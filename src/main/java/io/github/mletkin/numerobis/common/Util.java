@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis;
+package io.github.mletkin.numerobis.common;
 
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -38,7 +38,7 @@ public final class Util {
      *            predicate to negate
      * @return the negated predicate as {@code Predicate}
      */
-    static <T> Predicate<T> not(Predicate<T> predicate) {
+    public static <T> Predicate<T> not(Predicate<T> predicate) {
         return predicate.negate();
     }
 
@@ -53,7 +53,7 @@ public final class Util {
      *            that produces the exception to be thrown
      * @throws T
      */
-    static <T extends Throwable> void ifNotThrow(boolean flag, Supplier<T> supplier) throws T {
+    public static <T extends Throwable> void ifNotThrow(boolean flag, Supplier<T> supplier) throws T {
         if (!flag) {
             throw supplier.get();
         }

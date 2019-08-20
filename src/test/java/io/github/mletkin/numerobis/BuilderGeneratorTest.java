@@ -23,8 +23,11 @@ import org.junit.jupiter.api.Test;
 
 import com.github.javaparser.StaticJavaParser;
 
+import io.github.mletkin.numerobis.generator.BuilderGenerator;
+import io.github.mletkin.numerobis.generator.GeneratorException;
+
 /**
- * Builder generation with empty target unit.
+ * Builder generation without existing builder class.
  */
 class BuilderGeneratorTest {
 
@@ -193,7 +196,7 @@ class BuilderGeneratorTest {
     @Test
     void ignoresBuilderImport() {
         Assertions.assertThat(generateFromResource("TestClassWithBuilderImport")).isEqualTo(//
-                        "public class TestClassWithBuilderImportBuilder {" //
+                "public class TestClassWithBuilderImportBuilder {" //
                         + "    private TestClassWithBuilderImport product;" //
                         + "    public TestClassWithBuilderImportBuilder() {" //
                         + "        product = new TestClassWithBuilderImport();" //
@@ -232,13 +235,6 @@ class BuilderGeneratorTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Test
-    void test2() throws IOException {
-        System.out.println(BuilderGenerator
-                .generate(StaticJavaParser.parseResource("TestClassWithConstructor.java"), "TestClassWithConstructor")
-                .toString());
     }
 
 }

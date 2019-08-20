@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis;
+package io.github.mletkin.numerobis.generator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -33,6 +33,7 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.github.mletkin.numerobis.annotation.WithBuilder;
+import io.github.mletkin.numerobis.common.Util;
 
 /**
  * Generates a Builder for a given class in a seperate compilation unit.

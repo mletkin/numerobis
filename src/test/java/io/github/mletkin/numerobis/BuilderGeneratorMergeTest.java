@@ -24,14 +24,18 @@ import org.junit.jupiter.api.Test;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
+import io.github.mletkin.numerobis.generator.BuilderGenerator;
+
 /**
- * Builder generation with empty target unit.
+ * Builder generation with existing builder class.
  */
 class BuilderGeneratorMergeTest {
 
     @Test
     void usesTargetClass() {
-        Assertions.assertThat(generateFromResource("TestClass", "public class TestClassBuilder {}")).isEqualTo(//
+        Assertions.assertThat(generateFromResource("TestClass", //
+                "public class TestClassBuilder {}") //
+        ).isEqualTo(//
                 "public class TestClassBuilder {" //
                         + "    private TestClass product;" //
                         + "    public TestClassBuilder() {" //
@@ -266,7 +270,9 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void builderRetainsPackage() {
-        Assertions.assertThat(generateFromResource("TestClassWithPackage", "package bim.bam.bum;")).isEqualTo(//
+        Assertions.assertThat(generateFromResource("TestClassWithPackage", //
+                "package bim.bam.bum;")//
+        ).isEqualTo(//
                 "package bim.bam.bum;" //
                         + "public class TestClassWithPackageBuilder {" //
                         + "    private TestClassWithPackage product;" //
@@ -316,6 +322,9 @@ class BuilderGeneratorMergeTest {
         }
     }
 
+    /**
+     * No real test, just for fooling around with features.
+     */
     @Disabled
     @Test
     void test2() throws IOException {

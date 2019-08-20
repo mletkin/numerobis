@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis;
+package io.github.mletkin.numerobis.generator;
 
 import java.util.List;
 

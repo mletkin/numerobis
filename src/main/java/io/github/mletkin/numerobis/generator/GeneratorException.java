@@ -13,19 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis;
+package io.github.mletkin.numerobis.generator;
 
+/**
+ * Exception thrown by the builder generator.
+ * <p>
+ * Only one exception class is defined. Different error cases have different
+ * messages.
+ */
 public class GeneratorException extends RuntimeException {
 
     private GeneratorException(String message) {
         super(message);
     }
 
-    static GeneratorException noConstructorFound() {
+    public static GeneratorException noConstructorFound() {
         return new GeneratorException("No suitable constructor found.");
     }
 
-    static GeneratorException productClassNotFound() {
+    public static GeneratorException productClassNotFound() {
         return new GeneratorException("Product class not found in compilation unit.");
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis;
+package io.github.mletkin.numerobis.plugin;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +24,10 @@ import java.nio.file.Path;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
+
+import io.github.mletkin.numerobis.generator.BuilderGenerator;
+import io.github.mletkin.numerobis.generator.GeneratorException;
+import io.github.mletkin.numerobis.generator.Sorter;
 
 /**
  * Processes single java files to generate builder classes in separate files.

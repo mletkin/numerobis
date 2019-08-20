@@ -23,12 +23,16 @@ import org.junit.jupiter.api.Test;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
+import io.github.mletkin.numerobis.generator.Sorter;
+
+/**
+ * Tests rearranging of class members.
+ */
 class SorterTest {
 
     @Test
     void test() throws IOException {
         CompilationUnit cu = StaticJavaParser.parseResource("SortTest.java");
-
         new Sorter().sort(cu);
 
         Assertions.assertThat(cu.toString().replace("\r\n", "")).isEqualTo(//
