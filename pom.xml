@@ -28,7 +28,7 @@
     <scm>
         <connection>scm:git:git://github.com/mletkin/numerobis</connection>
         <developerConnection>scm:git:ssh://github.com:mletkin/numerobis</developerConnection>
-        <url>http://github.com/mletkin/minerobis/tree/master</url>
+        <url>http://github.com/mletkin/numerobis/tree/master</url>
     </scm>
 
     <properties>
