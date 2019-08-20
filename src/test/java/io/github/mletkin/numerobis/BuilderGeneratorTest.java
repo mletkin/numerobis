@@ -22,8 +22,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
 
-import io.github.mletkin.numerobis.generator.BuilderGenerator;
+import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.GeneratorException;
 
 /**
@@ -210,14 +211,14 @@ class BuilderGeneratorTest {
     @Test
     void notContainedClassProducesNothing() {
         Assertions.assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> BuilderGenerator.generate(StaticJavaParser.parseResource("TestClass.java"), "Foo"))
+                () -> Facade.generate(StaticJavaParser.parseResource("TestClass.java"), "Foo", new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
 
     @Test
     void nullClassProducesNothing() {
         Assertions.assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> BuilderGenerator.generate(StaticJavaParser.parseResource("TestClass.java"), ""))
+                () -> Facade.generate(StaticJavaParser.parseResource("TestClass.java"), "", new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
 
@@ -230,8 +231,9 @@ class BuilderGeneratorTest {
 
     private String generateFromResource(String className) {
         try {
-            return BuilderGenerator.generate(StaticJavaParser.parseResource(className + ".java"), className).toString()
-                    .replace("\r\n", "");
+            return Facade
+                    .generate(StaticJavaParser.parseResource(className + ".java"), className, new CompilationUnit())
+                    .toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

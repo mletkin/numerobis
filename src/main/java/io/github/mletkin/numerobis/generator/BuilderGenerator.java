@@ -32,11 +32,10 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
-import io.github.mletkin.numerobis.annotation.WithBuilder;
 import io.github.mletkin.numerobis.common.Util;
 
 /**
- * Generates a Builder for a given class in a seperate compilation unit.
+ * Generates builder classes product classes in a seperate compilation unit.
  */
 public class BuilderGenerator {
 
@@ -47,72 +46,39 @@ public class BuilderGenerator {
     final static String BUILD_METHOD = "build";
     final static String WITH_PREFIX = "with";
 
-    private CompilationUnit builderUnit;
+    private CompilationUnit productUnit;
     private String productClassName;
+    private CompilationUnit builderUnit;
     private ClassOrInterfaceDeclaration builderclass;
 
-    private BuilderGenerator(CompilationUnit productUnit, String productClassName, CompilationUnit builderUnit) {
+    /**
+     * instantiates and initializes a new builder generator.
+     *
+     * @param productUnit
+     *            unit with the product class definition
+     * @param productClassName
+     *            name of the product class
+     * @param builderUnit
+     *            unit with the builder class
+     */
+    BuilderGenerator(CompilationUnit productUnit, String productClassName, CompilationUnit builderUnit) {
         this.builderUnit = builderUnit;
         this.productClassName = productClassName;
-        createPackageDeclaration(productUnit);
-        createBuilderClass(productClassName);
-        copyImports(productUnit);
+        this.productUnit = productUnit;
+
+        createPackageDeclaration();
+        createBuilderClass();
+        copyImports();
     }
 
-    /**
-     * Generates a new builder for a product class.
-     *
-     * @param cu
-     *            compilation unit containing the product class
-     * @param producClassName
-     *            Name of the product class
-     * @return compilation unit containing the builder class
-     */
-    public static CompilationUnit generate(CompilationUnit cu, String producClassName) {
-        return generate(cu, producClassName, new CompilationUnit());
-    }
-
-    /**
-     * Generate a builder for a product class using an existing compilation unit.
-     *
-     * @param builderUnit
-     *            compilation unit containing the product class
-     * @param producClassName
-     *            name of the product class
-     * @return compilation unit containing the builder classs
-     */
-    public static CompilationUnit generate(CompilationUnit cu, String producClassName, CompilationUnit result) {
-
-        Util.ifNotThrow(ProductUtil.containsClass(cu, producClassName), GeneratorException::productClassNotFound);
-        Util.ifNotThrow(ProductUtil.hasUsableConstructor(cu), GeneratorException::noConstructorFound);
-
-        BuilderGenerator builder = new BuilderGenerator(cu, producClassName, result);
-        builder.addProductField();
-
-        builder.addDefaultConstructorIfNeeded(cu);
-
-        cu.findAll(ConstructorDeclaration.class).stream() //
-                .filter(ProductUtil::process) //
-                .forEach(builder::addConstructor);
-
-        cu.findAll(FieldDeclaration.class).stream() //
-                .filter(ProductUtil::process) //
-                .map(FieldDeclaration::getVariables) //
-                .flatMap(List::stream) //
-                .forEach(builder::addWithMethod);
-
-        builder.addBuildMethod();
-        return builder.builderUnit;
-    }
-
-    private void createPackageDeclaration(CompilationUnit cu) {
+    private void createPackageDeclaration() {
         if (!builderUnit.getPackageDeclaration().isPresent()) {
-            cu.getPackageDeclaration().ifPresent(builderUnit::setPackageDeclaration);
+            productUnit.getPackageDeclaration().ifPresent(builderUnit::setPackageDeclaration);
         }
     }
 
-    private void copyImports(CompilationUnit cu) {
-        cu.getImports().stream() //
+    private void copyImports() {
+        productUnit.getImports().stream() //
                 .filter(Util.not(this::isBuilderImport)) //
                 .forEach(builderUnit::addImport);
     }
@@ -121,7 +87,7 @@ public class BuilderGenerator {
         return impDec.getNameAsString().startsWith(BUILDER_PACKAGE);
     }
 
-    private void createBuilderClass(String productClassName) {
+    private void createBuilderClass() {
         this.builderclass = builderUnit.findAll(ClassOrInterfaceDeclaration.class).stream() //
                 .filter(c -> c.getNameAsString().equals(productClassName + CLASS_POSTFIX)) //
                 .filter(Util.not(ClassOrInterfaceDeclaration::isInterface)) //
@@ -129,7 +95,18 @@ public class BuilderGenerator {
                 .orElseGet(() -> builderUnit.addClass(productClassName + CLASS_POSTFIX));
     }
 
-    private void addDefaultConstructorIfNeeded(CompilationUnit productUnit) {
+    /**
+     * Add a constructor for each constructor in the product class.
+     */
+    BuilderGenerator addConstructors() {
+        addDefaultConstructorIfNeeded();
+        productUnit.findAll(ConstructorDeclaration.class).stream() //
+                .filter(ProductUtil::process) //
+                .forEach(this::addConstructor);
+        return this;
+    }
+
+    private void addDefaultConstructorIfNeeded() {
         if (!ProductUtil.hasExplicitConstructor(productUnit) && !ProductUtil.hasDefaultConstructor(builderUnit)) {
             ConstructorDeclaration builderconstructor = builderclass.addConstructor(Modifier.Keyword.PUBLIC);
             builderconstructor.createBody() //
@@ -169,7 +146,10 @@ public class BuilderGenerator {
         cd.getParameters().stream().map(Parameter::getNameAsString).collect(Collectors.joining(","))) + ")";
     }
 
-    private void addProductField() {
+    /**
+     * Adds a field for the product to the builder.
+     */
+    BuilderGenerator addProductField() {
         if (!builderclass.findAll(FieldDeclaration.class).stream() //
                 .map(FieldDeclaration::getVariables) //
                 .map(List::stream) //
@@ -178,22 +158,27 @@ public class BuilderGenerator {
                 .findAny().isPresent()) {
             builderclass.addField(productClassName, FIELD, Modifier.Keyword.PRIVATE);
         }
-    }
-
-    private void addWithMethod(VariableDeclarator vd) {
-        addWithMethod(vd.getType().asString(), vd.getNameAsString());
-    }
-
-    private boolean hasWithMethod(String type, String name) {
-        return builderclass.findAll(MethodDeclaration.class).stream() //
-                .filter(md -> md.getNameAsString().equals(makeWithName(name))) //
-                .filter(md -> matchesParameter(md, type)) //
-                .filter(md -> md.getType().equals(new ClassOrInterfaceType(builderclass.getNameAsString()))) //
-                .findAny().isPresent();
+        return this;
     }
 
     private boolean matchesParameter(MethodDeclaration md, String type) {
         return md.getParameters().size() == 1 && md.getParameter(0).getTypeAsString().equals(type);
+    }
+
+    /**
+     * Adds a with method for each field in the product.
+     */
+    BuilderGenerator addWithMethods() {
+        productUnit.findAll(FieldDeclaration.class).stream() //
+                .filter(ProductUtil::process) //
+                .map(FieldDeclaration::getVariables) //
+                .flatMap(List::stream) //
+                .forEach(this::addWithMethod);
+        return this;
+    }
+
+    private void addWithMethod(VariableDeclarator vd) {
+        addWithMethod(vd.getType().asString(), vd.getNameAsString());
     }
 
     private void addWithMethod(String type, String name) {
@@ -207,6 +192,27 @@ public class BuilderGenerator {
         }
     }
 
+    private boolean hasWithMethod(String type, String name) {
+        return builderclass.findAll(MethodDeclaration.class).stream() //
+                .filter(md -> md.getNameAsString().equals(makeWithName(name))) //
+                .filter(md -> matchesParameter(md, type)) //
+                .filter(md -> md.getType().equals(new ClassOrInterfaceType(builderclass.getNameAsString()))) //
+                .findAny().isPresent();
+    }
+
+    /**
+     * Adds the build method to the builder class.
+     */
+    BuilderGenerator addBuildMethod() {
+        if (!hasBuildMethod()) {
+            builderclass.addMethod(BUILD_METHOD, Modifier.Keyword.PUBLIC) //
+                    .setType(new ClassOrInterfaceType(productClassName)) //
+                    .createBody() //
+                    .addStatement("return " + FIELD + ";");
+        }
+        return this;
+    }
+
     private boolean hasBuildMethod() {
         return builderclass.findAll(MethodDeclaration.class).stream() //
                 .filter(md -> md.getNameAsString().equals(BUILD_METHOD)) //
@@ -214,21 +220,16 @@ public class BuilderGenerator {
                 .findAny().isPresent();
     }
 
-    private void addBuildMethod() {
-        if (!hasBuildMethod()) {
-            builderclass.addMethod(BUILD_METHOD, Modifier.Keyword.PUBLIC) //
-                    .setType(new ClassOrInterfaceType(productClassName)) //
-                    .createBody() //
-                    .addStatement("return " + FIELD + ";");
-        }
-    }
-
     private String makeWithName(String name) {
         return WITH_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
-    public static boolean isBuilderWanted(CompilationUnit cu) {
-        return cu.findAll(ClassOrInterfaceDeclaration.class) //
-                .stream().anyMatch(c -> c.isAnnotationPresent(WithBuilder.class.getSimpleName()));
+    /**
+     * Returns the builder class.
+     *
+     * @return compilation unit with the builder class
+     */
+    CompilationUnit builderUnit() {
+        return builderUnit;
     }
 }

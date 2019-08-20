@@ -25,7 +25,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
 
-import io.github.mletkin.numerobis.generator.BuilderGenerator;
+import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.GeneratorException;
 import io.github.mletkin.numerobis.generator.Sorter;
 
@@ -55,7 +55,7 @@ public class Processor {
     public void process(File file) {
         try {
             CompilationUnit productClass = parse(file);
-            if (BuilderGenerator.isBuilderWanted(productClass)) {
+            if (Facade.isBuilderWanted(productClass)) {
                 Destination builder = builder(file, productClass);
                 process(productClass, builder);
                 writeDestinationUnit(builder);
@@ -73,7 +73,7 @@ public class Processor {
             throws FileNotFoundException {
 
         return productClass.getPrimaryTypeName() //
-                .map(type -> BuilderGenerator.generate(productClass, type, builderClass)) //
+                .map(type -> Facade.generate(productClass, type, builderClass)) //
                 .orElseThrow(GeneratorException::productClassNotFound);
     }
 

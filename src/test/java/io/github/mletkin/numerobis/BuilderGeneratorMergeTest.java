@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
-import io.github.mletkin.numerobis.generator.BuilderGenerator;
+import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * Builder generation with existing builder class.
@@ -316,7 +316,7 @@ class BuilderGeneratorMergeTest {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
 
-            return BuilderGenerator.generate(source, className, target).toString().replace("\r\n", "");
+            return Facade.generate(source, className, target).toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -328,9 +328,8 @@ class BuilderGeneratorMergeTest {
     @Disabled
     @Test
     void test2() throws IOException {
-        System.out.println(BuilderGenerator
-                .generate(StaticJavaParser.parseResource("TestClassWithConstructor.java"), "TestClassWithConstructor")
-                .toString());
+        System.out.println(Facade.generate(StaticJavaParser.parseResource("TestClassWithConstructor.java"),
+                "TestClassWithConstructor", new CompilationUnit()).toString());
     }
 
 }
