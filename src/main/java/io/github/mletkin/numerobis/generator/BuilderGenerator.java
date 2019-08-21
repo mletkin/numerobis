@@ -15,6 +15,8 @@
  */
 package io.github.mletkin.numerobis.generator;
 
+import static io.github.mletkin.numerobis.generator.ProductUtil.hasExplicitConstructor;
+
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -44,6 +47,7 @@ public class BuilderGenerator {
     private final static String CLASS_POSTFIX = "Builder";
 
     final static String BUILD_METHOD = "build";
+    final static String FACTORY_METHOD = "of";
     final static String WITH_PREFIX = "with";
 
     private CompilationUnit productUnit;
@@ -96,13 +100,13 @@ public class BuilderGenerator {
     }
 
     /**
-     * Add a constructor for each constructor in the product class.
+     * Add a builder constructor for each constructor in the product class.
      */
     BuilderGenerator addConstructors() {
         addDefaultConstructorIfNeeded();
         productUnit.findAll(ConstructorDeclaration.class).stream() //
                 .filter(ProductUtil::process) //
-                .forEach(this::addConstructor);
+                .forEach(this::addMatchingConstructor);
         return this;
     }
 
@@ -114,8 +118,8 @@ public class BuilderGenerator {
         }
     }
 
-    private void addConstructor(ConstructorDeclaration productConstructor) {
-        if (!hasConstructor(productConstructor)) {
+    private void addMatchingConstructor(ConstructorDeclaration productConstructor) {
+        if (!hasMatchingConstructor(productConstructor)) {
             ConstructorDeclaration builderconstructor = builderclass.addConstructor(Modifier.Keyword.PUBLIC);
             productConstructor.getParameters().stream().forEach(builderconstructor::addParameter);
             builderconstructor.createBody() //
@@ -123,13 +127,82 @@ public class BuilderGenerator {
         }
     }
 
-    private boolean hasConstructor(ConstructorDeclaration productConstructor) {
+    private boolean hasMatchingConstructor(ConstructorDeclaration productConstructor) {
         return builderclass.findAll(ConstructorDeclaration.class).stream() //
                 .filter(cd -> matchesParameter(cd, productConstructor)) //
                 .findAny().isPresent();
     }
 
-    private boolean matchesParameter(ConstructorDeclaration a, ConstructorDeclaration b) {
+    /**
+     * Adds a builder factory method for each product constructor.
+     */
+    BuilderGenerator addFactoryMethods() {
+        addProductConstructor();
+        if (!hasExplicitConstructor(productUnit)) {
+            addDefaultFactoryMethod();
+        }
+        productUnit.findAll(ConstructorDeclaration.class).stream() //
+                .filter(ProductUtil::process) //
+                .forEach(this::addFactoryMethod);
+        return this;
+    }
+
+    private void addDefaultFactoryMethod() {
+        if (!hasDefaultFactoryMethod()) {
+            MethodDeclaration factoryMethod = builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC,
+                    Modifier.Keyword.STATIC);
+            factoryMethod.setType(builderclass.getNameAsString());
+            factoryMethod.createBody() //
+                    .addStatement("return new " + builderclass.getNameAsString() + "(new " + productClassName + "());");
+        }
+    }
+
+    private boolean hasDefaultFactoryMethod() {
+        return builderclass.findAll(MethodDeclaration.class).stream() //
+                .filter(MethodDeclaration::isStatic) //
+                .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
+                .filter(md -> md.getTypeAsString().equals(builderclass.getNameAsString())) //
+                .filter(md -> md.getParameters().size() == 0) //
+                .findAny().isPresent();
+    }
+
+    /**
+     * Adds a product constructor to the builder.
+     * <p>
+     * signature {@code private Builder(Product product)}
+     */
+    void addProductConstructor() {
+        if (!ProductUtil.hasProductConstructor(builderUnit, productClassName)) {
+            ConstructorDeclaration constructor = builderclass.addConstructor(Modifier.Keyword.PRIVATE);
+            constructor.addParameter(productClassName, FIELD);
+            constructor.createBody() //
+                    .addStatement("this." + FIELD + " = " + FIELD + ";");
+        }
+    }
+
+    private void addFactoryMethod(ConstructorDeclaration productConstructor) {
+        if (!hasMatchingFactoryMethod(productConstructor)) {
+            MethodDeclaration factoryMethod = builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC,
+                    Modifier.Keyword.STATIC);
+            productConstructor.getParameters().stream().forEach(factoryMethod::addParameter);
+            factoryMethod.setType(builderclass.getNameAsString());
+            factoryMethod.createBody() //
+                    .addStatement(//
+                            "return new " + builderclass.getNameAsString() + "(" + invocation(productConstructor)
+                                    + ");");
+        }
+    }
+
+    private boolean hasMatchingFactoryMethod(ConstructorDeclaration productConstructor) {
+        return builderclass.findAll(MethodDeclaration.class).stream() //
+        .filter(MethodDeclaration::isStatic) //
+        .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
+        .filter(md -> md.getTypeAsString().equals(builderclass.getNameAsString())) //
+        .filter(md -> matchesParameter(md, productConstructor)) //
+        .findAny().isPresent();
+    }
+
+    private boolean matchesParameter(CallableDeclaration a, CallableDeclaration b) {
         if (a.getParameters().size() != b.getParameters().size()) {
             return false;
         }

@@ -15,9 +15,11 @@
  */
 package io.github.mletkin.numerobis;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
 import java.io.IOException;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +36,7 @@ class BuilderGeneratorTest {
 
     @Test
     void convertsClassWithField() {
-        Assertions.assertThat(generateFromResource("TestClass")).isEqualTo(//
+        assertThat(generateFromResource("TestClass")).isEqualTo(//
                 "public class TestClassBuilder {" //
                         + "    private TestClass product;" //
                         + "    public TestClassBuilder() {" //
@@ -53,7 +55,7 @@ class BuilderGeneratorTest {
     @Disabled
     @Test
     void usesCustomMethodName() {
-        Assertions.assertThat(generateFromResource("TestClassWithName")).isEqualTo(//
+        assertThat(generateFromResource("TestClassWithName")).isEqualTo(//
                 "public class TestClassWithNameBuilder {" //
                         + "    private TestClassWithName product = new TestClassWithName();" //
                         + "    public TestClassWithNameBuilder access(int x) {" //
@@ -68,7 +70,7 @@ class BuilderGeneratorTest {
 
     @Test
     void fieldWithAnnotationIsIgnored() {
-        Assertions.assertThat(generateFromResource("TestClassIgnoreField")).isEqualTo(//
+        assertThat(generateFromResource("TestClassIgnoreField")).isEqualTo(//
                 "public class TestClassIgnoreFieldBuilder {" //
                         + "    private TestClassIgnoreField product;" //
                         + "    public TestClassIgnoreFieldBuilder() {" //
@@ -86,7 +88,7 @@ class BuilderGeneratorTest {
 
     @Test
     void convertsClassWithTwoFields() {
-        Assertions.assertThat(generateFromResource("TestClassTwo")).isEqualTo(//
+        assertThat(generateFromResource("TestClassTwo")).isEqualTo(//
                 "public class TestClassTwoBuilder {" //
                         + "    private TestClassTwo product;" //
                         + "    public TestClassTwoBuilder() {" //
@@ -108,7 +110,7 @@ class BuilderGeneratorTest {
 
     @Test
     void ignoresPrivateField() {
-        Assertions.assertThat(generateFromResource("TestClassWithPrivateField")).isEqualTo( //
+        assertThat(generateFromResource("TestClassWithPrivateField")).isEqualTo( //
                 "public class TestClassWithPrivateFieldBuilder {" //
                         + "    private TestClassWithPrivateField product;" //
                         + "    public TestClassWithPrivateFieldBuilder() {" //
@@ -126,7 +128,7 @@ class BuilderGeneratorTest {
 
     @Test
     void builderIsInSamePackage() {
-        Assertions.assertThat(generateFromResource("TestClassWithPackage")).isEqualTo(//
+        assertThat(generateFromResource("TestClassWithPackage")).isEqualTo(//
                 "package foo.bar.baz;" //
                         + "public class TestClassWithPackageBuilder {" //
                         + "    private TestClassWithPackage product;" //
@@ -144,44 +146,8 @@ class BuilderGeneratorTest {
     }
 
     @Test
-    void withConstructor() {
-        Assertions.assertThat(generateFromResource("TestClassWithConstructor")).isEqualTo( //
-                "public class TestClassWithConstructorBuilder {" + //
-                        "    private TestClassWithConstructor product;" + //
-                        "    public TestClassWithConstructorBuilder(int n) {" + //
-                        "        product = new TestClassWithConstructor(n);" + //
-                        "    }" + //
-                        "    public TestClassWithConstructorBuilder withX(int x) {" + //
-                        "        product.x = x;" + //
-                        "        return this;" + //
-                        "    }" + //
-                        "    public TestClassWithConstructor build() {" + //
-                        "        return product;" + //
-                        "    }" + //
-                        "}");
-    }
-
-    @Test
-    void ignoreConstructorWithAnnotation() {
-        Assertions.assertThat(generateFromResource("TestClassIgnoreConstructor")).isEqualTo( //
-                "public class TestClassIgnoreConstructorBuilder {" + //
-                        "    private TestClassIgnoreConstructor product;" + //
-                        "    public TestClassIgnoreConstructorBuilder(int n) {" + //
-                        "        product = new TestClassIgnoreConstructor(n);" + //
-                        "    }" + //
-                        "    public TestClassIgnoreConstructorBuilder withX(int x) {" + //
-                        "        product.x = x;" + //
-                        "        return this;" + //
-                        "    }" + //
-                        "    public TestClassIgnoreConstructor build() {" + //
-                        "        return product;" + //
-                        "    }" + //
-                        "}");
-    }
-
-    @Test
     void copiesImport() {
-        Assertions.assertThat(generateFromResource("TestClassWithImport")).isEqualTo(//
+        assertThat(generateFromResource("TestClassWithImport")).isEqualTo(//
                 "import foo.bar.baz;" + //
                         "public class TestClassWithImportBuilder {" //
                         + "    private TestClassWithImport product;" //
@@ -196,7 +162,7 @@ class BuilderGeneratorTest {
 
     @Test
     void ignoresBuilderImport() {
-        Assertions.assertThat(generateFromResource("TestClassWithBuilderImport")).isEqualTo(//
+        assertThat(generateFromResource("TestClassWithBuilderImport")).isEqualTo(//
                 "public class TestClassWithBuilderImportBuilder {" //
                         + "    private TestClassWithBuilderImport product;" //
                         + "    public TestClassWithBuilderImportBuilder() {" //
@@ -210,21 +176,21 @@ class BuilderGeneratorTest {
 
     @Test
     void notContainedClassProducesNothing() {
-        Assertions.assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
+        assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
                 () -> Facade.generate(StaticJavaParser.parseResource("TestClass.java"), "Foo", new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
 
     @Test
     void nullClassProducesNothing() {
-        Assertions.assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
+        assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
                 () -> Facade.generate(StaticJavaParser.parseResource("TestClass.java"), "", new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
 
     @Test
     void classWithoutUsableConstructorThrowsException() {
-        Assertions.assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
+        assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
                 () -> generateFromResource("TestClassWithoutConstructor"))
                 .withMessage("No suitable constructor found.");
     }

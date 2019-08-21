@@ -15,9 +15,10 @@
  */
 package io.github.mletkin.numerobis;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.github.javaparser.StaticJavaParser;
@@ -35,7 +36,7 @@ class SorterTest {
         CompilationUnit cu = StaticJavaParser.parseResource("SortTest.java");
         new Sorter().sort(cu);
 
-        Assertions.assertThat(cu.toString().replace("\r\n", "")).isEqualTo(//
+        assertThat(cu.toString().replace("\r\n", "")).isEqualTo(//
                 "/**" + //
                         " * File comment." + //
                         " */" + //

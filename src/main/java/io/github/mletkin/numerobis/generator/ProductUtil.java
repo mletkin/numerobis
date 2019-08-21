@@ -71,6 +71,19 @@ public final class ProductUtil {
     }
 
     /**
+     * Checks a compilation unit for a product constructor.
+     *
+     * @param cu
+     *            compilation unit to check
+     * @return {@code true} if the compilation unit contains a roduct constructor.
+     */
+    static boolean hasProductConstructor(CompilationUnit cu, String productClassName) {
+        return cu.findAll(ConstructorDeclaration.class).stream() //
+                .filter(cd -> cd.getParameters().size() == 1) //
+                .anyMatch(cd -> cd.getParameter(0).getTypeAsString().equals(productClassName)) ;
+    }
+
+    /**
      * Checks a compilation unit for a non-private constructor.
      *
      * @param cu

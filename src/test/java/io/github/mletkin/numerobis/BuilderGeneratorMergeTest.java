@@ -15,9 +15,10 @@
  */
 package io.github.mletkin.numerobis;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +34,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void usesTargetClass() {
-        Assertions.assertThat(generateFromResource("TestClass", //
+        assertThat(generateFromResource("TestClass", //
                 "public class TestClassBuilder {}") //
         ).isEqualTo(//
                 "public class TestClassBuilder {" //
@@ -53,28 +54,27 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void retainsProductField() {
-        Assertions
-                .assertThat(
-                        generateFromResource("TestClass", "public class TestClassBuilder {TestClass product = null;}"))
-                .isEqualTo(//
-                        "public class TestClassBuilder {" //
-                                + "    TestClass product = null;" //
-                                + "    public TestClassBuilder() {" //
-                                + "        product = new TestClass();" //
-                                + "    }" //
-                                + "    public TestClassBuilder withX(int x) {" //
-                                + "        product.x = x;" //
-                                + "        return this;" //
-                                + "    }" //
-                                + "    public TestClass build() {" //
-                                + "        return product;" //
-                                + "    }" //
-                                + "}");
+        assertThat(generateFromResource("TestClass", //
+                "public class TestClassBuilder {TestClass product = null;}") //
+        ).isEqualTo(//
+                "public class TestClassBuilder {" //
+                        + "    TestClass product = null;" //
+                        + "    public TestClassBuilder() {" //
+                        + "        product = new TestClass();" //
+                        + "    }" //
+                        + "    public TestClassBuilder withX(int x) {" //
+                        + "        product.x = x;" //
+                        + "        return this;" //
+                        + "    }" //
+                        + "    public TestClass build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "}");
     }
 
     @Test
     void retainsBuildMethod() {
-        Assertions.assertThat(generateFromResource("TestClass", //
+        assertThat(generateFromResource("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClass build() {" //
                         + "        return null;" //
@@ -98,7 +98,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void retainsDefaultConstructor() {
-        Assertions.assertThat(generateFromResource("TestClass", //
+        assertThat(generateFromResource("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder() {" //
                         + "        product = null;" //
@@ -122,7 +122,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void usesWithMethod() {
-        Assertions.assertThat(generateFromResource("TestClass", //
+        assertThat(generateFromResource("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder withX(int x) {" //
                         + "        return null;" //
@@ -145,7 +145,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void usesWithMethodWithDifferentParameterName() {
-        Assertions.assertThat(generateFromResource("TestClass", //
+        assertThat(generateFromResource("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder withX(int ypsilon) {" //
                         + "        return null;" //
@@ -170,7 +170,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void ignoresWithMethodWithDifferentReturnType() {
-        Assertions.assertThat(generateFromResource("TestClass", //
+        assertThat(generateFromResource("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public Object withX(int x) {" //
                         + "        return null;" //
@@ -197,7 +197,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void ignoresWithMethodWithDifferentParameterType() {
-        Assertions.assertThat(generateFromResource("TestClass", //
+        assertThat(generateFromResource("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder withX(String x) {" //
                         + "        return null;" //
@@ -224,7 +224,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void ignoresWithMethodWithAdditionalParameter() {
-        Assertions.assertThat(generateFromResource("TestClass", //
+        assertThat(generateFromResource("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder withX(int x, String z) {" //
                         + "        return null;" //
@@ -251,7 +251,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void existingImportIsNotDuplicated() {
-        Assertions.assertThat(generateFromResource("TestClassWithImport", //
+        assertThat(generateFromResource("TestClassWithImport", //
                 "import foo.bar.baz;" + //
                         "public class TestClassWithImportBuilder {" + //
                         "}") //
@@ -270,7 +270,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void builderRetainsPackage() {
-        Assertions.assertThat(generateFromResource("TestClassWithPackage", //
+        assertThat(generateFromResource("TestClassWithPackage", //
                 "package bim.bam.bum;")//
         ).isEqualTo(//
                 "package bim.bam.bum;" //
@@ -291,24 +291,24 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void ignoresExistingConstructor() {
-        Assertions.assertThat(generateFromResource("TestClassWithConstructor", //
-                "public class TestClassWithConstructorBuilder {" + //
-                        "    public TestClassWithConstructorBuilder(int n) {" + //
-                        "    }" + //
-                        "}") //
+        assertThat(generateFromResource("TestClassWithConstructor", //
+                "public class TestClassWithConstructorBuilder {" //
+                        + "    public TestClassWithConstructorBuilder(int n) {" //
+                        + "    }" //
+                        + "}") //
         ).isEqualTo(//
-                "public class TestClassWithConstructorBuilder {" + //
-                        "    public TestClassWithConstructorBuilder(int n) {" + //
-                        "    }" + //
-                        "    private TestClassWithConstructor product;" + //
-                        "    public TestClassWithConstructorBuilder withX(int x) {" + //
-                        "        product.x = x;" + //
-                        "        return this;" + //
-                        "    }" + //
-                        "    public TestClassWithConstructor build() {" + //
-                        "        return product;" + //
-                        "    }" + //
-                        "}");
+                "public class TestClassWithConstructorBuilder {" //
+                        + "    public TestClassWithConstructorBuilder(int n) {" //
+                        + "    }" //
+                        + "    private TestClassWithConstructor product;" //
+                        + "    public TestClassWithConstructorBuilder withX(int x) {" //
+                        + "        product.x = x;" //
+                        + "        return this;" //
+                        + "    }" //
+                        + "    public TestClassWithConstructor build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "}");
     }
 
     private String generateFromResource(String className, String builderClass) {

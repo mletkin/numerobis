@@ -34,7 +34,7 @@ public final class Facade {
     }
 
     /**
-     * Generate a builder for a product class using an existing compilation unit.
+     * Generate a builder for a product class using constructor methods.
      *
      * @param product
      *            compilation unit containing the product class
@@ -57,7 +57,31 @@ public final class Facade {
     }
 
     /**
-     * Tests wether the class needs a builder.
+     * Generate a builder for a product class using static factory methods.
+     *
+     * @param product
+     *            compilation unit containing the product class
+     * @param producClassName
+     *            name of the product class
+     * @param builder
+     *            compilation unit for the builder class
+     * @return compilation unit containing the builder classs
+     */
+    public static CompilationUnit withFactoryMethods(CompilationUnit product, String producClassName,
+            CompilationUnit builder) {
+        ifNotThrow(containsClass(product, producClassName), GeneratorException::productClassNotFound);
+        ifNotThrow(hasUsableConstructor(product), GeneratorException::noConstructorFound);
+
+        return new BuilderGenerator(product, producClassName, builder) //
+                .addProductField() //
+                .addFactoryMethods() //
+                .addWithMethods() //
+                .addBuildMethod() //
+                .builderUnit();
+    }
+
+    /**
+     * Tests whether a class needs a builder.
      *
      * @param sourceClass
      *            compilation unit with the potential product class
