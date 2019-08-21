@@ -93,13 +93,16 @@ public class Sorter {
 
         if (declaration instanceof MethodDeclaration) {
             MethodDeclaration md = (MethodDeclaration) declaration;
-            if (md.getNameAsString().startsWith(BuilderGenerator.WITH_PREFIX)) {
+            if (md.isStatic() && md.getNameAsString().startsWith(BuilderGenerator.FACTORY_METHOD)) {
                 return 30;
             }
-            if (md.getNameAsString().equals(BuilderGenerator.BUILD_METHOD)) {
+            if (md.getNameAsString().startsWith(BuilderGenerator.WITH_PREFIX)) {
                 return 31;
             }
-            return 32;
+            if (md.getNameAsString().equals(BuilderGenerator.BUILD_METHOD)) {
+                return 32;
+            }
+            return 33;
         }
         return 40;
     }

@@ -48,4 +48,8 @@ public class SortTest {
     SortTest() {
         // nothing to do
     }
+
+    public static String of() {
+    }
+
 }

@@ -37,46 +37,48 @@ class SorterTest {
         new Sorter().sort(cu);
 
         assertThat(cu.toString().replace("\r\n", "")).isEqualTo(//
-                "/**" + //
-                        " * File comment." + //
-                        " */" + //
-                        "package foo.bar.baz;" + //
-                        "import di.da.dum;" + //
-                        "/**" + //
-                        " * class" + //
-                        " */" + //
-                        "public class SortTest {" + //
-                        "    static int bla = 10;" + //
-                        "    private TestClass product = new TestClass();" + //
-                        "    /* Foo bekommt */" + //
-                        "    /* Wert 10 */" + //
-                        "    int foo = 10;" + //
-                        "    /**" + //
-                        "     * constructor comment." + //
-                        "     */" + //
-                        "    SortTest() {" + //
-                        "    // nothing to do" + //
-                        "    }" + //
-                        "    public TestClassBuilder withX(int x) {" + //
-                        "        // sue me" + //
-                        "        product.x = x;" + //
-                        "        return this;" + //
-                        "    }" + //
-                        "    public TestClass build() {" + //
-                        "        return product;" + //
-                        "    }" + //
-                        "    /**" + //
-                        "     * Method comment" + //
-                        "     *" + //
-                        "     * @param x" + //
-                        "     * @return" + //
-                        "     */" + //
-                        "    public Object foo(int x) {" + //
-                        "        return null;" + //
-                        "    }" + //
-                        "    public static class Foo {" + //
-                        "    }" + //
-                        "}");
+                "/**" //
+                        + " * File comment." //
+                        + " */" //
+                        + "package foo.bar.baz;" //
+                        + "import di.da.dum;" //
+                        + "/**" //
+                        + " * class" //
+                        + " */" //
+                        + "public class SortTest {" //
+                        + "    static int bla = 10;" //
+                        + "    private TestClass product = new TestClass();" //
+                        + "    /* Foo bekommt */" //
+                        + "    /* Wert 10 */" //
+                        + "    int foo = 10;" //
+                        + "    /**" //
+                        + "     * constructor comment." //
+                        + "     */" //
+                        + "    SortTest() {" //
+                        + "    // nothing to do" //
+                        + "    }" //
+                        + "    public static String of() {" //
+                        + "    }" //
+                        + "    public TestClassBuilder withX(int x) {" //
+                        + "        // sue me" //
+                        + "        product.x = x;" //
+                        + "        return this;" //
+                        + "    }" //
+                        + "    public TestClass build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "    /**" //
+                        + "     * Method comment" //
+                        + "     *" //
+                        + "     * @param x" //
+                        + "     * @return" //
+                        + "     */" //
+                        + "    public Object foo(int x) {" //
+                        + "        return null;" //
+                        + "    }" //
+                        + "    public static class Foo {" //
+                        + "    }" //
+                        + "}");
 
     }
 
