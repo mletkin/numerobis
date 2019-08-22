@@ -44,7 +44,7 @@ public final class Facade {
      *            compilation unit for the builder class
      * @return compilation unit containing the builder classs
      */
-    public static CompilationUnit generate(CompilationUnit product, String producClassName, CompilationUnit builder) {
+    public static CompilationUnit withConstructors(CompilationUnit product, String producClassName, CompilationUnit builder) {
         ifNotThrow(containsClass(product, producClassName), GeneratorException::productClassNotFound);
         ifNotThrow(hasUsableConstructor(product), GeneratorException::noConstructorFound);
 
@@ -52,6 +52,7 @@ public final class Facade {
                 .addProductField() //
                 .addConstructors() //
                 .addWithMethods() //
+                .addAddMethods() //
                 .addBuildMethod() //
                 .builderUnit();
     }
@@ -76,6 +77,7 @@ public final class Facade {
                 .addProductField() //
                 .addFactoryMethods() //
                 .addWithMethods() //
+                .addAddMethods() //
                 .addBuildMethod() //
                 .builderUnit();
     }

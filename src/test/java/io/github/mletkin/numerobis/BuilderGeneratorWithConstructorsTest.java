@@ -90,7 +90,7 @@ class BuilderGeneratorWithConstructorsTest {
     private String generateFromResource(String className) {
         try {
             return Facade
-                    .generate(StaticJavaParser.parseResource(className + ".java"), className, new CompilationUnit())
+                    .withConstructors(StaticJavaParser.parseResource(className + ".java"), className, new CompilationUnit())
                     .toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);

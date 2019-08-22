@@ -15,12 +15,17 @@
  */
 package io.github.mletkin.numerobis.generator;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.SimpleName;
 
 import io.github.mletkin.numerobis.annotation.Ignore;
 
@@ -80,7 +85,7 @@ public final class ProductUtil {
     static boolean hasProductConstructor(CompilationUnit cu, String productClassName) {
         return cu.findAll(ConstructorDeclaration.class).stream() //
                 .filter(cd -> cd.getParameters().size() == 1) //
-                .anyMatch(cd -> cd.getParameter(0).getTypeAsString().equals(productClassName)) ;
+                .anyMatch(cd -> cd.getParameter(0).getTypeAsString().equals(productClassName));
     }
 
     /**
@@ -117,4 +122,25 @@ public final class ProductUtil {
     static boolean process(ConstructorDeclaration cd) {
         return !cd.isPrivate() && !cd.isAnnotationPresent(Ignore.class);
     }
+
+    static boolean implementsCollection(VariableDeclarator vd, CompilationUnit cu) {
+        String typ = vd.getType().findFirst(SimpleName.class).map(SimpleName::asString).orElse("#");
+
+        Optional<String> fullType = cu.getImports().stream() //
+                .map(ImportDeclaration::getNameAsString) //
+                .filter(i -> i.endsWith(typ)) //
+                .findFirst();
+
+        try {
+            if (fullType.isPresent()) {
+                Class<?> c = Class.forName(fullType.get());
+                c.asSubclass(Collection.class);
+                return true;
+            }
+        } catch (ClassCastException | ClassNotFoundException e) {
+            return false;
+        }
+        return false;
+    }
+
 }

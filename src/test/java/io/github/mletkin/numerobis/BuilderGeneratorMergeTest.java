@@ -316,7 +316,7 @@ class BuilderGeneratorMergeTest {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
 
-            return Facade.generate(source, className, target).toString().replace("\r\n", "");
+            return Facade.withConstructors(source, className, target).toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -328,7 +328,7 @@ class BuilderGeneratorMergeTest {
     @Disabled
     @Test
     void test2() throws IOException {
-        System.out.println(Facade.generate(StaticJavaParser.parseResource("TestClassWithConstructor.java"),
+        System.out.println(Facade.withConstructors(StaticJavaParser.parseResource("TestClassWithConstructor.java"),
                 "TestClassWithConstructor", new CompilationUnit()).toString());
     }
 

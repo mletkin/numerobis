@@ -33,6 +33,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class BuilderMojo extends AbstractMojo {
 
+    enum Creation {
+        CONSTRUCTOR, FACTORY;
+    }
+
     /**
      * The directories containing the sources to be processed.
      */
@@ -47,6 +51,9 @@ public class BuilderMojo extends AbstractMojo {
     @Parameter(defaultValue = " ", readonly = true, required = true)
     private String targetDirectory;
 
+    @Parameter(defaultValue = "FACTORY")
+    private Creation builderCreation;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         logConfiguration();
@@ -59,6 +66,7 @@ public class BuilderMojo extends AbstractMojo {
         if (compileSourceRoots != null) {
             compileSourceRoots.stream().forEach(getLog()::info);
         }
+        getLog().info("builder creation: " + builderCreation);
     }
 
     /**
@@ -73,7 +81,7 @@ public class BuilderMojo extends AbstractMojo {
                     .map(Path::toFile) //
                     .filter(File::isFile) //
                     .filter(f -> f.getName().endsWith(".java")) //
-                    .forEach(new Processor(targetDirectory)::process);
+                    .forEach(new Processor(targetDirectory, builderCreation == Creation.FACTORY)::process);
         } catch (IOException e) {
             e.printStackTrace();
         }

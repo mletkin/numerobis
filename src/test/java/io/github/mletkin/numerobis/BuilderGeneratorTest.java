@@ -177,14 +177,14 @@ class BuilderGeneratorTest {
     @Test
     void notContainedClassProducesNothing() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> Facade.generate(StaticJavaParser.parseResource("TestClass.java"), "Foo", new CompilationUnit()))
+                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo", new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
 
     @Test
     void nullClassProducesNothing() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> Facade.generate(StaticJavaParser.parseResource("TestClass.java"), "", new CompilationUnit()))
+                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "", new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
 
@@ -198,7 +198,7 @@ class BuilderGeneratorTest {
     private String generateFromResource(String className) {
         try {
             return Facade
-                    .generate(StaticJavaParser.parseResource(className + ".java"), className, new CompilationUnit())
+                    .withConstructors(StaticJavaParser.parseResource(className + ".java"), className, new CompilationUnit())
                     .toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);

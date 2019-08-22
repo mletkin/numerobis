@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Function;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -35,15 +36,18 @@ import io.github.mletkin.numerobis.generator.Sorter;
 public class Processor {
 
     private String destinationPath;
+    private boolean useFactoryMethods;
 
     /**
      * Produces a new instance for the given configuration.x
      *
      * @param destinationPath
      *            Where the generated builder classes are stored.
+     * @param b
      */
-    public Processor(String destinationPath) {
+    public Processor(String destinationPath, boolean useFactoryMethods) {
         this.destinationPath = destinationPath == null ? "" : destinationPath.trim();
+        this.useFactoryMethods = useFactoryMethods;
     }
 
     /**
@@ -72,8 +76,12 @@ public class Processor {
     private CompilationUnit generate(CompilationUnit productClass, CompilationUnit builderClass)
             throws FileNotFoundException {
 
+        Function<String, CompilationUnit> generator = useFactoryMethods //
+                ? type -> Facade.withFactoryMethods(productClass, type, builderClass)
+                : type -> Facade.withConstructors(productClass, type, builderClass);
+
         return productClass.getPrimaryTypeName() //
-                .map(type -> Facade.generate(productClass, type, builderClass)) //
+                .map(generator) //
                 .orElseThrow(GeneratorException::productClassNotFound);
     }
 
