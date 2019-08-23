@@ -44,10 +44,14 @@ public class Processor {
     private boolean embeddedBuilder;
 
     /**
-     * Produces a new instance for the given configuration.x
+     * Produces a new instance for the given configuration.
      *
      * @param destinationPath
      *            Where external generated builder classes are stored.
+     * @param creation
+     *            generate factory methods or constructors
+     * @param location
+     *            use embedded or separate builder class
      */
     public Processor(String destinationPath, BuilderMojo.Creation creation, BuilderMojo.Location location) {
         this.destinationPath = destinationPath == null ? "" : destinationPath.trim();

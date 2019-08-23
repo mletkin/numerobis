@@ -54,8 +54,8 @@ public final class Facade {
      * @param productClassName
      *            name of the product class
      * @param builderUnit
-     *            compilation unit for the builder class
-     * @return compilation unit containing the builder classs
+     *            compilation unit for/with the builder class
+     * @return result object with generated source
      */
     public static Result withConstructors(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
@@ -79,8 +79,8 @@ public final class Facade {
      * @param productClassName
      *            name of the product class
      * @param builderUnit
-     *            compilation unit for the builder class
-     * @return compilation unit containing the builder classs
+     *            compilation unit for/with the builder class
+     * @return result object with generated source
      */
     public static Result withFactoryMethods(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
@@ -103,9 +103,7 @@ public final class Facade {
      *            compilation unit containing the product class
      * @param productClassName
      *            name of the product class
-     * @param builderUnit
-     *            compilation unit for the builder class
-     * @return compilation unit containing the builder classs
+     * @return result object with generated source
      */
     public static Result withConstructors(CompilationUnit productUnit, String productClassName) {
         return Result.product(//
@@ -127,7 +125,7 @@ public final class Facade {
      *            compilation unit containing the product class
      * @param productClassName
      *            name of the product class
-     * @return compilation unit containing the builder classs
+     * @return result object with generated source
      */
     public static Result withFactoryMethods(CompilationUnit productUnit, String productClassName) {
         return Result.product(//

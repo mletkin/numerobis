@@ -56,6 +56,7 @@ public final class Util {
      * @param supplier
      *            that produces the exception to be thrown
      * @throws T
+     *             thrown if {@code flag} is {@code false}
      */
     public static <T extends Throwable> void ifNotThrow(boolean flag, Supplier<T> supplier) throws T {
         if (!flag) {
