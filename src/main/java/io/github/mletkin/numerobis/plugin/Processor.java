@@ -15,6 +15,8 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
+import static java.util.Optional.ofNullable;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,7 +28,9 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
 
+import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.Facade;
+import io.github.mletkin.numerobis.generator.Facade.Result;
 import io.github.mletkin.numerobis.generator.GeneratorException;
 import io.github.mletkin.numerobis.generator.Sorter;
 
@@ -37,17 +41,18 @@ public class Processor {
 
     private String destinationPath;
     private boolean useFactoryMethods;
+    private boolean embeddedBuilder;
 
     /**
      * Produces a new instance for the given configuration.x
      *
      * @param destinationPath
-     *            Where the generated builder classes are stored.
-     * @param b
+     *            Where external generated builder classes are stored.
      */
-    public Processor(String destinationPath, boolean useFactoryMethods) {
+    public Processor(String destinationPath, BuilderMojo.Creation creation, BuilderMojo.Location location) {
         this.destinationPath = destinationPath == null ? "" : destinationPath.trim();
-        this.useFactoryMethods = useFactoryMethods;
+        this.useFactoryMethods = creation.flag();
+        this.embeddedBuilder = location.flag();
     }
 
     /**
@@ -60,42 +65,64 @@ public class Processor {
         try {
             CompilationUnit productClass = parse(file);
             if (Facade.isBuilderWanted(productClass)) {
-                Destination builder = builder(file, productClass);
-                process(productClass, builder);
-                writeDestinationUnit(builder);
+                Destination dest = builder(file, productClass) //
+                        .withProductUnit(productClass) //
+                        .withProductPath(file.toPath());
+                write(dest, sort(generate(dest)));
             }
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             e.printStackTrace();
         }
     }
 
-    private void process(CompilationUnit productClass, Destination builder) throws FileNotFoundException {
-        new Sorter().sort(generate(productClass, builder.unit));
-    }
-
-    private CompilationUnit generate(CompilationUnit productClass, CompilationUnit builderClass)
-            throws FileNotFoundException {
-
-        Function<String, CompilationUnit> generator = useFactoryMethods //
-                ? type -> Facade.withFactoryMethods(productClass, type, builderClass)
-                : type -> Facade.withConstructors(productClass, type, builderClass);
-
-        return productClass.getPrimaryTypeName() //
-                .map(generator) //
+    private Result generate(Destination dest) throws FileNotFoundException {
+        return dest.product.getPrimaryTypeName() //
+                .map(generator(dest)) //
                 .orElseThrow(GeneratorException::productClassNotFound);
     }
 
+    private Function<String, Result> generator(Destination dest) {
+        if (embeddedBuilder) {
+            return useFactoryMethods //
+                    ? type -> Facade.withFactoryMethods(dest.product, type)
+                    : type -> Facade.withConstructors(dest.product, type);
+        }
+        return useFactoryMethods //
+                ? type -> Facade.withFactoryMethods(dest.product, type, dest.builder)
+                : type -> Facade.withConstructors(dest.product, type, dest.builder);
+    }
+
+    private Result sort(Result result) {
+        Sorter sorter = new Sorter();
+        ofNullable(result.builderUnit).ifPresent(sorter::sort);
+        ofNullable(result.productUnit).ifPresent(sorter::sort);
+        return result;
+    }
+
     private static class Destination {
-        private CompilationUnit unit;
-        private Path path;
+        private CompilationUnit builder;
+        private Path builderPath;
+
+        private CompilationUnit product;
+        private Path productPath;
 
         public Destination(CompilationUnit unit, Path path) {
-            this.unit = unit;
-            this.path = path;
+            this.builder = unit;
+            this.builderPath = path;
         }
 
-        Path path() {
-            return path;
+        Destination withProductUnit(CompilationUnit product) {
+            this.product = product;
+            return this;
+        }
+
+        Destination withProductPath(Path productPath) {
+            this.productPath = productPath;
+            return this;
+        }
+
+        Path builderPath() {
+            return builderPath;
         }
 
     }
@@ -110,15 +137,17 @@ public class Processor {
         return new Destination(new CompilationUnit(), destinationPath);
     }
 
-    private Path writeDestinationUnit(Destination dest) throws IOException {
-        createPath(dest.path());
-        return Files.write(dest.path(), dest.unit.toString().getBytes());
+    private void write(Destination dest, Result result) {
+        ofNullable(result.builderUnit).ifPresent(u -> writeResult(dest.builderPath(), u));
+        ofNullable(result.productUnit).ifPresent(u -> writeResult(dest.productPath, u));
     }
 
-    private void createPath(Path destinationFile) {
-        File parent = destinationFile.getParent().toFile();
-        if (!parent.exists() && !parent.mkdirs()) {
-            throw new IllegalStateException("Couldn't create dir: " + parent);
+    private void writeResult(Path path, CompilationUnit unit) {
+        try {
+            Util.createParentPath(path);
+            Files.write(path, unit.toString().getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

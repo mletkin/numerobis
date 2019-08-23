@@ -21,7 +21,6 @@ import static io.github.mletkin.numerobis.common.Util.not;
 import static io.github.mletkin.numerobis.generator.ClassUtil.allMember;
 import static io.github.mletkin.numerobis.generator.ClassUtil.hasDefaultConstructor;
 import static io.github.mletkin.numerobis.generator.ClassUtil.hasExplicitConstructor;
-import static io.github.mletkin.numerobis.generator.ClassUtil.hasUsableConstructor;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.args;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.assignExpr;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.fieldAccess;
@@ -34,6 +33,7 @@ import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -45,6 +45,8 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+
+import io.github.mletkin.numerobis.annotation.Ignore;
 
 /**
  * Generates builder classes product classes in a seperate compilation unit.
@@ -60,11 +62,37 @@ public class BuilderGenerator {
     final static String WITH_PREFIX = "with";
     final static String ADD_PREFIX = "add";
 
+    private boolean separateClass = true;
+
     private CompilationUnit productUnit;
     private CompilationUnit builderUnit;
 
     private ClassOrInterfaceDeclaration builderclass;
     private ClassOrInterfaceDeclaration productclass;
+
+    /**
+     * Creates a generator for an internal builder class.
+     * <p>
+     * <ul>
+     * <li>creates the builder class definition
+     * </ul>
+     *
+     * @param productUnit
+     *            unit with the product class definition
+     * @param productClassName
+     *            name of the product class
+     */
+    BuilderGenerator(CompilationUnit productUnit, String productClassName) {
+        this.productclass = ClassUtil.findClass(productUnit, productClassName).orElse(null);
+        this.productUnit = productUnit;
+        this.builderUnit = productUnit;
+        this.separateClass = false;
+
+        ifNotThrow(productclass != null, GeneratorException::productClassNotFound);
+        ifNotThrow(hasUsableConstructor(productclass), GeneratorException::noConstructorFound);
+
+        createInternalBuilderClass();
+    }
 
     /**
      * Creates a generator for an external builder class.
@@ -93,7 +121,7 @@ public class BuilderGenerator {
 
         createPackageDeclaration();
         copyImports();
-        createBuilderClass();
+        createExternalBuilderClass();
     }
 
     private void createPackageDeclaration() {
@@ -112,12 +140,25 @@ public class BuilderGenerator {
         return impDec.getNameAsString().startsWith(BUILDER_PACKAGE);
     }
 
-    private void createBuilderClass() {
+    private void createExternalBuilderClass() {
         this.builderclass = builderUnit.findAll(ClassOrInterfaceDeclaration.class).stream() //
                 .filter(c -> c.getNameAsString().equals(productClassName() + CLASS_POSTFIX)) //
                 .filter(not(ClassOrInterfaceDeclaration::isInterface)) //
                 .findFirst() //
                 .orElseGet(() -> builderUnit.addClass(productClassName() + CLASS_POSTFIX));
+    }
+
+    private void createInternalBuilderClass() {
+        this.builderclass = allMember(productclass, ClassOrInterfaceDeclaration.class) //
+                .filter(c -> c.getNameAsString().equals(CLASS_POSTFIX)) //
+                .findFirst() //
+                .orElseGet(this::newInternalBuilderClass);
+    }
+
+    private ClassOrInterfaceDeclaration newInternalBuilderClass() {
+        ClassOrInterfaceDeclaration memberClass = GenerationUtil.newMemberClass(CLASS_POSTFIX);
+        productclass.getMembers().add(memberClass);
+        return memberClass;
     }
 
     /**
@@ -156,7 +197,7 @@ public class BuilderGenerator {
     BuilderGenerator addConstructors() {
         addDefaultConstructorIfNeeded();
         allMember(productclass, ConstructorDeclaration.class) //
-                .filter(ClassUtil::process) //
+                .filter(this::process) //
                 .forEach(this::addMatchingConstructor);
         return this;
     }
@@ -194,7 +235,7 @@ public class BuilderGenerator {
             addDefaultFactoryMethod();
         }
         allMember(productclass, ConstructorDeclaration.class) //
-                .filter(ClassUtil::process) //
+                .filter(this::process) //
                 .forEach(this::addFactoryMethod);
         return this;
     }
@@ -266,11 +307,31 @@ public class BuilderGenerator {
      */
     BuilderGenerator addWithMethods() {
         allMember(productclass, FieldDeclaration.class) //
-                .filter(ClassUtil::process) //
+                .filter(this::process) //
                 .map(FieldDeclaration::getVariables) //
                 .flatMap(List::stream) //
                 .forEach(this::addWithMethod);
         return this;
+    }
+
+    private boolean process(FieldDeclaration fd) {
+        if (fd.isAnnotationPresent(Ignore.class)) {
+            return false;
+        }
+        if (fd.isPrivate() && separateClass) {
+            return false;
+        }
+        return true;
+    }
+
+    private  boolean process(ConstructorDeclaration cd) {
+        if (cd.isAnnotationPresent(Ignore.class)) {
+            return false;
+        }
+        if (cd.isPrivate() && separateClass) {
+            return false;
+        }
+        return true;
     }
 
     private void addWithMethod(VariableDeclarator vd) {
@@ -331,7 +392,7 @@ public class BuilderGenerator {
      */
     BuilderGenerator addAddMethods() {
         allMember(productclass, FieldDeclaration.class) //
-                .filter(ClassUtil::process) //
+                .filter(this::process) //
                 .map(FieldDeclaration::getVariables) //
                 .flatMap(List::stream) //
                 .filter(vd -> ClassUtil.implementsCollection(vd, productUnit)) //
@@ -400,7 +461,23 @@ public class BuilderGenerator {
      * @return compilation unit with the builder class
      */
     CompilationUnit builderUnit() {
-        return builderUnit;
+        return separateClass ? builderUnit : productUnit;
+    }
+
+    /**
+     * Checks a class declaration for a usable constructor.
+     * <p>
+     * The constructor must be callable by the builder
+     *
+     * @param type
+     *            class to check
+     * @return {@code true} if the class contains fitting constructor.
+     */
+    private boolean hasUsableConstructor(ClassOrInterfaceDeclaration type) {
+        List<ConstructorDeclaration> constructorList = //
+                allMember(type, ConstructorDeclaration.class).collect(Collectors.toList());
+
+        return constructorList.isEmpty() || constructorList.stream().anyMatch(this::process);
     }
 
 }

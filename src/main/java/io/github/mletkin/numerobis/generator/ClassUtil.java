@@ -18,10 +18,8 @@ package io.github.mletkin.numerobis.generator;
 import static io.github.mletkin.numerobis.common.Util.exists;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -30,7 +28,6 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.SimpleName;
 
@@ -54,7 +51,7 @@ public final class ClassUtil {
      *            name of the searched class
      * @return the found class declaration wrapped in an optional
      */
-    static Optional<ClassOrInterfaceDeclaration> findClass(CompilationUnit unit, String className) {
+    public static Optional<ClassOrInterfaceDeclaration> findClass(CompilationUnit unit, String className) {
         return unit.findFirst(ClassOrInterfaceDeclaration.class, //
                 cl -> cl.getNameAsString().equals(className));
     }
@@ -93,32 +90,6 @@ public final class ClassUtil {
         return allMember(type, ConstructorDeclaration.class) //
                 .filter(cd -> cd.getParameters().size() == 1) //
                 .anyMatch(cd -> cd.getParameter(0).getTypeAsString().equals(productClassName));
-    }
-
-    /**
-     * Checks a class declaration for a non-private constructor.
-     *
-     * @param type
-     *            class to check
-     * @return {@code true} if the class contains a non-private constructor or a
-     *         default constructor.
-     */
-    static boolean hasUsableConstructor(ClassOrInterfaceDeclaration type) {
-        List<ConstructorDeclaration> constructorList = //
-                allMember(type, ConstructorDeclaration.class).collect(Collectors.toList());
-
-        return constructorList.isEmpty() || constructorList.stream().anyMatch(ClassUtil::process);
-    }
-
-    /**
-     * Checks a field declaration for builder usage.
-     *
-     * @param fd
-     *            field declartion to check
-     * @return {@code true} if the field should have a with-method
-     */
-    static boolean process(FieldDeclaration fd) {
-        return !fd.isPrivate() && !fd.isAnnotationPresent(Ignore.class);
     }
 
     /**
@@ -185,7 +156,7 @@ public final class ClassUtil {
      *            class object of the member type
      * @return stream of members
      */
-    static <T extends Node> Stream<T> allMember(ClassOrInterfaceDeclaration decl, Class<T> memberType) {
+    public static <T extends Node> Stream<T> allMember(ClassOrInterfaceDeclaration decl, Class<T> memberType) {
         return decl.findAll(memberType) //
                 .stream() //
                 .filter(isMember(decl));

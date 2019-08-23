@@ -18,25 +18,28 @@ package io.github.mletkin.numerobis;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
+import io.github.mletkin.numerobis.generator.ClassUtil;
 import io.github.mletkin.numerobis.generator.Facade;
 
 /**
- * Builder generation with constructors without existing builder class.
+ * Builder generation of internal builder class.
  */
-class BuilderGeneratorWithConstructorsTest {
+class InteralBuilderGeneratorWithConstructorsTest {
 
     @Test
     void productClassWithoutConstructor() {
         assertThat(generateFromResource("Empty")).isEqualTo(//
-                "public class EmptyBuilder {" //
+                "public static class Builder {" //
                         + "    private Empty product;" //
-                        + "    public EmptyBuilder() {" //
+                        + "    public Builder() {" //
                         + "        product = new Empty();" //
                         + "    }" //
                         + "    public Empty build() {" //
@@ -47,10 +50,10 @@ class BuilderGeneratorWithConstructorsTest {
 
     @Test
     void productClassWithCustomConstructor() {
-        assertThat(generateFromResource("EmptyWithCustomConstructor")).isEqualTo( //
-                "public class EmptyWithCustomConstructorBuilder {" //
+        assertThat(generateFromResource("EmptyWithCustomConstructor")).isEqualTo(//
+                "public static class Builder {" //
                         + "    private EmptyWithCustomConstructor product;" //
-                        + "    public EmptyWithCustomConstructorBuilder(int n) {" //
+                        + "    public Builder(int n) {" //
                         + "        product = new EmptyWithCustomConstructor(n);" //
                         + "    }" //
                         + "    public EmptyWithCustomConstructor build() {" //
@@ -61,10 +64,10 @@ class BuilderGeneratorWithConstructorsTest {
 
     @Test
     void productClassWithDefaultConstructor() {
-        assertThat(generateFromResource("EmptyWithDefaultConstructor")).isEqualTo( //
-                "public class EmptyWithDefaultConstructorBuilder {" //
+        assertThat(generateFromResource("EmptyWithDefaultConstructor")).isEqualTo(//
+                "public static class Builder {" //
                         + "    private EmptyWithDefaultConstructor product;" //
-                        + "    public EmptyWithDefaultConstructorBuilder() {" //
+                        + "    public Builder() {" //
                         + "        product = new EmptyWithDefaultConstructor();" //
                         + "    }" //
                         + "    public EmptyWithDefaultConstructor build() {" //
@@ -76,9 +79,9 @@ class BuilderGeneratorWithConstructorsTest {
     @Test
     void constructorWithAnnotationIsIgnored() {
         assertThat(generateFromResource("EmptyWithIgnoredConstructor")).isEqualTo( //
-                "public class EmptyWithIgnoredConstructorBuilder {" //
+                "public static class Builder {" //
                         + "    private EmptyWithIgnoredConstructor product;" //
-                        + "    public EmptyWithIgnoredConstructorBuilder(int n) {" //
+                        + "    public Builder(int n) {" //
                         + "        product = new EmptyWithIgnoredConstructor(n);" //
                         + "    }" //
                         + "    public EmptyWithIgnoredConstructor build() {" //
@@ -88,12 +91,15 @@ class BuilderGeneratorWithConstructorsTest {
     }
 
     @Test
-    void privateConstructorIsIgnored() {
+    void privateConstructorIsProcessed() {
         assertThat(generateFromResource("EmptyWithPrivateAndPublicConstructor")).isEqualTo( //
-                "public class EmptyWithPrivateAndPublicConstructorBuilder {" //
+                "public static class Builder {" //
                         + "    private EmptyWithPrivateAndPublicConstructor product;" //
-                        + "    public EmptyWithPrivateAndPublicConstructorBuilder(int n) {" //
+                        + "    public Builder(int n) {" //
                         + "        product = new EmptyWithPrivateAndPublicConstructor(n);" //
+                        + "    }" //
+                        + "    public Builder(String s) {" //
+                        + "        product = new EmptyWithPrivateAndPublicConstructor(s);" //
                         + "    }" //
                         + "    public EmptyWithPrivateAndPublicConstructor build() {" //
                         + "        return product;" //
@@ -101,13 +107,36 @@ class BuilderGeneratorWithConstructorsTest {
                         + "}");
     }
 
+    @Test
+    void usesExistingMemberBuilderClass() {
+        assertThat(generateFromResource("WithBuilder")).isEqualTo(//
+                "public static class Builder {" //
+                        + "    private int x;" //
+                        + "    private WithBuilder product;" //
+                        + "    public Builder() {" //
+                        + "        product = new WithBuilder();" //
+                        + "    }" //
+                        + "    public WithBuilder build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "}");
+    }
+
     private String generateFromResource(String className) {
         try {
-            return Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
-                    new CompilationUnit()).toString().replace("\r\n", "");
+            return extractBuilder(
+                    Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className).productUnit,
+                    className).toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private ClassOrInterfaceDeclaration extractBuilder(CompilationUnit cu, String className) {
+        return ClassUtil.findClass(cu, className) //
+                .map(c -> ClassUtil.allMember(c, ClassOrInterfaceDeclaration.class)) //
+                .orElseGet(Stream::empty) //
+                .findFirst().get();
     }
 
 }

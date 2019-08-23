@@ -15,7 +15,9 @@
  */
 package io.github.mletkin.numerobis.generator;
 
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -74,5 +76,18 @@ public final class GenerationUtil {
 
     static FieldAccessExpr fieldAccess(Expression scope, String fieldName) {
         return new FieldAccessExpr(scope, fieldName);
+    }
+
+    /**
+     * Creates a public member class.
+     *
+     * @param className
+     *            name of the new class
+     * @return class declaration
+     */
+    static ClassOrInterfaceDeclaration newMemberClass(String className) {
+        return new ClassOrInterfaceDeclaration(new NodeList<>(Modifier.publicModifier(), Modifier.staticModifier()),
+                false, className);
+
     }
 }

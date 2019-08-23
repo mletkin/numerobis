@@ -15,6 +15,9 @@
  */
 package io.github.mletkin.numerobis.common;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -60,12 +63,41 @@ public final class Util {
         }
     }
 
-    public static boolean isEmpty(Stream<?> stream) {
-        return !stream.findAny().isPresent();
-    }
-
+    /**
+     * Checks whether a stream contains an object.
+     *
+     * @param stream
+     *            Stream to checkxs
+     * @return {@code true} if the stream is not empty
+     */
     public static boolean exists(Stream<?> stream) {
         return stream.findAny().isPresent();
+    }
+
+    /**
+     * Returns a stream from a Collection (null save).
+     *
+     * @param <T>
+     *            class of the objects in the collection
+     * @param collection
+     *            collection of objeccts
+     * @return stream of collection objects
+     */
+    public static <T> Stream<T> stream(Collection<T> collection) {
+        return collection == null ? Stream.empty() : collection.stream();
+    }
+
+    /**
+     * Create all non existing directories on the path of a file.
+     *
+     * @param destinationFile
+     *            file with path
+     */
+    public static void createParentPath(Path destinationFile) {
+        File parent = destinationFile.getParent().toFile();
+        if (!parent.exists() && !parent.mkdirs()) {
+            throw new IllegalStateException("Couldn't create dir: " + parent);
+        }
     }
 
 }

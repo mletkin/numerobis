@@ -83,7 +83,7 @@ class BuilderGeneratorWithFactoryMethodsTest {
     }
 
     @Test
-    void ignoreConstructorWithAnnotation() {
+    void constructorWithAnnotationIsIgnored() {
         assertThat(generateFromResource("EmptyWithIgnoredConstructor")).isEqualTo( //
                 "public class EmptyWithIgnoredConstructorBuilder {" //
                         + "    private EmptyWithIgnoredConstructor product;" //
@@ -94,6 +94,23 @@ class BuilderGeneratorWithFactoryMethodsTest {
                         + "        return new EmptyWithIgnoredConstructorBuilder(new EmptyWithIgnoredConstructor(n));" //
                         + "    }" //
                         + "    public EmptyWithIgnoredConstructor build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "}");
+    }
+
+    @Test
+    void privateConstructorIsIgnored() {
+        assertThat(generateFromResource("EmptyWithPrivateAndPublicConstructor")).isEqualTo( //
+                "public class EmptyWithPrivateAndPublicConstructorBuilder {" //
+                        + "    private EmptyWithPrivateAndPublicConstructor product;" //
+                        + "    private EmptyWithPrivateAndPublicConstructorBuilder(EmptyWithPrivateAndPublicConstructor product) {" //
+                        + "        this.product = product;" //
+                        + "    }" //
+                        + "    public static EmptyWithPrivateAndPublicConstructorBuilder of(int n) {" //
+                        + "        return new EmptyWithPrivateAndPublicConstructorBuilder(new EmptyWithPrivateAndPublicConstructor(n));" //
+                        + "    }" //
+                        + "    public EmptyWithPrivateAndPublicConstructor build() {" //
                         + "        return product;" //
                         + "    }" //
                         + "}");

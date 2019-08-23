@@ -15,6 +15,8 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
+import static io.github.mletkin.numerobis.common.Util.stream;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,6 +37,16 @@ public class BuilderMojo extends AbstractMojo {
 
     enum Creation {
         CONSTRUCTOR, FACTORY;
+        boolean flag() {
+            return this == FACTORY;
+        }
+    }
+
+    enum Location {
+        EMBEDDED, SEPARATE;
+        boolean flag() {
+            return this == EMBEDDED;
+        }
     }
 
     /**
@@ -54,6 +66,9 @@ public class BuilderMojo extends AbstractMojo {
     @Parameter(defaultValue = "FACTORY")
     private Creation builderCreation;
 
+    @Parameter(defaultValue = "EMBEDDED")
+    private Location builderLocation;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         logConfiguration();
@@ -63,10 +78,9 @@ public class BuilderMojo extends AbstractMojo {
     private void logConfiguration() {
         getLog().info("target directory: " + targetDirectory);
         getLog().info("source directories: ");
-        if (compileSourceRoots != null) {
-            compileSourceRoots.stream().forEach(getLog()::info);
-        }
+        stream(compileSourceRoots).forEach(getLog()::info);
         getLog().info("builder creation: " + builderCreation);
+        getLog().info("builder location: " + builderLocation);
     }
 
     /**
@@ -81,7 +95,10 @@ public class BuilderMojo extends AbstractMojo {
                     .map(Path::toFile) //
                     .filter(File::isFile) //
                     .filter(f -> f.getName().endsWith(".java")) //
-                    .forEach(new Processor(targetDirectory, builderCreation == Creation.FACTORY)::process);
+                    .forEach(new Processor(targetDirectory, //
+                            builderCreation, //
+                            builderLocation //
+                    )::process);
         } catch (IOException e) {
             e.printStackTrace();
         }

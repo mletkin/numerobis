@@ -29,6 +29,23 @@ public final class Facade {
         // prevent instantiation
     }
 
+    public static class Result {
+        public CompilationUnit productUnit;
+        public CompilationUnit builderUnit;
+
+        static Result builder(CompilationUnit unit) {
+            Result result = new Result();
+            result.builderUnit = unit;
+            return result;
+        }
+
+        static Result product(CompilationUnit unit) {
+            Result result = new Result();
+            result.productUnit = unit;
+            return result;
+        }
+    }
+
     /**
      * Generate a builder for a product class using constructor methods.
      *
@@ -40,16 +57,18 @@ public final class Facade {
      *            compilation unit for the builder class
      * @return compilation unit containing the builder classs
      */
-    public static CompilationUnit withConstructors(CompilationUnit productUnit, String productClassName,
+    public static Result withConstructors(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
 
-        return new BuilderGenerator(productUnit, productClassName, builderUnit) //
-                .addProductField() //
-                .addConstructors() //
-                .addWithMethods() //
-                .addAddMethods() //
-                .addBuildMethod() //
-                .builderUnit();
+        return Result.builder(//
+                new BuilderGenerator(productUnit, productClassName, builderUnit) //
+                        .addProductField() //
+                        .addConstructors() //
+                        .addWithMethods() //
+                        .addAddMethods() //
+                        .addBuildMethod() //
+                        .builderUnit() //
+        );
     }
 
     /**
@@ -63,16 +82,63 @@ public final class Facade {
      *            compilation unit for the builder class
      * @return compilation unit containing the builder classs
      */
-    public static CompilationUnit withFactoryMethods(CompilationUnit productUnit, String productClassName,
+    public static Result withFactoryMethods(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
 
-        return new BuilderGenerator(productUnit, productClassName, builderUnit) //
-                .addProductField() //
-                .addFactoryMethods() //
-                .addWithMethods() //
-                .addAddMethods() //
-                .addBuildMethod() //
-                .builderUnit();
+        return Result.builder(//
+                new BuilderGenerator(productUnit, productClassName, builderUnit) //
+                        .addProductField() //
+                        .addFactoryMethods() //
+                        .addWithMethods() //
+                        .addAddMethods() //
+                        .addBuildMethod() //
+                        .builderUnit() //
+        );
+    }
+
+    /**
+     * Generate a builder for a product class using constructor methods.
+     *
+     * @param productUnit
+     *            compilation unit containing the product class
+     * @param productClassName
+     *            name of the product class
+     * @param builderUnit
+     *            compilation unit for the builder class
+     * @return compilation unit containing the builder classs
+     */
+    public static Result withConstructors(CompilationUnit productUnit, String productClassName) {
+        return Result.product(//
+                new BuilderGenerator(productUnit, productClassName) //
+                        .addProductField() //
+                        .addConstructors() //
+                        .addWithMethods() //
+                        .addAddMethods() //
+                        .addBuildMethod() //
+                        .builderUnit() //
+        );
+    }
+
+    /**
+     * Generate an internal builder for a product class using static factory
+     * methods.
+     *
+     * @param productUnit
+     *            compilation unit containing the product class
+     * @param productClassName
+     *            name of the product class
+     * @return compilation unit containing the builder classs
+     */
+    public static Result withFactoryMethods(CompilationUnit productUnit, String productClassName) {
+        return Result.product(//
+                new BuilderGenerator(productUnit, productClassName) //
+                        .addProductField() //
+                        .addFactoryMethods() //
+                        .addWithMethods() //
+                        .addAddMethods() //
+                        .addBuildMethod() //
+                        .builderUnit() //
+        );
     }
 
     /**
