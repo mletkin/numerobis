@@ -29,7 +29,7 @@ import io.github.mletkin.numerobis.generator.Facade;
 /**
  * Builder generation with Factory Methods.
  */
-class BuilderGeneratorWithFactoryMethodsTest {
+class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void productClassWithoutConstructor() {
@@ -240,7 +240,7 @@ class BuilderGeneratorWithFactoryMethodsTest {
     private String generateFromResource(String className) {
         try {
             return Facade.withFactoryMethods(StaticJavaParser.parseResource(className + ".java"), className,
-                    new CompilationUnit()).toString().replace("\r\n", "");
+                    new CompilationUnit()).builderUnit.toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -251,7 +251,7 @@ class BuilderGeneratorWithFactoryMethodsTest {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
 
-            return Facade.withFactoryMethods(source, className, target).toString().replace("\r\n", "");
+            return Facade.withFactoryMethods(source, className, target).builderUnit.toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

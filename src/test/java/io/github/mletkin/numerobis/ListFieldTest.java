@@ -108,7 +108,7 @@ class ListFieldTest {
     private String generateFromResource(String className) {
         try {
             return Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
-                    new CompilationUnit()).toString().replace("\r\n", "");
+                    new CompilationUnit()).builderUnit.toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -119,7 +119,7 @@ class ListFieldTest {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
 
-            return Facade.withConstructors(source, className, target).toString().replace("\r\n", "");
+            return Facade.withConstructors(source, className, target).builderUnit.toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

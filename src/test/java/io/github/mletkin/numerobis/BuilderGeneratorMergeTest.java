@@ -365,7 +365,7 @@ class BuilderGeneratorMergeTest {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
 
-            return Facade.withConstructors(source, className, target).toString().replace("\r\n", "");
+            return Facade.withConstructors(source, className, target).builderUnit.toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

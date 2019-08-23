@@ -32,7 +32,7 @@ import io.github.mletkin.numerobis.generator.GeneratorException;
 /**
  * Builder generation without existing builder class.
  */
-class BuilderGeneratorTest {
+class ExternalBuilderGeneratorTest {
 
     @Test
     void convertsClassWithField() {
@@ -199,7 +199,7 @@ class BuilderGeneratorTest {
         try {
             return Facade
                     .withConstructors(StaticJavaParser.parseResource(className + ".java"), className, new CompilationUnit())
-                    .toString().replace("\r\n", "");
+                    .builderUnit.toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

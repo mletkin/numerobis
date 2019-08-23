@@ -29,7 +29,7 @@ import io.github.mletkin.numerobis.generator.Facade;
 /**
  * Builder generation with constructors without existing builder class.
  */
-class BuilderGeneratorWithConstructorsTest {
+class ExternalBuilderGeneratorWithConstructorsTest {
 
     @Test
     void productClassWithoutConstructor() {
@@ -104,7 +104,7 @@ class BuilderGeneratorWithConstructorsTest {
     private String generateFromResource(String className) {
         try {
             return Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
-                    new CompilationUnit()).toString().replace("\r\n", "");
+                    new CompilationUnit()).builderUnit.toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
