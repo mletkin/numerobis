@@ -15,10 +15,6 @@
  */
 package io.github.mletkin.numerobis.generator;
 
-import static io.github.mletkin.numerobis.common.Util.ifNotThrow;
-import static io.github.mletkin.numerobis.generator.ProductUtil.containsClass;
-import static io.github.mletkin.numerobis.generator.ProductUtil.hasUsableConstructor;
-
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
@@ -36,19 +32,18 @@ public final class Facade {
     /**
      * Generate a builder for a product class using constructor methods.
      *
-     * @param product
+     * @param productUnit
      *            compilation unit containing the product class
-     * @param producClassName
+     * @param productClassName
      *            name of the product class
-     * @param builder
+     * @param builderUnit
      *            compilation unit for the builder class
      * @return compilation unit containing the builder classs
      */
-    public static CompilationUnit withConstructors(CompilationUnit product, String producClassName, CompilationUnit builder) {
-        ifNotThrow(containsClass(product, producClassName), GeneratorException::productClassNotFound);
-        ifNotThrow(hasUsableConstructor(product), GeneratorException::noConstructorFound);
+    public static CompilationUnit withConstructors(CompilationUnit productUnit, String productClassName,
+            CompilationUnit builderUnit) {
 
-        return new BuilderGenerator(product, producClassName, builder) //
+        return new BuilderGenerator(productUnit, productClassName, builderUnit) //
                 .addProductField() //
                 .addConstructors() //
                 .addWithMethods() //
@@ -60,20 +55,18 @@ public final class Facade {
     /**
      * Generate a builder for a product class using static factory methods.
      *
-     * @param product
+     * @param productUnit
      *            compilation unit containing the product class
-     * @param producClassName
+     * @param productClassName
      *            name of the product class
-     * @param builder
+     * @param builderUnit
      *            compilation unit for the builder class
      * @return compilation unit containing the builder classs
      */
-    public static CompilationUnit withFactoryMethods(CompilationUnit product, String producClassName,
-            CompilationUnit builder) {
-        ifNotThrow(containsClass(product, producClassName), GeneratorException::productClassNotFound);
-        ifNotThrow(hasUsableConstructor(product), GeneratorException::noConstructorFound);
+    public static CompilationUnit withFactoryMethods(CompilationUnit productUnit, String productClassName,
+            CompilationUnit builderUnit) {
 
-        return new BuilderGenerator(product, producClassName, builder) //
+        return new BuilderGenerator(productUnit, productClassName, builderUnit) //
                 .addProductField() //
                 .addFactoryMethods() //
                 .addWithMethods() //

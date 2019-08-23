@@ -15,6 +15,13 @@
  */
 package io.github.mletkin.numerobis.generator;
 
+import static io.github.mletkin.numerobis.common.Util.exists;
+import static io.github.mletkin.numerobis.common.Util.ifNotThrow;
+import static io.github.mletkin.numerobis.common.Util.not;
+import static io.github.mletkin.numerobis.generator.ClassUtil.allMember;
+import static io.github.mletkin.numerobis.generator.ClassUtil.hasDefaultConstructor;
+import static io.github.mletkin.numerobis.generator.ClassUtil.hasExplicitConstructor;
+import static io.github.mletkin.numerobis.generator.ClassUtil.hasUsableConstructor;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.args;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.assignExpr;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.fieldAccess;
@@ -23,10 +30,10 @@ import static io.github.mletkin.numerobis.generator.GenerationUtil.nameExpr;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.newExpr;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
-import static io.github.mletkin.numerobis.generator.ProductUtil.hasDefaultConstructor;
-import static io.github.mletkin.numerobis.generator.ProductUtil.hasExplicitConstructor;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -38,8 +45,6 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-
-import io.github.mletkin.numerobis.common.Util;
 
 /**
  * Generates builder classes product classes in a seperate compilation unit.
@@ -56,12 +61,13 @@ public class BuilderGenerator {
     final static String ADD_PREFIX = "add";
 
     private CompilationUnit productUnit;
-    private String productClassName;
     private CompilationUnit builderUnit;
+
     private ClassOrInterfaceDeclaration builderclass;
+    private ClassOrInterfaceDeclaration productclass;
 
     /**
-     * Instantiates and initializes a new builder generator.
+     * Creates a generator for an external builder class.
      * <p>
      * <ul>
      * <li>adds the package declaration
@@ -78,13 +84,16 @@ public class BuilderGenerator {
      *            unit with the builder class
      */
     BuilderGenerator(CompilationUnit productUnit, String productClassName, CompilationUnit builderUnit) {
-        this.builderUnit = builderUnit;
-        this.productClassName = productClassName;
+        this.productclass = ClassUtil.findClass(productUnit, productClassName).orElse(null);
         this.productUnit = productUnit;
+        this.builderUnit = builderUnit;
+
+        ifNotThrow(productclass != null, GeneratorException::productClassNotFound);
+        ifNotThrow(hasUsableConstructor(productclass), GeneratorException::noConstructorFound);
 
         createPackageDeclaration();
-        createBuilderClass();
         copyImports();
+        createBuilderClass();
     }
 
     private void createPackageDeclaration() {
@@ -95,7 +104,7 @@ public class BuilderGenerator {
 
     private void copyImports() {
         productUnit.getImports().stream() //
-                .filter(Util.not(this::isBuilderImport)) //
+                .filter(not(this::isBuilderImport)) //
                 .forEach(builderUnit::addImport);
     }
 
@@ -105,10 +114,10 @@ public class BuilderGenerator {
 
     private void createBuilderClass() {
         this.builderclass = builderUnit.findAll(ClassOrInterfaceDeclaration.class).stream() //
-                .filter(c -> c.getNameAsString().equals(productClassName + CLASS_POSTFIX)) //
-                .filter(Util.not(ClassOrInterfaceDeclaration::isInterface)) //
+                .filter(c -> c.getNameAsString().equals(productClassName() + CLASS_POSTFIX)) //
+                .filter(not(ClassOrInterfaceDeclaration::isInterface)) //
                 .findFirst() //
-                .orElseGet(() -> builderUnit.addClass(productClassName + CLASS_POSTFIX));
+                .orElseGet(() -> builderUnit.addClass(productClassName() + CLASS_POSTFIX));
     }
 
     /**
@@ -118,32 +127,42 @@ public class BuilderGenerator {
      */
     BuilderGenerator addProductField() {
         if (!hasProductField()) {
-            builderclass.addField(productClassName, FIELD, Modifier.Keyword.PRIVATE);
+            builderclass.addField(productClassName(), FIELD, Modifier.Keyword.PRIVATE);
         }
         return this;
     }
 
     private boolean hasProductField() {
-        return builderclass.findAll(FieldDeclaration.class).stream() //
+        Optional<VariableDeclarator> productField = findProductField();
+        productField.filter(vd -> !vd.getType().equals(productClassType())).ifPresent(type -> {
+            throw GeneratorException.productFieldHasWrongType(type);
+        });
+        return productField.isPresent();
+    }
+
+    Optional<VariableDeclarator> findProductField() {
+        return allMember(builderclass, FieldDeclaration.class) //
                 .map(FieldDeclaration::getVariables) //
                 .flatMap(List::stream) //
                 .filter(vd -> vd.getNameAsString().equals(FIELD)) //
-                .findAny().isPresent();
+                .findFirst();
     }
 
     /**
      * Adds a builder constructor for each constructor in the product class.
+     *
+     * @return the generator instance
      */
     BuilderGenerator addConstructors() {
         addDefaultConstructorIfNeeded();
-        productUnit.findAll(ConstructorDeclaration.class).stream() //
-                .filter(ProductUtil::process) //
+        allMember(productclass, ConstructorDeclaration.class) //
+                .filter(ClassUtil::process) //
                 .forEach(this::addMatchingConstructor);
         return this;
     }
 
     private void addDefaultConstructorIfNeeded() {
-        if (!hasExplicitConstructor(productUnit) && !hasDefaultConstructor(builderUnit)) {
+        if (!hasExplicitConstructor(productclass) && !hasDefaultConstructor(builderclass)) {
             builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
                     .createBody() //
                     .addStatement(assignExpr(FIELD, newExpr(productClassType())));
@@ -160,9 +179,8 @@ public class BuilderGenerator {
     }
 
     private boolean hasMatchingConstructor(ConstructorDeclaration productConstructor) {
-        return builderclass.findAll(ConstructorDeclaration.class).stream() //
-                .filter(cd -> ProductUtil.matchesParameter(cd, productConstructor)) //
-                .findAny().isPresent();
+        return allMember(builderclass, ConstructorDeclaration.class) //
+                .anyMatch(cd -> ClassUtil.matchesParameter(cd, productConstructor));
     }
 
     /**
@@ -172,11 +190,11 @@ public class BuilderGenerator {
      */
     BuilderGenerator addFactoryMethods() {
         addProductConstructor();
-        if (!hasExplicitConstructor(productUnit)) {
+        if (!hasExplicitConstructor(productclass)) {
             addDefaultFactoryMethod();
         }
-        productUnit.findAll(ConstructorDeclaration.class).stream() //
-                .filter(ProductUtil::process) //
+        allMember(productclass, ConstructorDeclaration.class) //
+                .filter(ClassUtil::process) //
                 .forEach(this::addFactoryMethod);
         return this;
     }
@@ -188,21 +206,21 @@ public class BuilderGenerator {
      */
     private void addDefaultFactoryMethod() {
         if (!hasDefaultFactoryMethod()) {
-            MethodDeclaration factoryMethod = builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC,
-                    Modifier.Keyword.STATIC);
-            factoryMethod.setType(builderclass.getNameAsString());
+            MethodDeclaration factoryMethod = //
+                    builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+            factoryMethod.setType(builderClassName());
             factoryMethod.createBody() //
                     .addStatement(returnStmt(newExpr(builderClassType(), newExpr(productClassType()))));
         }
     }
 
     private boolean hasDefaultFactoryMethod() {
-        return builderclass.findAll(MethodDeclaration.class).stream() //
-                .filter(MethodDeclaration::isStatic) //
-                .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
-                .filter(md -> md.getTypeAsString().equals(builderclass.getNameAsString())) //
-                .filter(md -> md.getParameters().size() == 0) //
-                .findAny().isPresent();
+        return exists(//
+                allMember(builderclass, MethodDeclaration.class) //
+                        .filter(MethodDeclaration::isStatic) //
+                        .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
+                        .filter(md -> md.getTypeAsString().equals(builderClassName())) //
+                        .filter(md -> md.getParameters().isEmpty()));
     }
 
     /**
@@ -211,9 +229,9 @@ public class BuilderGenerator {
      * signature {@code private Builder(Product product)}
      */
     void addProductConstructor() {
-        if (!ProductUtil.hasProductConstructor(builderUnit, productClassName)) {
+        if (!ClassUtil.hasProductConstructor(builderclass, productClassName())) {
             ConstructorDeclaration constructor = builderclass.addConstructor(Modifier.Keyword.PRIVATE);
-            constructor.addParameter(productClassName, FIELD);
+            constructor.addParameter(productClassName(), FIELD);
             constructor.createBody() //
                     .addStatement(assignExpr(fieldAccess(thisExpr(), FIELD), nameExpr(FIELD)));
         }
@@ -221,27 +239,24 @@ public class BuilderGenerator {
 
     private void addFactoryMethod(ConstructorDeclaration productConstructor) {
         if (!hasMatchingFactoryMethod(productConstructor)) {
-            MethodDeclaration factoryMethod = builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC,
-                    Modifier.Keyword.STATIC);
+            MethodDeclaration factoryMethod = //
+                    builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
             productConstructor.getParameters().stream().forEach(factoryMethod::addParameter);
-            factoryMethod.setType(builderclass.getNameAsString());
+            factoryMethod.setType(builderClassName());
             factoryMethod.createBody() //
                     .addStatement(//
-                            returnStmt(newExpr(builderClassType(), args(productConstructor))));
+                            returnStmt(newExpr(builderClassType(),
+                                    newExpr(productClassType(), args(productConstructor)))));
         }
     }
 
     private boolean hasMatchingFactoryMethod(ConstructorDeclaration productConstructor) {
-        return builderclass.findAll(MethodDeclaration.class).stream() //
-                .filter(MethodDeclaration::isStatic) //
-                .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
-                .filter(md -> md.getTypeAsString().equals(builderclass.getNameAsString())) //
-                .filter(md -> ProductUtil.matchesParameter(md, productConstructor)) //
-                .findAny().isPresent();
-    }
-
-    private boolean matchesParameter(MethodDeclaration md, String type) {
-        return md.getParameters().size() == 1 && md.getParameter(0).getTypeAsString().equals(type);
+        return exists(//
+                allMember(builderclass, MethodDeclaration.class) //
+                        .filter(MethodDeclaration::isStatic) //
+                        .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
+                        .filter(md -> md.getTypeAsString().equals(builderClassName())) //
+                        .filter(md -> ClassUtil.matchesParameter(md, productConstructor)));
     }
 
     /**
@@ -250,8 +265,8 @@ public class BuilderGenerator {
      * @return the generator instance
      */
     BuilderGenerator addWithMethods() {
-        productUnit.findAll(FieldDeclaration.class).stream() //
-                .filter(ProductUtil::process) //
+        allMember(productclass, FieldDeclaration.class) //
+                .filter(ClassUtil::process) //
                 .map(FieldDeclaration::getVariables) //
                 .flatMap(List::stream) //
                 .forEach(this::addWithMethod);
@@ -259,10 +274,10 @@ public class BuilderGenerator {
     }
 
     private void addWithMethod(VariableDeclarator vd) {
-        addWithMethod(vd.getType().asString(), vd.getNameAsString());
+        addWithMethod(vd.getType(), vd.getNameAsString());
     }
 
-    private void addWithMethod(String type, String name) {
+    private void addWithMethod(Type type, String name) {
         if (!hasWithMethod(type, name)) {
             MethodDeclaration meth = builderclass.addMethod(makeWithName(name), Modifier.Keyword.PUBLIC);
             meth.addParameter(type, name);
@@ -273,12 +288,16 @@ public class BuilderGenerator {
         }
     }
 
-    private boolean hasWithMethod(String type, String name) {
-        return builderclass.findAll(MethodDeclaration.class).stream() //
-                .filter(md -> md.getNameAsString().equals(makeWithName(name))) //
-                .filter(md -> matchesParameter(md, type)) //
-                .filter(md -> md.getType().equals(builderClassType())) //
-                .findAny().isPresent();
+    private boolean hasWithMethod(Type type, String name) {
+        return exists(//
+                allMember(builderclass, MethodDeclaration.class) //
+                        .filter(md -> md.getNameAsString().equals(makeWithName(name))) //
+                        .filter(hasSingleParameter(type)) //
+                        .filter(md -> md.getType().equals(builderClassType())));
+    }
+
+    private Predicate<MethodDeclaration> hasSingleParameter(Type type) {
+        return md -> md.getParameters().size() == 1 && md.getParameter(0).getType().equals(type);
     }
 
     /**
@@ -297,10 +316,10 @@ public class BuilderGenerator {
     }
 
     private boolean hasBuildMethod() {
-        return builderclass.findAll(MethodDeclaration.class).stream() //
-                .filter(md -> md.getNameAsString().equals(BUILD_METHOD)) //
-                .filter(md -> md.getType().equals(productClassType())) //
-                .findAny().isPresent();
+        return exists(//
+                allMember(builderclass, MethodDeclaration.class) //
+                        .filter(md -> md.getNameAsString().equals(BUILD_METHOD)) //
+                        .filter(md -> md.getType().equals(productClassType())));
     }
 
     private String makeWithName(String name) {
@@ -311,11 +330,11 @@ public class BuilderGenerator {
      * Adds an add method for each list implementing field in the product.
      */
     BuilderGenerator addAddMethods() {
-        productUnit.findAll(FieldDeclaration.class).stream() //
-                .filter(ProductUtil::process) //
+        allMember(productclass, FieldDeclaration.class) //
+                .filter(ClassUtil::process) //
                 .map(FieldDeclaration::getVariables) //
                 .flatMap(List::stream) //
-                .filter(vd -> ProductUtil.implementsCollection(vd, productUnit)) //
+                .filter(vd -> ClassUtil.implementsCollection(vd, productUnit)) //
                 .forEach(this::addAddMethod);
         return this;
     }
@@ -348,19 +367,27 @@ public class BuilderGenerator {
      * @return {@code true} if the method exists
      */
     private boolean hasAddMethod(Type type, String name) {
-        return builderclass.findAll(MethodDeclaration.class).stream() //
-                .filter(md -> md.getNameAsString().equals(makeAddName(name))) //
-                .filter(md -> matchesParameter(md, type.asString())) //
-                .filter(md -> md.getType().equals(builderClassType())) //
-                .findAny().isPresent();
+        return exists(//
+                allMember(builderclass, MethodDeclaration.class) //
+                        .filter(md -> md.getNameAsString().equals(makeAddName(name))) //
+                        .filter(hasSingleParameter(type)) //
+                        .filter(md -> md.getType().equals(builderClassType())));
     }
 
     private ClassOrInterfaceType builderClassType() {
-        return new ClassOrInterfaceType(builderclass.getNameAsString());
+        return new ClassOrInterfaceType(builderClassName());
+    }
+
+    private String productClassName() {
+        return productclass.getNameAsString();
     }
 
     private ClassOrInterfaceType productClassType() {
-        return new ClassOrInterfaceType(productClassName);
+        return new ClassOrInterfaceType(productClassName());
+    }
+
+    private String builderClassName() {
+        return builderclass.getNameAsString();
     }
 
     private String makeAddName(String name) {

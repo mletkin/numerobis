@@ -16,6 +16,7 @@
 package io.github.mletkin.numerobis;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.IOException;
 
@@ -26,6 +27,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
+import io.github.mletkin.numerobis.generator.GeneratorException;
 
 /**
  * Builder generation with existing builder class.
@@ -70,6 +72,16 @@ class BuilderGeneratorMergeTest {
                         + "        return product;" //
                         + "    }" //
                         + "}");
+    }
+
+    @Test
+    void productFieldWithWrongTypeThrowsException() {
+        assertThatExceptionOfType(GeneratorException.class).isThrownBy(//
+                () -> generateFromResource("Empty", //
+                        "public class EmptyBuilder {" //
+                                + "    private String product;" //
+                                + "}")//
+        ).withMessage("The product field has the wrong type String.");
     }
 
     @Test
@@ -311,6 +323,43 @@ class BuilderGeneratorMergeTest {
                         + "}");
     }
 
+    @Test
+    void generateDefaultConstructor() {
+        assertThat(generateFromResource("Empty", //
+                "public class EmptyBuilder { }") //
+        ).isEqualTo(//
+                "public class EmptyBuilder {" //
+                        + "    private Empty product;" //
+                        + "    public EmptyBuilder() {" //
+                        + "        product = new Empty();" //
+                        + "    }" //
+                        + "    public Empty build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "}");
+    }
+
+    @Test
+    void generateDefaultConstructorIgnoreExistingNonDefaultConstructor() {
+        assertThat(generateFromResource("Empty", //
+                "public class EmptyBuilder {" //
+                        + "    EmptyBuilder(int n) {" //
+                        + "    }" //
+                        + " }") //
+        ).isEqualTo(//
+                "public class EmptyBuilder {" //
+                        + "    EmptyBuilder(int n) {" //
+                        + "    }" //
+                        + "    private Empty product;" //
+                        + "    public EmptyBuilder() {" //
+                        + "        product = new Empty();" //
+                        + "    }" //
+                        + "    public Empty build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "}");
+    }
+
     private String generateFromResource(String className, String builderClass) {
         try {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
@@ -330,6 +379,31 @@ class BuilderGeneratorMergeTest {
     void test2() throws IOException {
         System.out.println(Facade.withConstructors(StaticJavaParser.parseResource("TestClassWithConstructor.java"),
                 "TestClassWithConstructor", new CompilationUnit()).toString());
+    }
+
+    @Test
+    void ignoresConstructorOfInnerClass() {
+        assertThat(generateFromResource("Empty", //
+                "public class EmptyBuilder {" //
+                        + "    public static class Foo {" //
+                        + "        Foo() {" //
+                        + "        }" //
+                        + "    }" //
+                        + "}") //
+        ).isEqualTo(//
+                "public class EmptyBuilder {" //
+                        + "    public static class Foo {" //
+                        + "        Foo() {" //
+                        + "        }" //
+                        + "    }" //
+                        + "    private Empty product;" //
+                        + "    public EmptyBuilder() {" //
+                        + "        product = new Empty();" //
+                        + "    }" //
+                        + "    public Empty build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "}");
     }
 
 }

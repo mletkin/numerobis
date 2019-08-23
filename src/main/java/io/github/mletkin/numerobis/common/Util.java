@@ -17,6 +17,7 @@ package io.github.mletkin.numerobis.common;
 
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * General purpose utility methods.
@@ -58,4 +59,13 @@ public final class Util {
             throw supplier.get();
         }
     }
+
+    public static boolean isEmpty(Stream<?> stream) {
+        return !stream.findAny().isPresent();
+    }
+
+    public static boolean exists(Stream<?> stream) {
+        return stream.findAny().isPresent();
+    }
+
 }

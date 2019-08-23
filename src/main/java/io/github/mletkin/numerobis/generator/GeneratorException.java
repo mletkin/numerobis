@@ -15,6 +15,8 @@
  */
 package io.github.mletkin.numerobis.generator;
 
+import com.github.javaparser.ast.body.VariableDeclarator;
+
 /**
  * Exception thrown by the builder generator.
  * <p>
@@ -34,4 +36,9 @@ public class GeneratorException extends RuntimeException {
     public static GeneratorException productClassNotFound() {
         return new GeneratorException("Product class not found in compilation unit.");
     }
+
+    public static GeneratorException productFieldHasWrongType(VariableDeclarator vd) {
+        return new GeneratorException("The product field has the wrong type " + vd.getTypeAsString() + ".");
+    }
+
 }

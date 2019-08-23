@@ -15,12 +15,18 @@
  */
 package io.github.mletkin.numerobis.generator;
 
+import static io.github.mletkin.numerobis.common.Util.exists;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -31,75 +37,77 @@ import com.github.javaparser.ast.expr.SimpleName;
 import io.github.mletkin.numerobis.annotation.Ignore;
 
 /**
- * Convenience Methods for the Product class.
+ * Convenience Methods for class declarations.
  */
-public final class ProductUtil {
+public final class ClassUtil {
 
-    private ProductUtil() {
+    private ClassUtil() {
         // prevent instantiation
     }
 
     /**
      * Checks a compilation unit for a given class.
      *
-     * @param cu
+     * @param unit
      *            compilation unit to check
      * @param className
      *            name of the searched class
-     * @return {@code true} if the unit contains a class with the given name
+     * @return the found class declaration wrapped in an optional
      */
-    static boolean containsClass(CompilationUnit cu, String className) {
-        return cu.findAll(ClassOrInterfaceDeclaration.class) //
-                .stream().anyMatch(c -> c.getNameAsString().equals(className));
+    static Optional<ClassOrInterfaceDeclaration> findClass(CompilationUnit unit, String className) {
+        return unit.findFirst(ClassOrInterfaceDeclaration.class, //
+                cl -> cl.getNameAsString().equals(className));
     }
 
     /**
-     * Checks a compilation unit for a constructor.
+     * Checks a class declaration for a constructor.
      *
-     * @param cu
-     *            compilation unit to check
-     * @return {@code true} if the compilation unit contains a constructor
+     * @param type
+     *            class to check
+     * @return {@code true} if the class contains a constructor
      */
-    static boolean hasExplicitConstructor(CompilationUnit cu) {
-        return !cu.findAll(ConstructorDeclaration.class).isEmpty();
+    static boolean hasExplicitConstructor(ClassOrInterfaceDeclaration type) {
+        return exists(allMember(type, ConstructorDeclaration.class));
     }
 
     /**
-     * Checks a compilation unit for a default constructor.
+     * Checks a class declaration for a default constructor.
      *
-     * @param cu
-     *            compilation unit to check
-     * @return {@code true} if the compilation unit contains a default constructor.
+     * @param type
+     *            class to check
+     * @return {@code true} if the class contains a default constructor.
      */
-    static boolean hasDefaultConstructor(CompilationUnit cu) {
-        return cu.findAll(ConstructorDeclaration.class).stream() //
-                .anyMatch(cd -> cd.getParameters().isEmpty());
+    static boolean hasDefaultConstructor(ClassOrInterfaceDeclaration type) {
+        return exists(allMember(type, ConstructorDeclaration.class) //
+                .filter(cd -> cd.getParameters().isEmpty()));
     }
 
     /**
-     * Checks a compilation unit for a product constructor.
+     * Checks a class declaration for a product constructor.
      *
-     * @param cu
-     *            compilation unit to check
-     * @return {@code true} if the compilation unit contains a roduct constructor.
+     * @param type
+     *            class to check
+     * @return {@code true} if the class contains a product constructor.
      */
-    static boolean hasProductConstructor(CompilationUnit cu, String productClassName) {
-        return cu.findAll(ConstructorDeclaration.class).stream() //
+    static boolean hasProductConstructor(ClassOrInterfaceDeclaration type, String productClassName) {
+        return allMember(type, ConstructorDeclaration.class) //
                 .filter(cd -> cd.getParameters().size() == 1) //
                 .anyMatch(cd -> cd.getParameter(0).getTypeAsString().equals(productClassName));
     }
 
     /**
-     * Checks a compilation unit for a non-private constructor.
+     * Checks a class declaration for a non-private constructor.
      *
-     * @param cu
-     *            compilation unit to check
-     * @return {@code true} if the compilation unit contains a non-private
-     *         constructor.
+     * @param type
+     *            class to check
+     * @return {@code true} if the class contains a non-private constructor or a
+     *         default constructor.
      */
-    static boolean hasUsableConstructor(CompilationUnit cu) {
-        List<ConstructorDeclaration> constructorList = cu.findAll(ConstructorDeclaration.class);
-        return constructorList.isEmpty() || constructorList.stream().anyMatch(ProductUtil::process);
+    static boolean hasUsableConstructor(ClassOrInterfaceDeclaration type) {
+        List<ConstructorDeclaration> constructorList = //
+                allMember(type, ConstructorDeclaration.class).collect(Collectors.toList());
+
+        return constructorList.isEmpty() || constructorList.stream().anyMatch(ClassUtil::process);
     }
 
     /**
@@ -144,7 +152,17 @@ public final class ProductUtil {
         return false;
     }
 
-    static boolean matchesParameter(CallableDeclaration a, CallableDeclaration b) {
+    /**
+     * Compares the types of the parameter Lists of two method or coantructor
+     * declarations.
+     *
+     * @param a
+     *            first declaration to compare
+     * @param b
+     *            second declaration to compare
+     * @return {@code true} if both type lists are identicalx
+     */
+    static boolean matchesParameter(CallableDeclaration<?> a, CallableDeclaration<?> b) {
         if (a.getParameters().size() != b.getParameters().size()) {
             return false;
         }
@@ -154,6 +172,27 @@ public final class ProductUtil {
             }
         }
         return true;
+    }
+
+    /**
+     * Gets all members of a given type for a class declaration.
+     *
+     * @param <T>
+     *            member Type
+     * @param decl
+     *            class declaration
+     * @param memberType
+     *            class object of the member type
+     * @return stream of members
+     */
+    static <T extends Node> Stream<T> allMember(ClassOrInterfaceDeclaration decl, Class<T> memberType) {
+        return decl.findAll(memberType) //
+                .stream() //
+                .filter(isMember(decl));
+    }
+
+    private static Predicate<Node> isMember(Node parent) {
+        return node -> node.getParentNode().orElse(null) == parent;
     }
 
 }
