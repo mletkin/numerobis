@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -141,6 +142,18 @@ public final class ProductUtil {
             return false;
         }
         return false;
+    }
+
+    static boolean matchesParameter(CallableDeclaration a, CallableDeclaration b) {
+        if (a.getParameters().size() != b.getParameters().size()) {
+            return false;
+        }
+        for (int n = 0; n < a.getParameters().size(); n++) {
+            if (!a.getParameter(n).getTypeAsString().equals(b.getParameter(n).getTypeAsString())) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

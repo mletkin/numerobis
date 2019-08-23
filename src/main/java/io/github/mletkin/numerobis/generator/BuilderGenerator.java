@@ -15,30 +15,27 @@
  */
 package io.github.mletkin.numerobis.generator;
 
+import static io.github.mletkin.numerobis.generator.GenerationUtil.args;
+import static io.github.mletkin.numerobis.generator.GenerationUtil.assignExpr;
+import static io.github.mletkin.numerobis.generator.GenerationUtil.fieldAccess;
+import static io.github.mletkin.numerobis.generator.GenerationUtil.methodCall;
+import static io.github.mletkin.numerobis.generator.GenerationUtil.nameExpr;
+import static io.github.mletkin.numerobis.generator.GenerationUtil.newExpr;
+import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
+import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
+import static io.github.mletkin.numerobis.generator.ProductUtil.hasDefaultConstructor;
 import static io.github.mletkin.numerobis.generator.ProductUtil.hasExplicitConstructor;
 
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.AssignExpr.Operator;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
-import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 
@@ -64,7 +61,14 @@ public class BuilderGenerator {
     private ClassOrInterfaceDeclaration builderclass;
 
     /**
-     * instantiates and initializes a new builder generator.
+     * Instantiates and initializes a new builder generator.
+     * <p>
+     * <ul>
+     * <li>adds the package declaration
+     * <li>creates the builder class definition
+     * <li>copies the import declarations from the product class
+     * </ul>
+     * Imports from the plugin package are excluded.
      *
      * @param productUnit
      *            unit with the product class definition
@@ -108,7 +112,27 @@ public class BuilderGenerator {
     }
 
     /**
-     * Add a builder constructor for each constructor in the product class.
+     * Adds a field for the product to the builder.
+     *
+     * @return the generator instance
+     */
+    BuilderGenerator addProductField() {
+        if (!hasProductField()) {
+            builderclass.addField(productClassName, FIELD, Modifier.Keyword.PRIVATE);
+        }
+        return this;
+    }
+
+    private boolean hasProductField() {
+        return builderclass.findAll(FieldDeclaration.class).stream() //
+                .map(FieldDeclaration::getVariables) //
+                .flatMap(List::stream) //
+                .filter(vd -> vd.getNameAsString().equals(FIELD)) //
+                .findAny().isPresent();
+    }
+
+    /**
+     * Adds a builder constructor for each constructor in the product class.
      */
     BuilderGenerator addConstructors() {
         addDefaultConstructorIfNeeded();
@@ -119,10 +143,10 @@ public class BuilderGenerator {
     }
 
     private void addDefaultConstructorIfNeeded() {
-        if (!ProductUtil.hasExplicitConstructor(productUnit) && !ProductUtil.hasDefaultConstructor(builderUnit)) {
-            ConstructorDeclaration builderconstructor = builderclass.addConstructor(Modifier.Keyword.PUBLIC);
-            builderconstructor.createBody() //
-                    .addStatement(FIELD + " = new " + productClassName + "();");
+        if (!hasExplicitConstructor(productUnit) && !hasDefaultConstructor(builderUnit)) {
+            builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
+                    .createBody() //
+                    .addStatement(assignExpr(FIELD, newExpr(productClassType())));
         }
     }
 
@@ -131,18 +155,20 @@ public class BuilderGenerator {
             ConstructorDeclaration builderconstructor = builderclass.addConstructor(Modifier.Keyword.PUBLIC);
             productConstructor.getParameters().stream().forEach(builderconstructor::addParameter);
             builderconstructor.createBody() //
-                    .addStatement(FIELD + " = " + invocation(productConstructor) + ";");
+                    .addStatement(assignExpr(FIELD, newExpr(productClassType(), args(productConstructor))));
         }
     }
 
     private boolean hasMatchingConstructor(ConstructorDeclaration productConstructor) {
         return builderclass.findAll(ConstructorDeclaration.class).stream() //
-                .filter(cd -> matchesParameter(cd, productConstructor)) //
+                .filter(cd -> ProductUtil.matchesParameter(cd, productConstructor)) //
                 .findAny().isPresent();
     }
 
     /**
      * Adds a builder factory method for each product constructor.
+     *
+     * @return the generator instance
      */
     BuilderGenerator addFactoryMethods() {
         addProductConstructor();
@@ -155,13 +181,18 @@ public class BuilderGenerator {
         return this;
     }
 
+    /**
+     * Adds a default factory method to the builder class.
+     * <p>
+     * signature: {@code public static Builder of();}
+     */
     private void addDefaultFactoryMethod() {
         if (!hasDefaultFactoryMethod()) {
             MethodDeclaration factoryMethod = builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC,
                     Modifier.Keyword.STATIC);
             factoryMethod.setType(builderclass.getNameAsString());
             factoryMethod.createBody() //
-                    .addStatement("return new " + builderclass.getNameAsString() + "(new " + productClassName + "());");
+                    .addStatement(returnStmt(newExpr(builderClassType(), newExpr(productClassType()))));
         }
     }
 
@@ -184,10 +215,7 @@ public class BuilderGenerator {
             ConstructorDeclaration constructor = builderclass.addConstructor(Modifier.Keyword.PRIVATE);
             constructor.addParameter(productClassName, FIELD);
             constructor.createBody() //
-                    .addStatement(new AssignExpr(//
-                            new FieldAccessExpr(new ThisExpr(), FIELD), //
-                            new NameExpr(FIELD), //
-                            Operator.ASSIGN));
+                    .addStatement(assignExpr(fieldAccess(thisExpr(), FIELD), nameExpr(FIELD)));
         }
     }
 
@@ -199,8 +227,7 @@ public class BuilderGenerator {
             factoryMethod.setType(builderclass.getNameAsString());
             factoryMethod.createBody() //
                     .addStatement(//
-                            "return new " + builderclass.getNameAsString() + "(" + invocation(productConstructor)
-                                    + ");");
+                            returnStmt(newExpr(builderClassType(), args(productConstructor))));
         }
     }
 
@@ -209,40 +236,8 @@ public class BuilderGenerator {
                 .filter(MethodDeclaration::isStatic) //
                 .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
                 .filter(md -> md.getTypeAsString().equals(builderclass.getNameAsString())) //
-                .filter(md -> matchesParameter(md, productConstructor)) //
+                .filter(md -> ProductUtil.matchesParameter(md, productConstructor)) //
                 .findAny().isPresent();
-    }
-
-    private boolean matchesParameter(CallableDeclaration a, CallableDeclaration b) {
-        if (a.getParameters().size() != b.getParameters().size()) {
-            return false;
-        }
-        for (int n = 0; n < a.getParameters().size(); n++) {
-            if (!a.getParameter(n).getTypeAsString().equals(b.getParameter(n).getTypeAsString())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private String invocation(ConstructorDeclaration cd) {
-        return "new " + cd.getNameAsString() + "(" + (//
-        cd.getParameters().stream().map(Parameter::getNameAsString).collect(Collectors.joining(","))) + ")";
-    }
-
-    /**
-     * Adds a field for the product to the builder.
-     */
-    BuilderGenerator addProductField() {
-        if (!builderclass.findAll(FieldDeclaration.class).stream() //
-                .map(FieldDeclaration::getVariables) //
-                .map(List::stream) //
-                .flatMap(Function.identity()) //
-                .filter(vd -> vd.getNameAsString().equals(FIELD)) //
-                .findAny().isPresent()) {
-            builderclass.addField(productClassName, FIELD, Modifier.Keyword.PRIVATE);
-        }
-        return this;
     }
 
     private boolean matchesParameter(MethodDeclaration md, String type) {
@@ -251,6 +246,8 @@ public class BuilderGenerator {
 
     /**
      * Adds a with method for each field in the product.
+     *
+     * @return the generator instance
      */
     BuilderGenerator addWithMethods() {
         productUnit.findAll(FieldDeclaration.class).stream() //
@@ -271,11 +268,8 @@ public class BuilderGenerator {
             meth.addParameter(type, name);
             meth.setType(builderClassType());
             meth.createBody() //
-                    .addStatement(new AssignExpr( //
-                            new FieldAccessExpr(new NameExpr(FIELD), name), //
-                            new NameExpr(name), //
-                            AssignExpr.Operator.ASSIGN))
-                    .addStatement(new ReturnStmt(new ThisExpr()));
+                    .addStatement(assignExpr(fieldAccess(nameExpr(FIELD), name), nameExpr(name))) //
+                    .addStatement(returnStmt(thisExpr()));
         }
     }
 
@@ -289,13 +283,15 @@ public class BuilderGenerator {
 
     /**
      * Adds the build method to the builder class.
+     *
+     * @return the generator instance
      */
     BuilderGenerator addBuildMethod() {
         if (!hasBuildMethod()) {
             builderclass.addMethod(BUILD_METHOD, Modifier.Keyword.PUBLIC) //
                     .setType(productClassType()) //
                     .createBody() //
-                    .addStatement(new ReturnStmt(new NameExpr(FIELD)));
+                    .addStatement(returnStmt(nameExpr(FIELD)));
         }
         return this;
     }
@@ -307,21 +303,8 @@ public class BuilderGenerator {
                 .findAny().isPresent();
     }
 
-    private ClassOrInterfaceType productClassType() {
-        return new ClassOrInterfaceType(productClassName);
-    }
-
     private String makeWithName(String name) {
         return WITH_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
-    }
-
-    /**
-     * Returns the builder class.
-     *
-     * @return compilation unit with the builder class
-     */
-    CompilationUnit builderUnit() {
-        return builderUnit;
     }
 
     /**
@@ -348,9 +331,8 @@ public class BuilderGenerator {
             meth.addParameter(itemType, "item");
             meth.setType(builderClassType());
             meth.createBody() //
-                    .addStatement(new MethodCallExpr(new FieldAccessExpr(new NameExpr(FIELD), fieldName), "add",
-                            new NodeList<>(new NameExpr("item")))) //
-                    .addStatement(new ReturnStmt(new ThisExpr()));
+                    .addStatement(methodCall(fieldAccess(nameExpr(FIELD), fieldName), "add", nameExpr("item"))) //
+                    .addStatement(returnStmt(thisExpr()));
         }
     }
 
@@ -377,8 +359,21 @@ public class BuilderGenerator {
         return new ClassOrInterfaceType(builderclass.getNameAsString());
     }
 
+    private ClassOrInterfaceType productClassType() {
+        return new ClassOrInterfaceType(productClassName);
+    }
+
     private String makeAddName(String name) {
         return ADD_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
+    /**
+     * Returns the builder class.
+     *
+     * @return compilation unit with the builder class
+     */
+    CompilationUnit builderUnit() {
+        return builderUnit;
     }
 
 }
