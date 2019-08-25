@@ -1,4 +1,4 @@
-# Maven Builder Plugin
+# Maven Builder Generator Plugin
 A simple maven plugin for the generation of builder classes.
 
 ## Nomenclature
@@ -17,8 +17,8 @@ Add the following to the plugin section of your pom.xml
 ```v
 <plugin>
     <groupId>io.github.mletkin</groupId>
-    <artifactId>builder-maven-plugin</artifactId>
-    <version>${version.builder.plugin}</version>
+    <artifactId>builder-generator-maven-plugin</artifactId>
+    <version>1.0.0</version>
     <executions>
         <execution>
             <goals>
