@@ -35,7 +35,7 @@ import io.github.mletkin.numerobis.generator.GeneratorException;
 import io.github.mletkin.numerobis.generator.Sorter;
 
 /**
- * Processes single java files to generate builder classes in separate files.
+ * Processes a single java files to generate a builder class.
  */
 public class Processor {
 
@@ -44,14 +44,14 @@ public class Processor {
     private boolean embeddedBuilder;
 
     /**
-     * Produces a new instance for the given configuration.
+     * Creates a processor for the given configuration.
      *
      * @param destinationPath
      *            Where external generated builder classes are stored.
      * @param creation
      *            generate factory methods or constructors
      * @param location
-     *            use embedded or separate builder class
+     *            use an embedded or a separate builder class
      */
     public Processor(String destinationPath, BuilderMojo.Creation creation, BuilderMojo.Location location) {
         this.destinationPath = destinationPath == null ? "" : destinationPath.trim();
@@ -60,17 +60,17 @@ public class Processor {
     }
 
     /**
-     * Parse a single java file, generates and stores a builder if desired.
+     * Parse the java file, generates and stores the builder if desired.
      *
      * @param file
      *            location of the Product class definition
      */
     public void process(File file) {
         try {
-            CompilationUnit productClass = parse(file);
-            if (Facade.isBuilderWanted(productClass)) {
-                Destination dest = builder(file, productClass) //
-                        .withProductUnit(productClass) //
+            CompilationUnit productUnit = parse(file);
+            if (Facade.isBuilderWanted(productUnit)) {
+                Destination dest = builder(file, productUnit) //
+                        .withProductUnit(productUnit) //
                         .withProductPath(file.toPath());
                 write(dest, sort(generate(dest)));
             }
