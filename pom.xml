@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.mletkin</groupId>
     <artifactId>builder-generator-maven-plugin</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.3.0</version>
     <packaging>maven-plugin</packaging>
 
     <name>Builder Generating Maven Plugin</name>
@@ -27,7 +27,7 @@
         <connection>scm:git:git://github.com/mletkin/numerobis</connection>
         <developerConnection>scm:git:ssh://github.com:mletkin/numerobis</developerConnection>
         <url>http://github.com/mletkin/numerobis/tree/master</url>
-        <tag>HEAD</tag>
+        <tag>builder-generator-maven-plugin-1.3.0</tag>
     </scm>
 
     <properties>
