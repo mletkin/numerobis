@@ -18,6 +18,7 @@ package io.github.mletkin.numerobis.generator;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
+import io.github.mletkin.numerobis.annotation.AccessMethods;
 import io.github.mletkin.numerobis.annotation.WithBuilder;
 
 /**
@@ -139,6 +140,12 @@ public final class Facade {
         );
     }
 
+    public static CompilationUnit withAccessMethods(CompilationUnit productUnit, String className) {
+        return new AccessGenerator(productUnit, className) //
+                .addAccessMethods() //
+                .resultUnit();
+    }
+
     /**
      * Tests whether a class needs a builder.
      *
@@ -148,7 +155,12 @@ public final class Facade {
      */
     public static boolean isBuilderWanted(CompilationUnit sourceClass) {
         return sourceClass.findAll(ClassOrInterfaceDeclaration.class).stream()
-                .anyMatch(c -> c.isAnnotationPresent(WithBuilder.class.getSimpleName()));
+                .anyMatch(c -> c.isAnnotationPresent(WithBuilder.class));
+    }
+
+    public static boolean areAccessorsWanted(CompilationUnit sourceClass) {
+        return sourceClass.findAll(ClassOrInterfaceDeclaration.class).stream()
+                .anyMatch(c -> c.isAnnotationPresent(AccessMethods.class));
     }
 
 }

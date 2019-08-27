@@ -80,9 +80,13 @@ public class Processor {
     }
 
     private Result generate(Destination dest) throws FileNotFoundException {
-        return dest.product.getPrimaryTypeName() //
+        Result result = dest.product.getPrimaryTypeName() //
                 .map(generator(dest)) //
                 .orElseThrow(GeneratorException::productClassNotFound);
+        if (Facade.areAccessorsWanted(dest.product)) {
+            dest.product.getPrimaryTypeName().ifPresent(type -> Facade.withAccessMethods(result.productUnit, type));
+        }
+        return result;
     }
 
     private Function<String, Result> generator(Destination dest) {
