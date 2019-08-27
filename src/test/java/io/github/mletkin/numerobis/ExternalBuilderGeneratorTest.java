@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.javaparser.StaticJavaParser;
@@ -52,12 +51,14 @@ class ExternalBuilderGeneratorTest {
                         + "}");
     }
 
-    @Disabled
     @Test
-    void usesCustomMethodName() {
+    void fieldAnnotationWithCustomMethodName() {
         assertThat(generateFromResource("TestClassWithName")).isEqualTo(//
                 "public class TestClassWithNameBuilder {" //
-                        + "    private TestClassWithName product = new TestClassWithName();" //
+                        + "    private TestClassWithName product;" //
+                        + "    public TestClassWithNameBuilder() {" //
+                        + "        product = new TestClassWithName();" //
+                        + "    }" //
                         + "    public TestClassWithNameBuilder access(int x) {" //
                         + "        product.x = x;" //
                         + "        return this;" //
@@ -69,7 +70,27 @@ class ExternalBuilderGeneratorTest {
     }
 
     @Test
-    void fieldWithAnnotationIsIgnored() {
+    void fieldAnnotationWithoutCustomMethodName() {
+        assertThat(generateFromResource("FieldAnnoNoCustomName")).isEqualTo(//
+                "public class FieldAnnoNoCustomNameBuilder {" //
+                        + "    private FieldAnnoNoCustomName product;" //
+                        + "    public FieldAnnoNoCustomNameBuilder() {" //
+                        + "        product = new FieldAnnoNoCustomName();" //
+                        + "    }" //
+                        + "    public FieldAnnoNoCustomNameBuilder withX(int x) {" //
+                        + "        product.x = x;" //
+                        + "        return this;" //
+                        + "    }" //
+                        + "    public FieldAnnoNoCustomName build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "}");
+    }
+
+// FIXME two fields with one Annotation sucks
+
+    @Test
+    void fieldWithIgnoreAnnotationIsIgnored() {
         assertThat(generateFromResource("TestClassIgnoreField")).isEqualTo(//
                 "public class TestClassIgnoreFieldBuilder {" //
                         + "    private TestClassIgnoreField product;" //
@@ -177,14 +198,16 @@ class ExternalBuilderGeneratorTest {
     @Test
     void notContainedClassProducesNothing() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo", new CompilationUnit()))
+                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo",
+                        new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
 
     @Test
     void nullClassProducesNothing() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "", new CompilationUnit()))
+                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "",
+                        new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
 
@@ -197,9 +220,8 @@ class ExternalBuilderGeneratorTest {
 
     private String generateFromResource(String className) {
         try {
-            return Facade
-                    .withConstructors(StaticJavaParser.parseResource(className + ".java"), className, new CompilationUnit())
-                    .builderUnit.toString().replace("\r\n", "");
+            return Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
+                    new CompilationUnit()).builderUnit.toString().replace("\r\n", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

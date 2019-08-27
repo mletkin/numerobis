@@ -1,8 +1,8 @@
 import io.github.mletkin.numerobis.WithMethod;
 
-public class TestClassWithName {
+public class FieldAnnoNoCustomName {
     
-    @WithMethod(name = "access")
+    @WithMethod
     int x;
 
 }

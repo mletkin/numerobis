@@ -308,8 +308,7 @@ public class BuilderGenerator {
     BuilderGenerator addWithMethods() {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
-                .map(FieldDeclaration::getVariables) //
-                .flatMap(List::stream) //
+                .flatMap(fd -> new WithMethodDescriptor.Generator(fd).stream()) //
                 .forEach(this::addWithMethod);
         return this;
     }
@@ -324,7 +323,7 @@ public class BuilderGenerator {
         return true;
     }
 
-    private  boolean process(ConstructorDeclaration cd) {
+    private boolean process(ConstructorDeclaration cd) {
         if (cd.isAnnotationPresent(Ignore.class)) {
             return false;
         }
@@ -334,26 +333,23 @@ public class BuilderGenerator {
         return true;
     }
 
-    private void addWithMethod(VariableDeclarator vd) {
-        addWithMethod(vd.getType(), vd.getNameAsString());
-    }
-
-    private void addWithMethod(Type type, String name) {
-        if (!hasWithMethod(type, name)) {
-            MethodDeclaration meth = builderclass.addMethod(makeWithName(name), Modifier.Keyword.PUBLIC);
-            meth.addParameter(type, name);
+    private void addWithMethod(WithMethodDescriptor wd) {
+        if (!hasWithMethod(wd)) {
+            MethodDeclaration meth = builderclass.addMethod(wd.methodName, Modifier.Keyword.PUBLIC);
+            meth.addParameter(wd.parameterType, wd.parameterName);
             meth.setType(builderClassType());
             meth.createBody() //
-                    .addStatement(assignExpr(fieldAccess(nameExpr(FIELD), name), nameExpr(name))) //
+                    .addStatement(
+                            assignExpr(fieldAccess(nameExpr(FIELD), wd.parameterName), nameExpr(wd.parameterName))) //
                     .addStatement(returnStmt(thisExpr()));
         }
     }
 
-    private boolean hasWithMethod(Type type, String name) {
+    private boolean hasWithMethod(WithMethodDescriptor wd) {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(makeWithName(name))) //
-                        .filter(hasSingleParameter(type)) //
+                        .filter(md -> md.getNameAsString().equals(wd.methodName)) //
+                        .filter(hasSingleParameter(wd.parameterType)) //
                         .filter(md -> md.getType().equals(builderClassType())));
     }
 
@@ -381,10 +377,6 @@ public class BuilderGenerator {
                 allMember(builderclass, MethodDeclaration.class) //
                         .filter(md -> md.getNameAsString().equals(BUILD_METHOD)) //
                         .filter(md -> md.getType().equals(productClassType())));
-    }
-
-    private String makeWithName(String name) {
-        return WITH_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
     /**
