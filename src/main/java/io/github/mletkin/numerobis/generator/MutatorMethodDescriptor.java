@@ -30,9 +30,9 @@ import com.github.javaparser.ast.type.Type;
 import io.github.mletkin.numerobis.annotation.WithMethod;
 
 /**
- * Descriptor for the generation of a "with"-method for a field.
+ * Descriptor for the generation of a mutator for a field.
  */
-class WithMethodDescriptor {
+class MutatorMethodDescriptor {
 
     String methodName;
     String parameterName;
@@ -54,15 +54,15 @@ class WithMethodDescriptor {
         /**
          * Produces a stream of method Descriptors from a field declaration.
          *
-         * @return Stream<WithMethodDescriptor>
+         * @return Stream<MutatorMethodDescriptor>
          */
-        Stream<WithMethodDescriptor> stream() {
+        Stream<MutatorMethodDescriptor> stream() {
             return field.getVariables().stream() //
                     .map(this::map);
         }
 
-        private WithMethodDescriptor map(VariableDeclarator vd) {
-            WithMethodDescriptor result = new WithMethodDescriptor();
+        private MutatorMethodDescriptor map(VariableDeclarator vd) {
+            MutatorMethodDescriptor result = new MutatorMethodDescriptor();
             result.methodName = methodName(vd);
             result.parameterName = vd.getNameAsString();
             result.parameterType = vd.getType();
@@ -75,7 +75,7 @@ class WithMethodDescriptor {
 
         private String makeWithName(VariableDeclarator vd) {
             String name = vd.getNameAsString();
-            return BuilderGenerator.WITH_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+            return BuilderGenerator.MUTATOR_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
         }
 
         private Optional<String> customName() {

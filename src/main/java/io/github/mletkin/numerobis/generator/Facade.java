@@ -65,8 +65,8 @@ public final class Facade {
                 new BuilderGenerator(productUnit, productClassName, builderUnit) //
                         .addProductField() //
                         .addConstructors() //
-                        .addWithMethods() //
-                        .addAddMethods() //
+                        .addMutator() //
+                        .addAdderMethods() //
                         .addBuildMethod() //
                         .builderUnit() //
         );
@@ -90,8 +90,8 @@ public final class Facade {
                 new BuilderGenerator(productUnit, productClassName, builderUnit) //
                         .addProductField() //
                         .addFactoryMethods() //
-                        .addWithMethods() //
-                        .addAddMethods() //
+                        .addMutator() //
+                        .addAdderMethods() //
                         .addBuildMethod() //
                         .builderUnit() //
         );
@@ -111,8 +111,8 @@ public final class Facade {
                 new BuilderGenerator(productUnit, productClassName) //
                         .addProductField() //
                         .addConstructors() //
-                        .addWithMethods() //
-                        .addAddMethods() //
+                        .addMutator() //
+                        .addAdderMethods() //
                         .addBuildMethod() //
                         .builderUnit() //
         );
@@ -133,8 +133,8 @@ public final class Facade {
                 new BuilderGenerator(productUnit, productClassName) //
                         .addProductField() //
                         .addFactoryMethods() //
-                        .addWithMethods() //
-                        .addAddMethods() //
+                        .addMutator() //
+                        .addAdderMethods() //
                         .addBuildMethod() //
                         .builderUnit() //
         );

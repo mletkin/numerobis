@@ -59,8 +59,8 @@ public class BuilderGenerator {
 
     final static String BUILD_METHOD = "build";
     final static String FACTORY_METHOD = "of";
-    final static String WITH_PREFIX = "with";
-    final static String ADD_PREFIX = "add";
+    final static String MUTATOR_PREFIX = "with";
+    final static String ADDER_PREFIX = "add";
 
     private boolean separateClass = true;
 
@@ -301,15 +301,15 @@ public class BuilderGenerator {
     }
 
     /**
-     * Adds a with method for each field in the product.
+     * Adds a mutator for each field in the product.
      *
      * @return the generator instance
      */
-    BuilderGenerator addWithMethods() {
+    BuilderGenerator addMutator() {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
-                .flatMap(fd -> new WithMethodDescriptor.Generator(fd).stream()) //
-                .forEach(this::addWithMethod);
+                .flatMap(fd -> new MutatorMethodDescriptor.Generator(fd).stream()) //
+                .forEach(this::addMutator);
         return this;
     }
 
@@ -333,23 +333,23 @@ public class BuilderGenerator {
         return true;
     }
 
-    private void addWithMethod(WithMethodDescriptor wd) {
-        if (!hasWithMethod(wd)) {
-            MethodDeclaration meth = builderclass.addMethod(wd.methodName, Modifier.Keyword.PUBLIC);
-            meth.addParameter(wd.parameterType, wd.parameterName);
+    private void addMutator(MutatorMethodDescriptor md) {
+        if (!hasMutator(md)) {
+            MethodDeclaration meth = builderclass.addMethod(md.methodName, Modifier.Keyword.PUBLIC);
+            meth.addParameter(md.parameterType, md.parameterName);
             meth.setType(builderClassType());
             meth.createBody() //
                     .addStatement(
-                            assignExpr(fieldAccess(nameExpr(FIELD), wd.parameterName), nameExpr(wd.parameterName))) //
+                            assignExpr(fieldAccess(nameExpr(FIELD), md.parameterName), nameExpr(md.parameterName))) //
                     .addStatement(returnStmt(thisExpr()));
         }
     }
 
-    private boolean hasWithMethod(WithMethodDescriptor wd) {
+    private boolean hasMutator(MutatorMethodDescriptor mmd) {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(wd.methodName)) //
-                        .filter(hasSingleParameter(wd.parameterType)) //
+                        .filter(md -> md.getNameAsString().equals(mmd.methodName)) //
+                        .filter(hasSingleParameter(mmd.parameterType)) //
                         .filter(md -> md.getType().equals(builderClassType())));
     }
 
@@ -380,26 +380,26 @@ public class BuilderGenerator {
     }
 
     /**
-     * Adds an add method for each list implementing field in the product.
+     * Adds an adder method for each list implementing field in the product.
      */
-    BuilderGenerator addAddMethods() {
+    BuilderGenerator addAdderMethods() {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
                 .map(FieldDeclaration::getVariables) //
                 .flatMap(List::stream) //
                 .filter(vd -> ClassUtil.implementsCollection(vd, productUnit)) //
-                .forEach(this::addAddMethod);
+                .forEach(this::addAdderMethod);
         return this;
     }
 
-    private void addAddMethod(VariableDeclarator vd) {
+    private void addAdderMethod(VariableDeclarator vd) {
         Type itemType = vd.getType().asClassOrInterfaceType().getTypeArguments().get().get(0);
-        addAddMethod(itemType, vd.getNameAsString());
+        addAdderMethod(itemType, vd.getNameAsString());
     }
 
-    private void addAddMethod(Type itemType, String fieldName) {
-        if (!hasAddMethod(itemType, fieldName)) {
-            MethodDeclaration meth = builderclass.addMethod(makeAddName(fieldName), Modifier.Keyword.PUBLIC);
+    private void addAdderMethod(Type itemType, String fieldName) {
+        if (!hasAdderMethod(itemType, fieldName)) {
+            MethodDeclaration meth = builderclass.addMethod(makeAdderName(fieldName), Modifier.Keyword.PUBLIC);
             meth.addParameter(itemType, "item");
             meth.setType(builderClassType());
             meth.createBody() //
@@ -419,10 +419,10 @@ public class BuilderGenerator {
      *            name of the list field in the product class
      * @return {@code true} if the method exists
      */
-    private boolean hasAddMethod(Type type, String name) {
+    private boolean hasAdderMethod(Type type, String name) {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(makeAddName(name))) //
+                        .filter(md -> md.getNameAsString().equals(makeAdderName(name))) //
                         .filter(hasSingleParameter(type)) //
                         .filter(md -> md.getType().equals(builderClassType())));
     }
@@ -443,8 +443,8 @@ public class BuilderGenerator {
         return builderclass.getNameAsString();
     }
 
-    private String makeAddName(String name) {
-        return ADD_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    private String makeAdderName(String name) {
+        return ADDER_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
     /**
