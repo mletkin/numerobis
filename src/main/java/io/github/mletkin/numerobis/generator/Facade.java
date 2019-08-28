@@ -141,7 +141,7 @@ public final class Facade {
     }
 
     public static CompilationUnit withAccessMethods(CompilationUnit productUnit, String className) {
-        return new AccessGenerator(productUnit, className) //
+        return new AccessorGenerator(productUnit, className) //
                 .addAccessMethods() //
                 .resultUnit();
     }

@@ -29,6 +29,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 
 /**
  * Functions for the generation of Java expressions and statements.
@@ -89,5 +90,18 @@ public final class GenerationUtil {
         return new ClassOrInterfaceDeclaration(new NodeList<>(Modifier.publicModifier(), Modifier.staticModifier()),
                 false, className);
 
+    }
+
+    /**
+     * Returns the {@code Stream} type for a {@code Argument} type.
+     *
+     * @param argumentType
+     *            argument type for the stream
+     * @return the stream type
+     */
+    public static Type streamType(Type argumentType) {
+        return new ClassOrInterfaceType() //
+                .setName("Stream") //
+                .setTypeArguments(argumentType);
     }
 }

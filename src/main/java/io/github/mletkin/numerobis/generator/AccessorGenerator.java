@@ -18,26 +18,30 @@ package io.github.mletkin.numerobis.generator;
 import static io.github.mletkin.numerobis.common.Util.exists;
 import static io.github.mletkin.numerobis.common.Util.ifNotThrow;
 import static io.github.mletkin.numerobis.generator.ClassUtil.allMember;
+import static io.github.mletkin.numerobis.generator.GenerationUtil.methodCall;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.nameExpr;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
+
+import java.util.stream.Stream;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.Ignore;
 
 /**
  * Generates access methods for a product class.
  */
-public class AccessGenerator {
+public class AccessorGenerator {
 
     private CompilationUnit unit;
     private ClassOrInterfaceDeclaration clazz;
 
-    AccessGenerator(CompilationUnit unit, String className) {
+    AccessorGenerator(CompilationUnit unit, String className) {
         this.unit = unit;
         this.clazz = ClassUtil.findClass(unit, className).orElse(null);
 
@@ -49,10 +53,10 @@ public class AccessGenerator {
      *
      * @return the generator instance
      */
-    AccessGenerator addAccessMethods() {
+    AccessorGenerator addAccessMethods() {
         allMember(clazz, FieldDeclaration.class) //
                 .filter(this::process) //
-                .flatMap(fd -> new AccessMethodDescriptor.Generator(fd).stream()) //
+                .flatMap(fd -> new AccessorMethodDescriptor.Generator(fd, unit).stream()) //
                 .forEach(this::addAccessorMethod);
         return this;
     }
@@ -61,22 +65,37 @@ public class AccessGenerator {
         return (!fd.isAnnotationPresent(Ignore.class));
     }
 
-    private AccessGenerator addAccessorMethod(AccessMethodDescriptor amd) {
+    private void addAccessorMethod(AccessorMethodDescriptor amd) {
         if (!hasAccessorMethod(amd)) {
-            MethodDeclaration meth = clazz.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
-            meth.setType(amd.returnType);
+            addAccessor(amd);
+        }
+    }
+
+    private void addAccessor(AccessorMethodDescriptor amd) {
+        MethodDeclaration meth = clazz.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
+        if (amd.streamAccessor) {
+            meth.setType(streamType(amd));
+            meth.createBody() //
+                    .addStatement(returnStmt(methodCall(nameExpr(amd.fieldName), "stream")));
+            unit.addImport(Stream.class);
+        } else {
+            meth.setType(amd.fieldType);
             meth.createBody() //
                     .addStatement(returnStmt(nameExpr(amd.fieldName)));
         }
-        return this;
     }
 
-    private boolean hasAccessorMethod(AccessMethodDescriptor amd) {
+    private Type streamType(AccessorMethodDescriptor amd) {
+        Type argType = amd.fieldType.asClassOrInterfaceType().getTypeArguments().get().get(0);
+        return GenerationUtil.streamType(argType);
+    }
+
+    private boolean hasAccessorMethod(AccessorMethodDescriptor amd) {
         return exists(//
                 allMember(clazz, MethodDeclaration.class) //
                         .filter(md -> md.getNameAsString().equals(amd.methodName)) //
                         .filter(md -> md.getParameters().isEmpty()) //
-                        .filter(md -> md.getType().equals(amd.returnType)));
+                        .filter(md -> md.getType().equals(amd.streamAccessor ? streamType(amd) : amd.fieldType)));
     }
 
     /**

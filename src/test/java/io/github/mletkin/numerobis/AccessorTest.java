@@ -38,6 +38,19 @@ class AccessorTest {
                         + "}");
     }
 
+    @Test
+    void accessMethodForListGeneratesStream() {
+        Assertions.assertThat(generateFromResource("WithList")).isEqualTo(//
+                "import java.util.List;" //
+                        + "import java.util.stream.Stream;" //
+                        + "public class WithList {" //
+                        + "    List<String> x = new ArrayList<>();" //
+                        + "    public Stream<String> x() {" //
+                        + "        return x.stream();" //
+                        + "    }" //
+                        + "}");
+    }
+
     private String generateFromResource(String className) {
         try {
             return Facade.withAccessMethods(StaticJavaParser.parseResource(className + ".java"), className) //

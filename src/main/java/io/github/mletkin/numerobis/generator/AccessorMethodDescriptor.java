@@ -17,40 +17,45 @@ package io.github.mletkin.numerobis.generator;
 
 import java.util.stream.Stream;
 
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.Type;
 
 /**
- * Describes an access method for a class.
+ * Describes an accessor method for a class.
  */
-class AccessMethodDescriptor {
+class AccessorMethodDescriptor {
     String methodName;
     String fieldName;
-    Type returnType;
+    Type fieldType;
+    boolean streamAccessor;
 
     static class Generator {
         FieldDeclaration field;
+        private CompilationUnit cu;
 
-        Generator(FieldDeclaration field) {
+        Generator(FieldDeclaration field, CompilationUnit cu) {
             this.field = field;
+            this.cu = cu;
         }
 
         /**
          * Produces a stream of method descriptors from a field declaration.
          *
-         * @return Stream<AccessMethodDescriptor>
+         * @return Stream<AccessorMethodDescriptor>
          */
-        Stream<AccessMethodDescriptor> stream() {
+        Stream<AccessorMethodDescriptor> stream() {
             return field.getVariables().stream() //
                     .map(this::map);
         }
 
-        private AccessMethodDescriptor map(VariableDeclarator vd) {
-            AccessMethodDescriptor result = new AccessMethodDescriptor();
+        private AccessorMethodDescriptor map(VariableDeclarator vd) {
+            AccessorMethodDescriptor result = new AccessorMethodDescriptor();
             result.methodName = methodName(vd);
             result.fieldName = vd.getNameAsString();
-            result.returnType = vd.getType();
+            result.fieldType = vd.getType();
+            result.streamAccessor = ClassUtil.implementsCollection(vd, cu);
             return result;
         }
 
