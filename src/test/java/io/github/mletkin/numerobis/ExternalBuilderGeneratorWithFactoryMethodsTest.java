@@ -15,9 +15,9 @@
  */
 package io.github.mletkin.numerobis;
 
+import static io.github.mletkin.numerobis.Util.asString;
+import static io.github.mletkin.numerobis.Util.uncheckExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
@@ -238,23 +238,18 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
     }
 
     private String generateFromResource(String className) {
-        try {
-            return Facade.withFactoryMethods(StaticJavaParser.parseResource(className + ".java"), className,
-                    new CompilationUnit()).builderUnit.toString().replace("\r\n", "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return uncheckExceptions(
+                () -> asString(Facade.withFactoryMethods(StaticJavaParser.parseResource(className + ".java"), className,
+                        new CompilationUnit()).builderUnit));
     }
 
     private String generateFromResource(String className, String builderClass) {
-        try {
+        return uncheckExceptions(() -> {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
 
-            return Facade.withFactoryMethods(source, className, target).builderUnit.toString().replace("\r\n", "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            return asString(Facade.withFactoryMethods(source, className, target).builderUnit);
+        });
     }
 
 }

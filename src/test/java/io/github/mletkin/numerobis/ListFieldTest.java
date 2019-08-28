@@ -15,9 +15,9 @@
  */
 package io.github.mletkin.numerobis;
 
+import static io.github.mletkin.numerobis.Util.asString;
+import static io.github.mletkin.numerobis.Util.uncheckExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,52 +30,6 @@ import io.github.mletkin.numerobis.generator.Facade;
  * List field.
  */
 class ListFieldTest {
-
-    @Test
-    void addMethodForListField() {
-        assertThat(generateFromResource("WithList")).isEqualTo(//
-                "import java.util.List;" //
-                        + "public class WithListBuilder {" //
-                        + "    private WithList product;" //
-                        + "    public WithListBuilder() {" //
-                        + "        product = new WithList();" //
-                        + "    }" //
-                        + "    public WithListBuilder withX(List<String> x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public WithListBuilder addX(String item) {" //
-                        + "        product.x.add(item);" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public WithList build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void addMethodForSetField() {
-        assertThat(generateFromResource("WithSet")).isEqualTo(//
-                "import java.util.Set;" //
-                        + "public class WithSetBuilder {" //
-                        + "    private WithSet product;" //
-                        + "    public WithSetBuilder() {" //
-                        + "        product = new WithSet();" //
-                        + "    }" //
-                        + "    public WithSetBuilder withX(Set<String> x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public WithSetBuilder addX(String item) {" //
-                        + "        product.x.add(item);" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public WithSet build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
 
     @Test
     void retainsAddMethod() {
@@ -105,24 +59,13 @@ class ListFieldTest {
                         + "}");
     }
 
-    private String generateFromResource(String className) {
-        try {
-            return Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
-                    new CompilationUnit()).builderUnit.toString().replace("\r\n", "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private String generateFromResource(String className, String builderClass) {
-        try {
+        return uncheckExceptions(() -> {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
 
-            return Facade.withConstructors(source, className, target).builderUnit.toString().replace("\r\n", "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            return asString(Facade.withConstructors(source, className, target).builderUnit);
+        });
     }
 
 }

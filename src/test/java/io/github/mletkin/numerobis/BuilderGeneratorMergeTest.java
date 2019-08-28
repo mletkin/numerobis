@@ -15,6 +15,8 @@
  */
 package io.github.mletkin.numerobis;
 
+import static io.github.mletkin.numerobis.Util.asString;
+import static io.github.mletkin.numerobis.Util.uncheckExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -361,14 +363,12 @@ class BuilderGeneratorMergeTest {
     }
 
     private String generateFromResource(String className, String builderClass) {
-        try {
+        return uncheckExceptions(() -> {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
 
-            return Facade.withConstructors(source, className, target).builderUnit.toString().replace("\r\n", "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            return asString(Facade.withConstructors(source, className, target).builderUnit);
+        });
     }
 
     /**

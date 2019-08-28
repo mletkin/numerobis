@@ -15,20 +15,18 @@
  */
 package io.github.mletkin.numerobis;
 
+import static io.github.mletkin.numerobis.Util.asString;
+import static io.github.mletkin.numerobis.Util.extractBuilder;
+import static io.github.mletkin.numerobis.Util.uncheckExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-
-import java.io.IOException;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
-import io.github.mletkin.numerobis.generator.ClassUtil;
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.GeneratorException;
 
@@ -50,68 +48,6 @@ class InternalBuilderGeneratorTest {
                         + "        return this;" //
                         + "    }" //
                         + "    public TestClass build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void fieldWithAnnotationIsIgnored() {
-        assertThat(generateFromResource("TestClassIgnoreField")).isEqualTo(//
-                "public static class Builder {" //
-                        + "    private TestClassIgnoreField product;" //
-                        + "    public Builder() {" //
-                        + "        product = new TestClassIgnoreField();" //
-                        + "    }" //
-                        + "    public Builder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public TestClassIgnoreField build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void convertsClassWithTwoFields() {
-        assertThat(generateFromResource("TestClassTwo")).isEqualTo(//
-                "public static class Builder {" //
-                        + "    private TestClassTwo product;" //
-                        + "    public Builder() {" //
-                        + "        product = new TestClassTwo();" //
-                        + "    }" //
-                        + "    public Builder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public Builder withY(int y) {" //
-                        + "        product.y = y;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public TestClassTwo build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void addsWithMethodForPrivateField() {
-        assertThat(generateFromResource("TestClassWithPrivateField")).isEqualTo( //
-                "public static class Builder {" //
-                        + "    private TestClassWithPrivateField product;" //
-                        + "    public Builder() {" //
-                        + "        product = new TestClassWithPrivateField();" //
-                        + "    }" //
-                        + "    public Builder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public Builder withY(int y) {" //
-                        + "        product.y = y;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public TestClassWithPrivateField build() {" //
                         + "        return product;" //
                         + "    }" //
                         + "}");
@@ -141,20 +77,9 @@ class InternalBuilderGeneratorTest {
     }
 
     private String generateFromResource(String className) {
-        try {
-            return extractBuilder(
-                    Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className).productUnit,
-                    className).toString().replace("\r\n", "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private ClassOrInterfaceDeclaration extractBuilder(CompilationUnit cu, String className) {
-        return ClassUtil.findClass(cu, className) //
-                .map(c -> ClassUtil.allMember(c, ClassOrInterfaceDeclaration.class)) //
-                .orElseGet(Stream::empty) //
-                .findFirst().get();
+        return uncheckExceptions(() -> asString(extractBuilder(
+                Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className).productUnit,
+                className)));
     }
 
 }

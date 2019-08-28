@@ -15,9 +15,9 @@
  */
 package io.github.mletkin.numerobis;
 
+import static io.github.mletkin.numerobis.Util.asString;
+import static io.github.mletkin.numerobis.Util.uncheckExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
@@ -102,12 +102,9 @@ class ExternalBuilderGeneratorWithConstructorsTest {
     }
 
     private String generateFromResource(String className) {
-        try {
-            return Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
-                    new CompilationUnit()).builderUnit.toString().replace("\r\n", "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return uncheckExceptions(
+                () -> asString(Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
+                        new CompilationUnit()).builderUnit));
     }
 
 }

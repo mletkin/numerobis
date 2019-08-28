@@ -15,10 +15,10 @@
  */
 package io.github.mletkin.numerobis;
 
+import static io.github.mletkin.numerobis.Util.asString;
+import static io.github.mletkin.numerobis.Util.uncheckExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-
-import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
@@ -33,119 +33,7 @@ import io.github.mletkin.numerobis.generator.GeneratorException;
  */
 class ExternalBuilderGeneratorTest {
 
-    @Test
-    void convertsClassWithField() {
-        assertThat(generateFromResource("TestClass")).isEqualTo(//
-                "public class TestClassBuilder {" //
-                        + "    private TestClass product;" //
-                        + "    public TestClassBuilder() {" //
-                        + "        product = new TestClass();" //
-                        + "    }" //
-                        + "    public TestClassBuilder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public TestClass build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void fieldAnnotationWithCustomMethodName() {
-        assertThat(generateFromResource("TestClassWithName")).isEqualTo(//
-                "public class TestClassWithNameBuilder {" //
-                        + "    private TestClassWithName product;" //
-                        + "    public TestClassWithNameBuilder() {" //
-                        + "        product = new TestClassWithName();" //
-                        + "    }" //
-                        + "    public TestClassWithNameBuilder access(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public TestClassWithName build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void fieldAnnotationWithoutCustomMethodName() {
-        assertThat(generateFromResource("FieldAnnoNoCustomName")).isEqualTo(//
-                "public class FieldAnnoNoCustomNameBuilder {" //
-                        + "    private FieldAnnoNoCustomName product;" //
-                        + "    public FieldAnnoNoCustomNameBuilder() {" //
-                        + "        product = new FieldAnnoNoCustomName();" //
-                        + "    }" //
-                        + "    public FieldAnnoNoCustomNameBuilder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public FieldAnnoNoCustomName build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-// FIXME two fields with one Annotation sucks
-
-    @Test
-    void fieldWithIgnoreAnnotationIsIgnored() {
-        assertThat(generateFromResource("TestClassIgnoreField")).isEqualTo(//
-                "public class TestClassIgnoreFieldBuilder {" //
-                        + "    private TestClassIgnoreField product;" //
-                        + "    public TestClassIgnoreFieldBuilder() {" //
-                        + "        product = new TestClassIgnoreField();" //
-                        + "    }" //
-                        + "    public TestClassIgnoreFieldBuilder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public TestClassIgnoreField build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void convertsClassWithTwoFields() {
-        assertThat(generateFromResource("TestClassTwo")).isEqualTo(//
-                "public class TestClassTwoBuilder {" //
-                        + "    private TestClassTwo product;" //
-                        + "    public TestClassTwoBuilder() {" //
-                        + "        product = new TestClassTwo();" //
-                        + "    }" //
-                        + "    public TestClassTwoBuilder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public TestClassTwoBuilder withY(int y) {" //
-                        + "        product.y = y;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public TestClassTwo build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void ignoresPrivateField() {
-        assertThat(generateFromResource("TestClassWithPrivateField")).isEqualTo( //
-                "public class TestClassWithPrivateFieldBuilder {" //
-                        + "    private TestClassWithPrivateField product;" //
-                        + "    public TestClassWithPrivateFieldBuilder() {" //
-                        + "        product = new TestClassWithPrivateField();" //
-                        + "    }" //
-                        + "    public TestClassWithPrivateFieldBuilder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public TestClassWithPrivateField build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
+    // FIXME two fields with one Annotation sucks
 
     @Test
     void builderIsInSamePackage() {
@@ -219,12 +107,9 @@ class ExternalBuilderGeneratorTest {
     }
 
     private String generateFromResource(String className) {
-        try {
-            return Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
-                    new CompilationUnit()).builderUnit.toString().replace("\r\n", "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return uncheckExceptions(
+                () -> asString(Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
+                        new CompilationUnit()).builderUnit));
     }
 
 }

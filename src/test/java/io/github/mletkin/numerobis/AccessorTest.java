@@ -15,7 +15,8 @@
  */
 package io.github.mletkin.numerobis;
 
-import java.io.IOException;
+import static io.github.mletkin.numerobis.Util.asString;
+import static io.github.mletkin.numerobis.Util.uncheckExceptions;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,9 @@ import com.github.javaparser.StaticJavaParser;
 
 import io.github.mletkin.numerobis.generator.Facade;
 
+/**
+ * Accessor generation in the product class.
+ */
 class AccessorTest {
 
     @Test
@@ -52,12 +56,8 @@ class AccessorTest {
     }
 
     private String generateFromResource(String className) {
-        try {
-            return Facade.withAccessMethods(StaticJavaParser.parseResource(className + ".java"), className) //
-                    .toString().replace("\r\n", "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return uncheckExceptions(() -> asString(
+                Facade.withAccessMethods(StaticJavaParser.parseResource(className + ".java"), className)));
     }
 
 }

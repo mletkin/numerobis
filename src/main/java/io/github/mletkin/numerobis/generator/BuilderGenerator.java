@@ -385,45 +385,37 @@ public class BuilderGenerator {
     BuilderGenerator addAdderMethods() {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
-                .map(FieldDeclaration::getVariables) //
-                .flatMap(List::stream) //
-                .filter(vd -> ClassUtil.implementsCollection(vd, productUnit)) //
+                .flatMap(fd -> new AdderMethodDescriptor.Generator(fd, productUnit).stream()) //
                 .forEach(this::addAdderMethod);
         return this;
     }
 
-    private void addAdderMethod(VariableDeclarator vd) {
-        Type itemType = vd.getType().asClassOrInterfaceType().getTypeArguments().get().get(0);
-        addAdderMethod(itemType, vd.getNameAsString());
-    }
-
-    private void addAdderMethod(Type itemType, String fieldName) {
-        if (!hasAdderMethod(itemType, fieldName)) {
-            MethodDeclaration meth = builderclass.addMethod(makeAdderName(fieldName), Modifier.Keyword.PUBLIC);
-            meth.addParameter(itemType, "item");
+    private void addAdderMethod(AdderMethodDescriptor amd) {
+        if (!hasAdderMethod(amd)) {
+            MethodDeclaration meth = builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
+            meth.addParameter(amd.parameterType, "item");
             meth.setType(builderClassType());
             meth.createBody() //
-                    .addStatement(methodCall(fieldAccess(nameExpr(FIELD), fieldName), "add", nameExpr("item"))) //
+                    .addStatement(methodCall(fieldAccess(nameExpr(FIELD), amd.fieldName), "add", nameExpr("item"))) //
                     .addStatement(returnStmt(thisExpr()));
         }
     }
+
 
     /**
      * Checks for an add method in the builder class.
      * <p>
      * signature {@code Builder addName(Type item)}
      *
-     * @param type
-     *            Type of the list items
-     * @param name
-     *            name of the list field in the product class
+     * @param amd
+     *            adder descriptor
      * @return {@code true} if the method exists
      */
-    private boolean hasAdderMethod(Type type, String name) {
+    private boolean hasAdderMethod(AdderMethodDescriptor amd) {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(makeAdderName(name))) //
-                        .filter(hasSingleParameter(type)) //
+                        .filter(md -> md.getNameAsString().equals(amd.methodName)) //
+                        .filter(hasSingleParameter(amd.parameterType)) //
                         .filter(md -> md.getType().equals(builderClassType())));
     }
 
