@@ -1,5 +1,5 @@
 # Maven Builder Generator Plugin
-A simple maven plugin for the generation of builder classes.
+This is a simple maven plugin that generates builder classes for classes that have the appropriate annotation.The builders are generated during the generate-sources phase of the maven build. The current version is restricted to the use of default settings. Customization is currenmtly in a proof of concept state.
 
 ## Nomenclature
 There is no standard for the wording of builder components.   
@@ -17,7 +17,7 @@ I avoided the terms **getter** and **setter** because of the special meaning the
 
 ## Usage
 Add the following to the plugin section of your pom.xml
-```v
+```
 <plugin>
     <groupId>io.github.mletkin</groupId>
     <artifactId>builder-generator-maven-plugin</artifactId>
@@ -33,3 +33,8 @@ Add the following to the plugin section of your pom.xml
 ```
 Add the annotation `@WithBuilder`to each class for which you want to create a builder.
 Builder code is generated in the `generate-sources` phase of the maven build. 
+
+## Configuration
+Two settings may be customized through Maven configuration
+
+
