@@ -7,10 +7,13 @@ The following terms are used throughout the code and the documentation.
 
 The (generated) class that builds the object instances is the **builder**.
 The object it builds is the **product**.
-The class which defines the products is the **product class**.
-The builder methods of the builder that set the values for the product
-are the **with methods** (for lack of a better word).
-The method in the builder that provides the **product** is the **build method**. 
+The class which defines the product is the **product class**.
+A method of the builder that sets the value of a product field is a **mutator**.
+A mutator that adds somethong (e.g. an Object to a Collection) is an **adder**.
+The method in the builder that provides the **product** is the **build method**.
+A method of the product class that returns the content of a field is an **accessor**.
+
+I avoided the terms **getter** and **setter** because of the special meaning they have in the JavaBeans context.
 
 ## Usage
 Add the following to the plugin section of your pom.xml
