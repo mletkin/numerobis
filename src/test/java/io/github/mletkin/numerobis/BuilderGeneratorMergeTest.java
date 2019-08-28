@@ -135,7 +135,7 @@ class BuilderGeneratorMergeTest {
     }
 
     @Test
-    void usesWithMethod() {
+    void retainsMutator() {
         assertThat(generateFromResource("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder withX(int x) {" //
@@ -152,6 +152,34 @@ class BuilderGeneratorMergeTest {
                         + "        product = new TestClass();" //
                         + "    }" //
                         + "    public TestClass build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "}");
+    }
+
+    @Test
+    void retainsAdder() {
+        assertThat(generateFromResource("WithList", //
+                "public class WithListBuilder {" //
+                        + "    public WithListBuilder addX(String y) {" //
+                        + "        return null;" //
+                        + "    }" //
+                        + "}") //
+        ).isEqualTo(//
+                "import java.util.List;" //
+                        + "public class WithListBuilder {" //
+                        + "    public WithListBuilder addX(String y) {" //
+                        + "        return null;" //
+                        + "    }" //
+                        + "    private WithList product;" //
+                        + "    public WithListBuilder() {" //
+                        + "        product = new WithList();" //
+                        + "    }" //
+                        + "    public WithListBuilder withX(List<String> x) {" //
+                        + "        product.x = x;" //
+                        + "        return this;" //
+                        + "    }" //
+                        + "    public WithList build() {" //
                         + "        return product;" //
                         + "    }" //
                         + "}");

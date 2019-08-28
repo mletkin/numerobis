@@ -21,6 +21,7 @@ import static io.github.mletkin.numerobis.common.Util.not;
 import static io.github.mletkin.numerobis.generator.ClassUtil.allMember;
 import static io.github.mletkin.numerobis.generator.ClassUtil.hasDefaultConstructor;
 import static io.github.mletkin.numerobis.generator.ClassUtil.hasExplicitConstructor;
+import static io.github.mletkin.numerobis.generator.ClassUtil.hasProductConstructor;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.args;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.assignExpr;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.fieldAccess;
@@ -202,6 +203,16 @@ public class BuilderGenerator {
         return this;
     }
 
+    private boolean process(ConstructorDeclaration cd) {
+        if (cd.isAnnotationPresent(Ignore.class)) {
+            return false;
+        }
+        if (cd.isPrivate() && separateClass) {
+            return false;
+        }
+        return true;
+    }
+
     private void addDefaultConstructorIfNeeded() {
         if (!hasExplicitConstructor(productclass) && !hasDefaultConstructor(builderclass)) {
             builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
@@ -230,12 +241,15 @@ public class BuilderGenerator {
      * @return the generator instance
      */
     BuilderGenerator addFactoryMethods() {
-        addProductConstructor();
-        if (!hasExplicitConstructor(productclass)) {
+        if (!hasProductConstructor(builderclass, productClassName())) {
+            addProductConstructor();
+        }
+        if (!hasExplicitConstructor(productclass) && !hasDefaultFactoryMethod()) {
             addDefaultFactoryMethod();
         }
         allMember(productclass, ConstructorDeclaration.class) //
                 .filter(this::process) //
+                .filter(not(this::hasMatchingFactoryMethod)) //
                 .forEach(this::addFactoryMethod);
         return this;
     }
@@ -246,13 +260,11 @@ public class BuilderGenerator {
      * signature: {@code public static Builder of();}
      */
     private void addDefaultFactoryMethod() {
-        if (!hasDefaultFactoryMethod()) {
-            MethodDeclaration factoryMethod = //
-                    builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
-            factoryMethod.setType(builderClassName());
-            factoryMethod.createBody() //
-                    .addStatement(returnStmt(newExpr(builderClassType(), newExpr(productClassType()))));
-        }
+        MethodDeclaration factoryMethod = //
+                builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+        factoryMethod.setType(builderClassName());
+        factoryMethod.createBody() //
+                .addStatement(returnStmt(newExpr(builderClassType(), newExpr(productClassType()))));
     }
 
     private boolean hasDefaultFactoryMethod() {
@@ -270,25 +282,20 @@ public class BuilderGenerator {
      * signature {@code private Builder(Product product)}
      */
     void addProductConstructor() {
-        if (!ClassUtil.hasProductConstructor(builderclass, productClassName())) {
-            ConstructorDeclaration constructor = builderclass.addConstructor(Modifier.Keyword.PRIVATE);
-            constructor.addParameter(productClassName(), FIELD);
-            constructor.createBody() //
-                    .addStatement(assignExpr(fieldAccess(thisExpr(), FIELD), nameExpr(FIELD)));
-        }
+        ConstructorDeclaration constructor = builderclass.addConstructor(Modifier.Keyword.PRIVATE);
+        constructor.addParameter(productClassName(), FIELD);
+        constructor.createBody() //
+                .addStatement(assignExpr(fieldAccess(thisExpr(), FIELD), nameExpr(FIELD)));
     }
 
     private void addFactoryMethod(ConstructorDeclaration productConstructor) {
-        if (!hasMatchingFactoryMethod(productConstructor)) {
-            MethodDeclaration factoryMethod = //
-                    builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
-            productConstructor.getParameters().stream().forEach(factoryMethod::addParameter);
-            factoryMethod.setType(builderClassName());
-            factoryMethod.createBody() //
-                    .addStatement(//
-                            returnStmt(newExpr(builderClassType(),
-                                    newExpr(productClassType(), args(productConstructor)))));
-        }
+        MethodDeclaration factoryMethod = //
+                builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+        productConstructor.getParameters().stream().forEach(factoryMethod::addParameter);
+        factoryMethod.setType(builderClassName());
+        factoryMethod.createBody() //
+                .addStatement(//
+                        returnStmt(newExpr(builderClassType(), newExpr(productClassType(), args(productConstructor)))));
     }
 
     private boolean hasMatchingFactoryMethod(ConstructorDeclaration productConstructor) {
@@ -309,6 +316,7 @@ public class BuilderGenerator {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> new MutatorMethodDescriptor.Generator(fd).stream()) //
+                .filter(not(this::hasMutator)) //
                 .forEach(this::addMutator);
         return this;
     }
@@ -323,26 +331,13 @@ public class BuilderGenerator {
         return true;
     }
 
-    private boolean process(ConstructorDeclaration cd) {
-        if (cd.isAnnotationPresent(Ignore.class)) {
-            return false;
-        }
-        if (cd.isPrivate() && separateClass) {
-            return false;
-        }
-        return true;
-    }
-
-    private void addMutator(MutatorMethodDescriptor md) {
-        if (!hasMutator(md)) {
-            MethodDeclaration meth = builderclass.addMethod(md.methodName, Modifier.Keyword.PUBLIC);
-            meth.addParameter(md.parameterType, md.parameterName);
-            meth.setType(builderClassType());
-            meth.createBody() //
-                    .addStatement(
-                            assignExpr(fieldAccess(nameExpr(FIELD), md.parameterName), nameExpr(md.parameterName))) //
-                    .addStatement(returnStmt(thisExpr()));
-        }
+    private void addMutator(MutatorMethodDescriptor mmd) {
+        MethodDeclaration meth = builderclass.addMethod(mmd.methodName, Modifier.Keyword.PUBLIC);
+        meth.addParameter(mmd.parameterType, mmd.parameterName);
+        meth.setType(builderClassType());
+        meth.createBody() //
+                .addStatement(assignExpr(fieldAccess(nameExpr(FIELD), mmd.parameterName), nameExpr(mmd.parameterName))) //
+                .addStatement(returnStmt(thisExpr()));
     }
 
     private boolean hasMutator(MutatorMethodDescriptor mmd) {
@@ -386,21 +381,19 @@ public class BuilderGenerator {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> new AdderMethodDescriptor.Generator(fd, productUnit).stream()) //
+                .filter(not(this::hasAdderMethod)) //
                 .forEach(this::addAdderMethod);
         return this;
     }
 
     private void addAdderMethod(AdderMethodDescriptor amd) {
-        if (!hasAdderMethod(amd)) {
-            MethodDeclaration meth = builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
-            meth.addParameter(amd.parameterType, "item");
-            meth.setType(builderClassType());
-            meth.createBody() //
-                    .addStatement(methodCall(fieldAccess(nameExpr(FIELD), amd.fieldName), "add", nameExpr("item"))) //
-                    .addStatement(returnStmt(thisExpr()));
-        }
+        MethodDeclaration meth = builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
+        meth.addParameter(amd.parameterType, "item");
+        meth.setType(builderClassType());
+        meth.createBody() //
+                .addStatement(methodCall(fieldAccess(nameExpr(FIELD), amd.fieldName), "add", nameExpr("item"))) //
+                .addStatement(returnStmt(thisExpr()));
     }
-
 
     /**
      * Checks for an add method in the builder class.
@@ -433,10 +426,6 @@ public class BuilderGenerator {
 
     private String builderClassName() {
         return builderclass.getNameAsString();
-    }
-
-    private String makeAdderName(String name) {
-        return ADDER_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
     /**
