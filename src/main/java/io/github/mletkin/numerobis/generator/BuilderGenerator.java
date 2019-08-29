@@ -213,7 +213,7 @@ public class BuilderGenerator {
     }
 
     private void addManipulationConstructorIfNeeded() {
-        if (mutable(productclass) && !hasManipulationConstructor()) {
+        if (isProductMutable() && !hasManipulationConstructor()) {
             addManipulationConstructor();
         }
     }
@@ -279,7 +279,7 @@ public class BuilderGenerator {
         if (!hasExplicitConstructor(productclass) && !hasDefaultFactoryMethod()) {
             addDefaultFactoryMethod();
         }
-        if (mutable(productclass)) {
+        if (isProductMutable()) {
             addManipulationFactoryMethod();
         }
         allMember(productclass, ConstructorDeclaration.class) //
@@ -500,15 +500,13 @@ public class BuilderGenerator {
     }
 
     /**
-     * Checks if the (product) class should be considered mutable.
+     * Checks if the product class should be considered mutable.
      *
-     * @param decl
-     *            class to check
      * @return {@code true} if the class should be mutable
      */
-    boolean mutable(ClassOrInterfaceDeclaration decl) {
-        return (!mutableByDefault && decl.isAnnotationPresent(Mutable.class))
-                || (mutableByDefault && !decl.isAnnotationPresent(Immutable.class));
+    boolean isProductMutable() {
+        return productclass.isAnnotationPresent(Mutable.class)
+                || (mutableByDefault && !productclass.isAnnotationPresent(Immutable.class));
     }
 
 }

@@ -1,0 +1,4 @@
+@Immutable
+class Immutable {
+
+}

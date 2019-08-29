@@ -18,12 +18,10 @@ package io.github.mletkin.numerobis;
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
 import io.github.mletkin.numerobis.generator.ClassUtil;
-import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * Utilities for unit tests.
@@ -61,11 +59,11 @@ public class Util {
         return clazz.toString().replace("\r\n", "");
     }
 
-    interface Thrower<T> {
+    public interface Thrower<T> {
         T call() throws IOException;
     }
 
-    static <T> T uncheckExceptions(Thrower<T> fkt) {
+    public static <T> T uncheckExceptions(Thrower<T> fkt) {
         try {
             return fkt.call();
         } catch (IOException e) {
@@ -74,49 +72,27 @@ public class Util {
     }
 
     static String externalWithConstructors(String className) {
-        return uncheckExceptions(
-                () -> asString(new Facade(false).withConstructors(StaticJavaParser.parseResource(className + ".java"),
-                        className, new CompilationUnit()).builderUnit));
+        return new TestFacade(false).externalWithConstructors(className);
     }
 
     static String externalWithConstructors(String className, String builderClass) {
-        return uncheckExceptions(() -> {
-            CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
-            CompilationUnit target = StaticJavaParser.parse(builderClass);
-
-            return asString(new Facade(false).withConstructors(source, className, target).builderUnit);
-        });
+        return new TestFacade(false).externalWithConstructors(className, builderClass);
     }
 
     static String internalWithConstructors(String className) {
-        return uncheckExceptions(() -> asString(extractBuilder(//
-                new Facade(false).withConstructors(StaticJavaParser.parseResource(className + ".java"), className) //
-                        .productUnit,
-                className)));
+        return new TestFacade(false).internalWithConstructors(className);
     }
 
     static String externalWithFactories(String className) {
-        return uncheckExceptions(
-                () -> asString(new Facade(false).withFactoryMethods(StaticJavaParser.parseResource(className + ".java"),
-                        className, new CompilationUnit()).builderUnit));
+        return new TestFacade(false).externalWithFactories(className);
     }
 
     static String externalWithFactories(String className, String builderClass) {
-        return uncheckExceptions(() -> {
-            CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
-            CompilationUnit target = StaticJavaParser.parse(builderClass);
-
-            return asString(new Facade(false).withFactoryMethods(source, className, target).builderUnit);
-        });
+        return new TestFacade(false).externalWithFactories(className, builderClass);
     }
 
     static String internalWithFactories(String className) {
-        return uncheckExceptions(
-                () -> asString(
-                        extractBuilder(
-                                new Facade(false).withFactoryMethods(
-                                        StaticJavaParser.parseResource(className + ".java"), className).productUnit,
-                                className)));
+        return new TestFacade(false).internalWithFactories(className);
     }
 
 }
