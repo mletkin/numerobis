@@ -79,4 +79,29 @@ The default is ```${project.compileSourceRoots}```
 ### targetDirectory
 The directory in which the generated builder classes are stored. File paths are created for the packages. The parameter is only relevant if the builders are created as separate classes.
 The default is the generation in the same directory as the product class.
+### products are mutable by default
+If set to true product classes are considered mutable. For the modification of product class instances a constructor (or factory method) will be created in the builder class. This modificaton method accepts a product class instance as parameter.
+The default value is **false**. The product objetcs are considered immutable and no method for modification is generated.
+```
+<configuration>
+    <productsAreMutable>true</productsAreMutable>
+<configuration>
+```
+## Annotations
+Most of the behavior of the builder generator is controlled through annotations.
+The generator will stick to th annotation concept. The names might change and options may be set via annotation parameters. 
+All annotations are located in the package ```io.github.mletkin.numerobis.annotation```
+### WithBuilder
+Used on product classes.
+This is the most important annotation. Only classes annotated with ```@WithBuilder``` will be processed.
+### AccessMethods
+Used on product classes.
+For every field in the product class an accessor will be generated. Accessors have the same name as the field.
+### Ignore
+Used on product fields.
+Field annotated with ```@Ignore``` are ignored by the generator, no mutators are generated.
+### Mutable an Immutable
+Used on product classes.
+Overrides the default setting for "product classes are immutable/mutable by default".
+
 
