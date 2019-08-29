@@ -279,7 +279,7 @@ public class BuilderGenerator {
         if (!hasExplicitConstructor(productclass) && !hasDefaultFactoryMethod()) {
             addDefaultFactoryMethod();
         }
-        if (isProductMutable()) {
+        if (isProductMutable() && !hasManipulationFactoryMethod()) {
             addManipulationFactoryMethod();
         }
         allMember(productclass, ConstructorDeclaration.class) //
@@ -288,6 +288,15 @@ public class BuilderGenerator {
                 .forEach(this::addFactoryMethod);
 
         return this;
+    }
+
+    private boolean hasManipulationFactoryMethod() {
+        return exists(//
+                allMember(builderclass, MethodDeclaration.class) //
+                        .filter(MethodDeclaration::isStatic) //
+                        .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
+                        .filter(md -> md.getTypeAsString().equals(builderClassName())) //
+                        .filter(hasSingleParameter(productClassType())));
     }
 
     private void addManipulationFactoryMethod() {
