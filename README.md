@@ -79,4 +79,13 @@ The default is ```${project.compileSourceRoots}```
 ### targetDirectory
 The directory in which the generated builder classes are stored. File paths are created for the packages. The parameter is only relevant if the builders are created as separate classes.
 The default is the generation in the same directory as the product class.
+### products are mutable by default
+If set to true product classes are considered mutable. For the modification of product class instances a constructor (or factory method) will be created in the builder class. This modificaton method accepts a product class instance as parameter.
+The default value is **false**. The product objetcs are considered immutable and no method for modification is generated.
+```
+<configuration>
+    <productsAreMutable>true</productsAreMutable>
+<configuration>
+```
+
 
