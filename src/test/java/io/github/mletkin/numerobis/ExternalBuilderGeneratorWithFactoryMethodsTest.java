@@ -15,16 +15,10 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
-import static io.github.mletkin.numerobis.Util.uncheckExceptions;
+import static io.github.mletkin.numerobis.Util.externalWithFactories;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-
-import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * Builder generation with Factory Methods.
@@ -33,7 +27,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void productClassWithoutConstructor() {
-        assertThat(generateFromResource("Empty")).isEqualTo(//
+        assertThat(externalWithFactories("Empty")).isEqualTo(//
                 "public class EmptyBuilder {" //
                         + "    private Empty product;" //
                         + "    private EmptyBuilder(Empty product) {" //
@@ -50,7 +44,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void productClassWithCustomConstructor() {
-        assertThat(generateFromResource("EmptyWithCustomConstructor")).isEqualTo( //
+        assertThat(externalWithFactories("EmptyWithCustomConstructor")).isEqualTo( //
                 "public class EmptyWithCustomConstructorBuilder {" //
                         + "    private EmptyWithCustomConstructor product;" //
                         + "    private EmptyWithCustomConstructorBuilder(EmptyWithCustomConstructor product) {" //
@@ -67,7 +61,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void productClassWithDefaultConstructor() {
-        assertThat(generateFromResource("EmptyWithDefaultConstructor")).isEqualTo( //
+        assertThat(externalWithFactories("EmptyWithDefaultConstructor")).isEqualTo( //
                 "public class EmptyWithDefaultConstructorBuilder {" //
                         + "    private EmptyWithDefaultConstructor product;" //
                         + "    private EmptyWithDefaultConstructorBuilder(EmptyWithDefaultConstructor product) {" //
@@ -84,7 +78,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void constructorWithAnnotationIsIgnored() {
-        assertThat(generateFromResource("EmptyWithIgnoredConstructor")).isEqualTo( //
+        assertThat(externalWithFactories("EmptyWithIgnoredConstructor")).isEqualTo( //
                 "public class EmptyWithIgnoredConstructorBuilder {" //
                         + "    private EmptyWithIgnoredConstructor product;" //
                         + "    private EmptyWithIgnoredConstructorBuilder(EmptyWithIgnoredConstructor product) {" //
@@ -101,7 +95,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void privateConstructorIsIgnored() {
-        assertThat(generateFromResource("EmptyWithPrivateAndPublicConstructor")).isEqualTo( //
+        assertThat(externalWithFactories("EmptyWithPrivateAndPublicConstructor")).isEqualTo( //
                 "public class EmptyWithPrivateAndPublicConstructorBuilder {" //
                         + "    private EmptyWithPrivateAndPublicConstructor product;" //
                         + "    private EmptyWithPrivateAndPublicConstructorBuilder(EmptyWithPrivateAndPublicConstructor product) {" //
@@ -118,7 +112,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void retainsDefaultConstructor() {
-        assertThat(generateFromResource("Empty", //
+        assertThat(Util.externalWithFactories("Empty", //
                 "public class EmptyBuilder {" //
                         + "    protected EmptyBuilder() {" //
                         + "        product = null;" //
@@ -144,7 +138,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void retainsProductConstructor() {
-        assertThat(generateFromResource("Empty", //
+        assertThat(Util.externalWithFactories("Empty", //
                 "public class EmptyBuilder {" //
                         + "    private EmptyBuilder(Empty p) {" //
                         + "        this.product = p;" //
@@ -167,7 +161,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void retainsDefaultFactoryMethod() {
-        assertThat(generateFromResource("Empty", //
+        assertThat(Util.externalWithFactories("Empty", //
                 "public class EmptyBuilder {" //
                         + "    public static EmptyBuilder of() {" //
                         + "        return null;" //
@@ -190,7 +184,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void retainCustomFactoryMethod() {
-        assertThat(generateFromResource("Empty", //
+        assertThat(Util.externalWithFactories("Empty", //
                 "public class EmptyBuilder {" //
                         + "    public static EmptyBuilder of(String foo) {" //
                         + "        return null;" //
@@ -216,7 +210,7 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void retainFactoryMethodForNonDefaultConstructor() {
-        assertThat(generateFromResource("EmptyWithCustomConstructor", //
+        assertThat(Util.externalWithFactories("EmptyWithCustomConstructor", //
                 "public class EmptyWithCustomConstructorBuilder {" //
                         + "    public static EmptyWithCustomConstructorBuilder of(int m) {" //
                         + "        return null;" //
@@ -235,21 +229,6 @@ class ExternalBuilderGeneratorWithFactoryMethodsTest {
                         + "        return product;" //
                         + "    }" //
                         + "}");
-    }
-
-    private String generateFromResource(String className) {
-        return uncheckExceptions(
-                () -> asString(Facade.withFactoryMethods(StaticJavaParser.parseResource(className + ".java"), className,
-                        new CompilationUnit()).builderUnit));
-    }
-
-    private String generateFromResource(String className, String builderClass) {
-        return uncheckExceptions(() -> {
-            CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
-            CompilationUnit target = StaticJavaParser.parse(builderClass);
-
-            return asString(Facade.withFactoryMethods(source, className, target).builderUnit);
-        });
     }
 
 }

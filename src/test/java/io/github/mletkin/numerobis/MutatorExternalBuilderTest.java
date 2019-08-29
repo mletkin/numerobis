@@ -15,15 +15,10 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
+import static io.github.mletkin.numerobis.Util.externalWithConstructors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-
-import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * Mutator generation for generated internal builder.
@@ -32,7 +27,7 @@ class MutatorExternalBuilderTest {
 
     @Test
     void mutatorForNonListField() {
-        assertThat(generateFromResource("Mutator")).isEqualTo(//
+        assertThat(externalWithConstructors("Mutator")).isEqualTo(//
                 "public class MutatorBuilder {" //
                         + "    private Mutator product;" //
                         + "    public MutatorBuilder() {" //
@@ -50,7 +45,7 @@ class MutatorExternalBuilderTest {
 
     @Test
     void mutatorsForTwoFieldsInOneDeclaration() {
-        assertThat(generateFromResource("MutatorTwoFields")).isEqualTo(//
+        assertThat(externalWithConstructors("MutatorTwoFields")).isEqualTo(//
                 "public class MutatorTwoFieldsBuilder {" //
                         + "    private MutatorTwoFields product;" //
                         + "    public MutatorTwoFieldsBuilder() {" //
@@ -72,7 +67,7 @@ class MutatorExternalBuilderTest {
 
     @Test
     void mutatorForFieldWithCustomNameAnnotation() {
-        assertThat(generateFromResource("MutatorWithCustomName")).isEqualTo(//
+        assertThat(externalWithConstructors("MutatorWithCustomName")).isEqualTo(//
                 "public class MutatorWithCustomNameBuilder {" //
                         + "    private MutatorWithCustomName product;" //
                         + "    public MutatorWithCustomNameBuilder() {" //
@@ -90,7 +85,7 @@ class MutatorExternalBuilderTest {
 
     @Test
     void mutatorForFieldWithAnnotationWithoutCustomMethodName() {
-        assertThat(generateFromResource("FieldAnnoNoCustomName")).isEqualTo(//
+        assertThat(externalWithConstructors("FieldAnnoNoCustomName")).isEqualTo(//
                 "public class FieldAnnoNoCustomNameBuilder {" //
                         + "    private FieldAnnoNoCustomName product;" //
                         + "    public FieldAnnoNoCustomNameBuilder() {" //
@@ -108,7 +103,7 @@ class MutatorExternalBuilderTest {
 
     @Test
     void noMutatorForFieldWithIgnoreAnnotation() {
-        assertThat(generateFromResource("MutatorIgnore")).isEqualTo(//
+        assertThat(externalWithConstructors("MutatorIgnore")).isEqualTo(//
                 "public class MutatorIgnoreBuilder {" //
                         + "    private MutatorIgnore product;" //
                         + "    public MutatorIgnoreBuilder() {" //
@@ -122,7 +117,7 @@ class MutatorExternalBuilderTest {
 
     @Test
     void noMutatorForPrivateField() {
-        assertThat(generateFromResource("MutatorPrivateField")).isEqualTo( //
+        assertThat(externalWithConstructors("MutatorPrivateField")).isEqualTo( //
                 "public class MutatorPrivateFieldBuilder {" //
                         + "    private MutatorPrivateField product;" //
                         + "    public MutatorPrivateFieldBuilder() {" //
@@ -136,7 +131,7 @@ class MutatorExternalBuilderTest {
 
     @Test
     void adderForListField() {
-        assertThat(generateFromResource("WithList")).isEqualTo(//
+        assertThat(externalWithConstructors("WithList")).isEqualTo(//
                 "import java.util.List;" //
                         + "public class WithListBuilder {" //
                         + "    private WithList product;" //
@@ -159,7 +154,7 @@ class MutatorExternalBuilderTest {
 
     @Test
     void adderForSetField() {
-        assertThat(generateFromResource("WithSet")).isEqualTo(//
+        assertThat(externalWithConstructors("WithSet")).isEqualTo(//
                 "import java.util.Set;" //
                         + "public class WithSetBuilder {" //
                         + "    private WithSet product;" //
@@ -178,12 +173,6 @@ class MutatorExternalBuilderTest {
                         + "        return product;" //
                         + "    }" //
                         + "}");
-    }
-
-    private String generateFromResource(String className) {
-        return Util.uncheckExceptions(
-                () -> asString(Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
-                        new CompilationUnit()).builderUnit));
     }
 
 }

@@ -15,8 +15,6 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
-import static io.github.mletkin.numerobis.Util.uncheckExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -38,7 +36,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void usesTargetClass() {
-        assertThat(generateFromResource("TestClass", //
+        assertThat(Util.externalWithConstructors("TestClass", //
                 "public class TestClassBuilder {}") //
         ).isEqualTo(//
                 "public class TestClassBuilder {" //
@@ -58,7 +56,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void retainsProductField() {
-        assertThat(generateFromResource("TestClass", //
+        assertThat(Util.externalWithConstructors("TestClass", //
                 "public class TestClassBuilder {TestClass product = null;}") //
         ).isEqualTo(//
                 "public class TestClassBuilder {" //
@@ -79,7 +77,7 @@ class BuilderGeneratorMergeTest {
     @Test
     void productFieldWithWrongTypeThrowsException() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy(//
-                () -> generateFromResource("Empty", //
+                () -> Util.externalWithConstructors("Empty", //
                         "public class EmptyBuilder {" //
                                 + "    private String product;" //
                                 + "}")//
@@ -88,7 +86,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void retainsBuildMethod() {
-        assertThat(generateFromResource("TestClass", //
+        assertThat(Util.externalWithConstructors("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClass build() {" //
                         + "        return null;" //
@@ -112,7 +110,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void retainsDefaultConstructor() {
-        assertThat(generateFromResource("TestClass", //
+        assertThat(Util.externalWithConstructors("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder() {" //
                         + "        product = null;" //
@@ -136,7 +134,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void retainsMutator() {
-        assertThat(generateFromResource("TestClass", //
+        assertThat(Util.externalWithConstructors("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder withX(int x) {" //
                         + "        return null;" //
@@ -159,7 +157,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void retainsAdder() {
-        assertThat(generateFromResource("WithList", //
+        assertThat(Util.externalWithConstructors("WithList", //
                 "public class WithListBuilder {" //
                         + "    public WithListBuilder addX(String y) {" //
                         + "        return null;" //
@@ -187,7 +185,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void usesWithMethodWithDifferentParameterName() {
-        assertThat(generateFromResource("TestClass", //
+        assertThat(Util.externalWithConstructors("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder withX(int ypsilon) {" //
                         + "        return null;" //
@@ -212,7 +210,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void ignoresWithMethodWithDifferentReturnType() {
-        assertThat(generateFromResource("TestClass", //
+        assertThat(Util.externalWithConstructors("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public Object withX(int x) {" //
                         + "        return null;" //
@@ -239,7 +237,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void ignoresWithMethodWithDifferentParameterType() {
-        assertThat(generateFromResource("TestClass", //
+        assertThat(Util.externalWithConstructors("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder withX(String x) {" //
                         + "        return null;" //
@@ -266,7 +264,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void ignoresWithMethodWithAdditionalParameter() {
-        assertThat(generateFromResource("TestClass", //
+        assertThat(Util.externalWithConstructors("TestClass", //
                 "public class TestClassBuilder {" //
                         + "    public TestClassBuilder withX(int x, String z) {" //
                         + "        return null;" //
@@ -293,7 +291,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void existingImportIsNotDuplicated() {
-        assertThat(generateFromResource("TestClassWithImport", //
+        assertThat(Util.externalWithConstructors("TestClassWithImport", //
                 "import foo.bar.baz;" + //
                         "public class TestClassWithImportBuilder {" + //
                         "}") //
@@ -312,7 +310,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void builderRetainsPackage() {
-        assertThat(generateFromResource("TestClassWithPackage", //
+        assertThat(Util.externalWithConstructors("TestClassWithPackage", //
                 "package bim.bam.bum;")//
         ).isEqualTo(//
                 "package bim.bam.bum;" //
@@ -333,7 +331,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void ignoresExistingConstructor() {
-        assertThat(generateFromResource("TestClassWithConstructor", //
+        assertThat(Util.externalWithConstructors("TestClassWithConstructor", //
                 "public class TestClassWithConstructorBuilder {" //
                         + "    public TestClassWithConstructorBuilder(int n) {" //
                         + "    }" //
@@ -355,7 +353,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void generateDefaultConstructor() {
-        assertThat(generateFromResource("Empty", //
+        assertThat(Util.externalWithConstructors("Empty", //
                 "public class EmptyBuilder { }") //
         ).isEqualTo(//
                 "public class EmptyBuilder {" //
@@ -371,7 +369,7 @@ class BuilderGeneratorMergeTest {
 
     @Test
     void generateDefaultConstructorIgnoreExistingNonDefaultConstructor() {
-        assertThat(generateFromResource("Empty", //
+        assertThat(Util.externalWithConstructors("Empty", //
                 "public class EmptyBuilder {" //
                         + "    EmptyBuilder(int n) {" //
                         + "    }" //
@@ -390,28 +388,20 @@ class BuilderGeneratorMergeTest {
                         + "}");
     }
 
-    private String generateFromResource(String className, String builderClass) {
-        return uncheckExceptions(() -> {
-            CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
-            CompilationUnit target = StaticJavaParser.parse(builderClass);
-
-            return asString(Facade.withConstructors(source, className, target).builderUnit);
-        });
-    }
-
     /**
      * No real test, just for fooling around with features.
      */
     @Disabled
     @Test
     void test2() throws IOException {
-        System.out.println(Facade.withConstructors(StaticJavaParser.parseResource("TestClassWithConstructor.java"),
-                "TestClassWithConstructor", new CompilationUnit()).toString());
+        System.out.println(
+                new Facade(false).withConstructors(StaticJavaParser.parseResource("TestClassWithConstructor.java"),
+                        "TestClassWithConstructor", new CompilationUnit()).toString());
     }
 
     @Test
     void ignoresConstructorOfInnerClass() {
-        assertThat(generateFromResource("Empty", //
+        assertThat(Util.externalWithConstructors("Empty", //
                 "public class EmptyBuilder {" //
                         + "    public static class Foo {" //
                         + "        Foo() {" //

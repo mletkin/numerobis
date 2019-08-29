@@ -15,9 +15,7 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
-import static io.github.mletkin.numerobis.Util.extractBuilder;
-import static io.github.mletkin.numerobis.Util.uncheckExceptions;
+import static io.github.mletkin.numerobis.Util.internalWithConstructors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -37,7 +35,7 @@ class InternalBuilderGeneratorTest {
 
     @Test
     void convertsClassWithField() {
-        assertThat(generateFromResource("TestClass")).isEqualTo(//
+        assertThat(internalWithConstructors("TestClass")).isEqualTo(//
                 "public static class Builder {" //
                         + "    private TestClass product;" //
                         + "    public Builder() {" //
@@ -56,7 +54,7 @@ class InternalBuilderGeneratorTest {
     @Test
     void notContainedClassProducesNothing() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo",
+                () -> new Facade(false).withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo",
                         new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
@@ -64,7 +62,7 @@ class InternalBuilderGeneratorTest {
     @Test
     void nullClassProducesNothing() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "",
+                () -> new Facade(false).withConstructors(StaticJavaParser.parseResource("TestClass.java"), "",
                         new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
@@ -74,12 +72,6 @@ class InternalBuilderGeneratorTest {
     void classWithoutUsableConstructorThrowsException() {
         // The member class builder can use any constructor
         // Although using a private constructor is not encouraged
-    }
-
-    private String generateFromResource(String className) {
-        return uncheckExceptions(() -> asString(extractBuilder(
-                Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className).productUnit,
-                className)));
     }
 
 }

@@ -165,5 +165,4 @@ public final class ClassUtil {
     private static Predicate<Node> isMember(Node parent) {
         return node -> node.getParentNode().orElse(null) == parent;
     }
-
 }

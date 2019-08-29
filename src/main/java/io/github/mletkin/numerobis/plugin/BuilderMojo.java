@@ -69,6 +69,9 @@ public class BuilderMojo extends AbstractMojo {
     @Parameter(defaultValue = "EMBEDDED")
     private Location builderLocation;
 
+    @Parameter
+    private boolean productsAreMutable;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         logConfiguration();
@@ -81,6 +84,7 @@ public class BuilderMojo extends AbstractMojo {
         stream(compileSourceRoots).forEach(getLog()::info);
         getLog().info("builder creation: " + builderCreation);
         getLog().info("builder location: " + builderLocation);
+        getLog().info("products are " + (productsAreMutable ? "mutable" : "immutable") + " by default");
     }
 
     /**
@@ -97,7 +101,8 @@ public class BuilderMojo extends AbstractMojo {
                     .filter(f -> f.getName().endsWith(".java")) //
                     .forEach(new Processor(targetDirectory, //
                             builderCreation, //
-                            builderLocation //
+                            builderLocation,
+                            productsAreMutable//
                     )::process);
         } catch (IOException e) {
             e.printStackTrace();

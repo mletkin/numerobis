@@ -15,16 +15,10 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
-import static io.github.mletkin.numerobis.Util.extractBuilder;
-import static io.github.mletkin.numerobis.Util.uncheckExceptions;
+import static io.github.mletkin.numerobis.Util.internalWithFactories;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.StaticJavaParser;
-
-import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * Inner Builder generation with Factory Methods.
@@ -33,7 +27,7 @@ class InternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void productClassWithoutConstructor() {
-        assertThat(generateFromResource("Empty")).isEqualTo(//
+        assertThat(internalWithFactories("Empty")).isEqualTo(//
                 "public static class Builder {" //
                         + "    private Empty product;" //
                         + "    private Builder(Empty product) {" //
@@ -50,7 +44,7 @@ class InternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void productClassWithCustomConstructor() {
-        assertThat(generateFromResource("EmptyWithCustomConstructor")).isEqualTo( //
+        assertThat(internalWithFactories("EmptyWithCustomConstructor")).isEqualTo( //
                 "public static class Builder {" //
                         + "    private EmptyWithCustomConstructor product;" //
                         + "    private Builder(EmptyWithCustomConstructor product) {" //
@@ -67,7 +61,7 @@ class InternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void productClassWithDefaultConstructor() {
-        assertThat(generateFromResource("EmptyWithDefaultConstructor")).isEqualTo( //
+        assertThat(internalWithFactories("EmptyWithDefaultConstructor")).isEqualTo( //
                 "public static class Builder {" //
                         + "    private EmptyWithDefaultConstructor product;" //
                         + "    private Builder(EmptyWithDefaultConstructor product) {" //
@@ -84,7 +78,7 @@ class InternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void constructorWithAnnotationIsIgnored() {
-        assertThat(generateFromResource("EmptyWithIgnoredConstructor")).isEqualTo( //
+        assertThat(internalWithFactories("EmptyWithIgnoredConstructor")).isEqualTo( //
                 "public static class Builder {" //
                         + "    private EmptyWithIgnoredConstructor product;" //
                         + "    private Builder(EmptyWithIgnoredConstructor product) {" //
@@ -101,7 +95,7 @@ class InternalBuilderGeneratorWithFactoryMethodsTest {
 
     @Test
     void privateConstructorIsProcessed() {
-        assertThat(generateFromResource("EmptyWithPrivateAndPublicConstructor")).isEqualTo( //
+        assertThat(internalWithFactories("EmptyWithPrivateAndPublicConstructor")).isEqualTo( //
                 "public static class Builder {" //
                         + "    private EmptyWithPrivateAndPublicConstructor product;" //
                         + "    private Builder(EmptyWithPrivateAndPublicConstructor product) {" //
@@ -117,79 +111,6 @@ class InternalBuilderGeneratorWithFactoryMethodsTest {
                         + "        return product;" //
                         + "    }" //
                         + "}");
-    }
-
-    /*
-     * @Test void retainsDefaultConstructor() {
-     * assertThat(generateFromResource("Empty", //
-     * "public static class EmptyBuilder {" // + "    protected EmptyBuilder() {" //
-     * + "        product = null;" // + "    }" // + "}") // ).isEqualTo(//
-     * "public static class EmptyBuilder {" // + "    protected EmptyBuilder() {" //
-     * + "        product = null;" // + "    }" // + "    private Empty product;" //
-     * + "    private EmptyBuilder(Empty product) {" // +
-     * "        this.product = product;" // + "    }" // +
-     * "    public static EmptyBuilder of() {" // +
-     * "        return new EmptyBuilder(new Empty());" // + "    }" // +
-     * "    public Empty build() {" // + "        return product;" // + "    }" // +
-     * "}"); }
-     *
-     * @Test void retainsProductConstructor() {
-     * assertThat(generateFromResource("Empty", //
-     * "public static class EmptyBuilder {" // +
-     * "    private EmptyBuilder(Empty p) {" // + "        this.product = p;" // +
-     * "    }" // + "}") // ).isEqualTo(// "public static class EmptyBuilder {" // +
-     * "    private EmptyBuilder(Empty p) {" // + "        this.product = p;" // +
-     * "    }" // + "    private Empty product;" // +
-     * "    public static EmptyBuilder of() {" // +
-     * "        return new EmptyBuilder(new Empty());" // + "    }" // +
-     * "    public Empty build() {" // + "        return product;" // + "    }" // +
-     * "}"); }
-     *
-     * @Test void retainsDefaultFactoryMethod() {
-     * assertThat(generateFromResource("Empty", //
-     * "public static class EmptyBuilder {" // +
-     * "    public static EmptyBuilder of() {" // + "        return null;" // +
-     * "    }" // + "}") // ).isEqualTo(// "public static class EmptyBuilder {" // +
-     * "    public static EmptyBuilder of() {" // + "        return null;" // +
-     * "    }" // + "    private Empty product;" // +
-     * "    private EmptyBuilder(Empty product) {" // +
-     * "        this.product = product;" // + "    }" // +
-     * "    public Empty build() {" // + "        return product;" // + "    }" // +
-     * "}"); }
-     *
-     * @Test void retainCustomFactoryMethod() {
-     * assertThat(generateFromResource("Empty", //
-     * "public static class EmptyBuilder {" // +
-     * "    public static EmptyBuilder of(String foo) {" // + "        return null;"
-     * // + "    }" // + "}") // ).isEqualTo(// "public static class EmptyBuilder {"
-     * // + "    public static EmptyBuilder of(String foo) {" // +
-     * "        return null;" // + "    }" // + "    private Empty product;" // +
-     * "    private EmptyBuilder(Empty product) {" // +
-     * "        this.product = product;" // + "    }" // +
-     * "    public static EmptyBuilder of() {" // +
-     * "        return new EmptyBuilder(new Empty());" // + "    }" // +
-     * "    public Empty build() {" // + "        return product;" // + "    }" // +
-     * "}"); }
-     *
-     * @Test void retainFactoryMethodForNonDefaultConstructor() {
-     * assertThat(generateFromResource("EmptyWithCustomConstructor", //
-     * "public static class EmptyWithCustomConstructorBuilder {" // +
-     * "    public static EmptyWithCustomConstructorBuilder of(int m) {" // +
-     * "        return null;" // + "    }" // + "}") // ).isEqualTo(//
-     * "public static class EmptyWithCustomConstructorBuilder {" // +
-     * "    public static EmptyWithCustomConstructorBuilder of(int m) {" // +
-     * "        return null;" // + "    }" // +
-     * "    private EmptyWithCustomConstructor product;" // +
-     * "    private EmptyWithCustomConstructorBuilder(EmptyWithCustomConstructor product) {"
-     * // + "        this.product = product;" // + "    }" // +
-     * "    public EmptyWithCustomConstructor build() {" // +
-     * "        return product;" // + "    }" // + "}"); }
-     */
-
-    private String generateFromResource(String className) {
-        return uncheckExceptions(() -> asString(extractBuilder(
-                Facade.withFactoryMethods(StaticJavaParser.parseResource(className + ".java"), className).productUnit,
-                className)));
     }
 
 }

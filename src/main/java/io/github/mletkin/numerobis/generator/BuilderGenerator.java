@@ -48,6 +48,8 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.Ignore;
+import io.github.mletkin.numerobis.annotation.Immutable;
+import io.github.mletkin.numerobis.annotation.Mutable;
 
 /**
  * Generates builder classes product classes in a seperate compilation unit.
@@ -64,6 +66,7 @@ public class BuilderGenerator {
     final static String ADDER_PREFIX = "add";
 
     private boolean separateClass = true;
+    private boolean mutableByDefault = false;
 
     private CompilationUnit productUnit;
     private CompilationUnit builderUnit;
@@ -123,6 +126,11 @@ public class BuilderGenerator {
         createPackageDeclaration();
         copyImports();
         createExternalBuilderClass();
+    }
+
+    BuilderGenerator mutableByDefault(boolean mutableByDefault) {
+        this.mutableByDefault = mutableByDefault;
+        return this;
     }
 
     private void createPackageDeclaration() {
@@ -200,7 +208,31 @@ public class BuilderGenerator {
         allMember(productclass, ConstructorDeclaration.class) //
                 .filter(this::process) //
                 .forEach(this::addMatchingConstructor);
+        addManipulationConstructorIfNeeded();
         return this;
+    }
+
+    private void addManipulationConstructorIfNeeded() {
+        if (mutable(productclass) && !hasManipulationConstructor()) {
+            addManipulationConstructor();
+        }
+    }
+
+    private boolean hasManipulationConstructor() {
+        return exists(//
+                allMember(builderclass, ConstructorDeclaration.class) //
+                        .filter(hasSingleParameterOfType(productClassType())));
+    }
+
+    private Predicate<ConstructorDeclaration> hasSingleParameterOfType(Type type) {
+        return md -> md.getParameters().size() == 1 && md.getParameter(0).getType().equals(type);
+    }
+
+    private void addManipulationConstructor() {
+        builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
+                .addParameter(productClassType(), FIELD) //
+                .createBody() //
+                .addStatement(assignExpr(fieldAccess(thisExpr(), FIELD), nameExpr(FIELD)));
     }
 
     private boolean process(ConstructorDeclaration cd) {
@@ -247,11 +279,25 @@ public class BuilderGenerator {
         if (!hasExplicitConstructor(productclass) && !hasDefaultFactoryMethod()) {
             addDefaultFactoryMethod();
         }
+        if (mutable(productclass)) {
+            addManipulationFactoryMethod();
+        }
         allMember(productclass, ConstructorDeclaration.class) //
                 .filter(this::process) //
                 .filter(not(this::hasMatchingFactoryMethod)) //
                 .forEach(this::addFactoryMethod);
+
         return this;
+    }
+
+    private void addManipulationFactoryMethod() {
+        MethodDeclaration factoryMethod = //
+                builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+        factoryMethod.setType(builderClassName());
+        factoryMethod.addParameter(productClassName(), FIELD);
+        factoryMethod.createBody() //
+                .addStatement(returnStmt(newExpr(builderClassType(), nameExpr(FIELD))));
+
     }
 
     /**
@@ -451,6 +497,18 @@ public class BuilderGenerator {
                 allMember(type, ConstructorDeclaration.class).collect(Collectors.toList());
 
         return constructorList.isEmpty() || constructorList.stream().anyMatch(this::process);
+    }
+
+    /**
+     * Checks if the (product) class should be considered mutable.
+     *
+     * @param decl
+     *            class to check
+     * @return {@code true} if the class should be mutable
+     */
+    boolean mutable(ClassOrInterfaceDeclaration decl) {
+        return (!mutableByDefault && decl.isAnnotationPresent(Mutable.class))
+                || (mutableByDefault && !decl.isAnnotationPresent(Immutable.class));
     }
 
 }

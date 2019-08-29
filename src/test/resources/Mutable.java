@@ -1,0 +1,4 @@
+@Mutable
+class Mutable {
+
+}

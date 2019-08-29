@@ -15,8 +15,7 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
-import static io.github.mletkin.numerobis.Util.uncheckExceptions;
+import static io.github.mletkin.numerobis.Util.externalWithConstructors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -37,7 +36,7 @@ class ExternalBuilderGeneratorTest {
 
     @Test
     void builderIsInSamePackage() {
-        assertThat(generateFromResource("TestClassWithPackage")).isEqualTo(//
+        assertThat(externalWithConstructors("TestClassWithPackage")).isEqualTo(//
                 "package foo.bar.baz;" //
                         + "public class TestClassWithPackageBuilder {" //
                         + "    private TestClassWithPackage product;" //
@@ -56,7 +55,7 @@ class ExternalBuilderGeneratorTest {
 
     @Test
     void copiesImport() {
-        assertThat(generateFromResource("TestClassWithImport")).isEqualTo(//
+        assertThat(externalWithConstructors("TestClassWithImport")).isEqualTo(//
                 "import foo.bar.baz;" + //
                         "public class TestClassWithImportBuilder {" //
                         + "    private TestClassWithImport product;" //
@@ -71,7 +70,7 @@ class ExternalBuilderGeneratorTest {
 
     @Test
     void ignoresBuilderImport() {
-        assertThat(generateFromResource("TestClassWithBuilderImport")).isEqualTo(//
+        assertThat(externalWithConstructors("TestClassWithBuilderImport")).isEqualTo(//
                 "public class TestClassWithBuilderImportBuilder {" //
                         + "    private TestClassWithBuilderImport product;" //
                         + "    public TestClassWithBuilderImportBuilder() {" //
@@ -86,7 +85,7 @@ class ExternalBuilderGeneratorTest {
     @Test
     void notContainedClassProducesNothing() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo",
+                () -> new Facade(false).withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo",
                         new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
@@ -94,7 +93,7 @@ class ExternalBuilderGeneratorTest {
     @Test
     void nullClassProducesNothing() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> Facade.withConstructors(StaticJavaParser.parseResource("TestClass.java"), "",
+                () -> new Facade(false).withConstructors(StaticJavaParser.parseResource("TestClass.java"), "",
                         new CompilationUnit()))
                 .withMessage("Product class not found in compilation unit.");
     }
@@ -102,14 +101,8 @@ class ExternalBuilderGeneratorTest {
     @Test
     void classWithoutUsableConstructorThrowsException() {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> generateFromResource("TestClassWithoutConstructor"))
+                () -> externalWithConstructors("TestClassWithoutConstructor"))
                 .withMessage("No suitable constructor found.");
-    }
-
-    private String generateFromResource(String className) {
-        return uncheckExceptions(
-                () -> asString(Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
-                        new CompilationUnit()).builderUnit));
     }
 
 }

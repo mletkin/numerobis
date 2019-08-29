@@ -24,10 +24,12 @@ import io.github.mletkin.numerobis.annotation.WithBuilder;
 /**
  * Configuration for the generation of different builder classes.
  */
-public final class Facade {
+public class Facade {
 
-    private Facade() {
-        // prevent instantiation
+    private boolean productsAreMutable;
+
+    public Facade(boolean productsAreMutable) {
+        this.productsAreMutable = productsAreMutable;
     }
 
     public static class Result {
@@ -58,11 +60,11 @@ public final class Facade {
      *            compilation unit for/with the builder class
      * @return result object with generated source
      */
-    public static Result withConstructors(CompilationUnit productUnit, String productClassName,
-            CompilationUnit builderUnit) {
+    public Result withConstructors(CompilationUnit productUnit, String productClassName, CompilationUnit builderUnit) {
 
         return Result.builder(//
                 new BuilderGenerator(productUnit, productClassName, builderUnit) //
+                        .mutableByDefault(productsAreMutable) //
                         .addProductField() //
                         .addConstructors() //
                         .addMutator() //
@@ -83,11 +85,12 @@ public final class Facade {
      *            compilation unit for/with the builder class
      * @return result object with generated source
      */
-    public static Result withFactoryMethods(CompilationUnit productUnit, String productClassName,
+    public Result withFactoryMethods(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
 
         return Result.builder(//
                 new BuilderGenerator(productUnit, productClassName, builderUnit) //
+                        .mutableByDefault(productsAreMutable) //
                         .addProductField() //
                         .addFactoryMethods() //
                         .addMutator() //
@@ -106,9 +109,10 @@ public final class Facade {
      *            name of the product class
      * @return result object with generated source
      */
-    public static Result withConstructors(CompilationUnit productUnit, String productClassName) {
+    public Result withConstructors(CompilationUnit productUnit, String productClassName) {
         return Result.product(//
                 new BuilderGenerator(productUnit, productClassName) //
+                        .mutableByDefault(productsAreMutable) //
                         .addProductField() //
                         .addConstructors() //
                         .addMutator() //
@@ -128,9 +132,10 @@ public final class Facade {
      *            name of the product class
      * @return result object with generated source
      */
-    public static Result withFactoryMethods(CompilationUnit productUnit, String productClassName) {
+    public Result withFactoryMethods(CompilationUnit productUnit, String productClassName) {
         return Result.product(//
                 new BuilderGenerator(productUnit, productClassName) //
+                        .mutableByDefault(productsAreMutable) //
                         .addProductField() //
                         .addFactoryMethods() //
                         .addMutator() //

@@ -42,6 +42,8 @@ public class Processor {
     private String destinationPath;
     private boolean useFactoryMethods;
     private boolean embeddedBuilder;
+    private Facade facade;
+
 
     /**
      * Creates a processor for the given configuration.
@@ -52,11 +54,15 @@ public class Processor {
      *            generate factory methods or constructors
      * @param location
      *            use an embedded or a separate builder class
+     * @param productsAreMutable
+     *            consider products objects as mutable by default
      */
-    public Processor(String destinationPath, BuilderMojo.Creation creation, BuilderMojo.Location location) {
+    public Processor(String destinationPath, BuilderMojo.Creation creation, BuilderMojo.Location location,
+            boolean productsAreMutable) {
         this.destinationPath = destinationPath == null ? "" : destinationPath.trim();
         this.useFactoryMethods = creation.flag();
         this.embeddedBuilder = location.flag();
+        facade = new Facade(productsAreMutable);
     }
 
     /**
@@ -84,7 +90,7 @@ public class Processor {
                 .map(generator(dest)) //
                 .orElseThrow(GeneratorException::productClassNotFound);
         if (Facade.areAccessorsWanted(dest.product)) {
-            dest.product.getPrimaryTypeName().ifPresent(type -> Facade.withAccessMethods(result.productUnit, type));
+            dest.product.getPrimaryTypeName().ifPresent(type -> facade.withAccessMethods(result.productUnit, type));
         }
         return result;
     }
@@ -92,12 +98,12 @@ public class Processor {
     private Function<String, Result> generator(Destination dest) {
         if (embeddedBuilder) {
             return useFactoryMethods //
-                    ? type -> Facade.withFactoryMethods(dest.product, type)
-                    : type -> Facade.withConstructors(dest.product, type);
+                    ? type -> facade.withFactoryMethods(dest.product, type)
+                    : type -> facade.withConstructors(dest.product, type);
         }
         return useFactoryMethods //
-                ? type -> Facade.withFactoryMethods(dest.product, type, dest.builder)
-                : type -> Facade.withConstructors(dest.product, type, dest.builder);
+                ? type -> facade.withFactoryMethods(dest.product, type, dest.builder)
+                : type -> facade.withConstructors(dest.product, type, dest.builder);
     }
 
     private Result sort(Result result) {

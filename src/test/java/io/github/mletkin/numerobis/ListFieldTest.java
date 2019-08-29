@@ -15,16 +15,10 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
-import static io.github.mletkin.numerobis.Util.uncheckExceptions;
+import static io.github.mletkin.numerobis.Util.externalWithConstructors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-
-import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * List field.
@@ -33,12 +27,11 @@ class ListFieldTest {
 
     @Test
     void retainsAddMethod() {
-        assertThat(generateFromResource("WithList", //
-                "public class WithListBuilder {" //
-                        + "    public WithListBuilder addX(String foo) {" //
-                        + "        return null;" //
-                        + "    }" //
-                        + "}") //
+        assertThat(externalWithConstructors("WithList", "public class WithListBuilder {" //
+        + "    public WithListBuilder addX(String foo) {" //
+        + "        return null;" //
+        + "    }" //
+        + "}") //
         ).isEqualTo(//
                 "import java.util.List;" //
                         + "public class WithListBuilder {" // 1
@@ -57,15 +50,6 @@ class ListFieldTest {
                         + "        return product;" //
                         + "    }" //
                         + "}");
-    }
-
-    private String generateFromResource(String className, String builderClass) {
-        return uncheckExceptions(() -> {
-            CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
-            CompilationUnit target = StaticJavaParser.parse(builderClass);
-
-            return asString(Facade.withConstructors(source, className, target).builderUnit);
-        });
     }
 
 }

@@ -15,16 +15,10 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
-import static io.github.mletkin.numerobis.Util.uncheckExceptions;
+import static io.github.mletkin.numerobis.Util.externalWithConstructors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-
-import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * Builder generation with constructors without existing builder class.
@@ -33,7 +27,7 @@ class ExternalBuilderGeneratorWithConstructorsTest {
 
     @Test
     void productClassWithoutConstructor() {
-        assertThat(generateFromResource("Empty")).isEqualTo(//
+        assertThat(externalWithConstructors("Empty")).isEqualTo(//
                 "public class EmptyBuilder {" //
                         + "    private Empty product;" //
                         + "    public EmptyBuilder() {" //
@@ -47,7 +41,7 @@ class ExternalBuilderGeneratorWithConstructorsTest {
 
     @Test
     void productClassWithCustomConstructor() {
-        assertThat(generateFromResource("EmptyWithCustomConstructor")).isEqualTo( //
+        assertThat(externalWithConstructors("EmptyWithCustomConstructor")).isEqualTo( //
                 "public class EmptyWithCustomConstructorBuilder {" //
                         + "    private EmptyWithCustomConstructor product;" //
                         + "    public EmptyWithCustomConstructorBuilder(int n) {" //
@@ -61,7 +55,7 @@ class ExternalBuilderGeneratorWithConstructorsTest {
 
     @Test
     void productClassWithDefaultConstructor() {
-        assertThat(generateFromResource("EmptyWithDefaultConstructor")).isEqualTo( //
+        assertThat(externalWithConstructors("EmptyWithDefaultConstructor")).isEqualTo( //
                 "public class EmptyWithDefaultConstructorBuilder {" //
                         + "    private EmptyWithDefaultConstructor product;" //
                         + "    public EmptyWithDefaultConstructorBuilder() {" //
@@ -75,7 +69,7 @@ class ExternalBuilderGeneratorWithConstructorsTest {
 
     @Test
     void constructorWithAnnotationIsIgnored() {
-        assertThat(generateFromResource("EmptyWithIgnoredConstructor")).isEqualTo( //
+        assertThat(externalWithConstructors("EmptyWithIgnoredConstructor")).isEqualTo( //
                 "public class EmptyWithIgnoredConstructorBuilder {" //
                         + "    private EmptyWithIgnoredConstructor product;" //
                         + "    public EmptyWithIgnoredConstructorBuilder(int n) {" //
@@ -89,7 +83,7 @@ class ExternalBuilderGeneratorWithConstructorsTest {
 
     @Test
     void privateConstructorIsIgnored() {
-        assertThat(generateFromResource("EmptyWithPrivateAndPublicConstructor")).isEqualTo( //
+        assertThat(externalWithConstructors("EmptyWithPrivateAndPublicConstructor")).isEqualTo( //
                 "public class EmptyWithPrivateAndPublicConstructorBuilder {" //
                         + "    private EmptyWithPrivateAndPublicConstructor product;" //
                         + "    public EmptyWithPrivateAndPublicConstructorBuilder(int n) {" //
@@ -99,12 +93,6 @@ class ExternalBuilderGeneratorWithConstructorsTest {
                         + "        return product;" //
                         + "    }" //
                         + "}");
-    }
-
-    private String generateFromResource(String className) {
-        return uncheckExceptions(
-                () -> asString(Facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
-                        new CompilationUnit()).builderUnit));
     }
 
 }
