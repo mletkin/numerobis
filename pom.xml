@@ -7,7 +7,7 @@
 
     <name>Builder Generating Maven Plugin</name>
     <description>Maven plugin that generates builder classes for existing classes</description>
-    <url>https://github.com/mletkin</url>
+    <url>https://mletkin.github.io/numerobis</url>
 
     <licenses>
         <license>
