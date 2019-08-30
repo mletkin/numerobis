@@ -91,12 +91,14 @@ The default value is **false**. The product objetcs are considered immutable and
 Most of the behavior of the builder generator is controlled through annotations.
 The generator will stick to th annotation concept. The names might change and options may be set via annotation parameters. 
 All annotations are located in the package ```io.github.mletkin.numerobis.annotation```
-### WithBuilder
+### GenerateBuilder
 Used on product classes.
 This is the most important annotation. Only classes annotated with ```@WithBuilder``` will be processed.
-### AccessMethods
+### GenerateAccessors
 Used on product classes.
 For every field in the product class an accessor will be generated. Accessors have the same name as the field.
+### GenerateMutator
+Mutator generation is the default. This annotation is a means to specify a custom name for the mutator.
 ### Ignore
 Used on product fields.
 Field annotated with ```@Ignore``` are ignored by the generator, no mutators are generated.
