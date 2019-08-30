@@ -133,48 +133,4 @@ class MutatorInternalBuilderTest {
                         + "}");
     }
 
-    @Test
-    void adderForListField() {
-        assertThat(internalWithConstructors("WithList")).isEqualTo(//
-                "public static class Builder {" //
-                        + "    private WithList product;" //
-                        + "    public Builder() {" //
-                        + "        product = new WithList();" //
-                        + "    }" //
-                        + "    public Builder withX(List<String> x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public Builder addX(String item) {" //
-                        + "        product.x.add(item);" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public WithList build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void adderForSetField() {
-        assertThat(internalWithConstructors("WithSet")).isEqualTo(//
-                "public static class Builder {" //
-                        + "    private WithSet product;" //
-                        + "    public Builder() {" //
-                        + "        product = new WithSet();" //
-                        + "    }" //
-                        + "    public Builder withX(Set<String> x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public Builder addX(String item) {" //
-                        + "        product.x.add(item);" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public WithSet build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
-
 }

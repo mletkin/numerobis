@@ -101,4 +101,14 @@ public final class Util {
         }
     }
 
+    /**
+     * convert the first letter to uppercase.
+     *
+     * @param word
+     *            string to process
+     * @return processed string
+     */
+    public static String firstLetterUppercase(String word) {
+        return Character.toUpperCase(word.charAt(0)) + word.substring(1);
+    }
 }

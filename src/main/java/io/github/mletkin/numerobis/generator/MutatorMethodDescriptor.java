@@ -28,6 +28,7 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.GenerateMutator;
+import io.github.mletkin.numerobis.common.Util;
 
 /**
  * Descriptor for the generation of a mutator for a field.
@@ -70,12 +71,11 @@ class MutatorMethodDescriptor {
         }
 
         private String methodName(VariableDeclarator vd) {
-            return customName().orElseGet(() -> makeWithName(vd));
+            return customName().orElseGet(() -> standardMutatorName(vd));
         }
 
-        private String makeWithName(VariableDeclarator vd) {
-            String name = vd.getNameAsString();
-            return BuilderGenerator.MUTATOR_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        private String standardMutatorName(VariableDeclarator vd) {
+            return BuilderGenerator.MUTATOR_PREFIX + Util.firstLetterUppercase(vd.getNameAsString());
         }
 
         private Optional<String> customName() {

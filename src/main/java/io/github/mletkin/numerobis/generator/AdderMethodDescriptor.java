@@ -27,6 +27,8 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.Type;
 
+import io.github.mletkin.numerobis.common.Util;
+
 /**
  * Descriptor for the generation of an adder for a collection field.
  */
@@ -70,12 +72,12 @@ class AdderMethodDescriptor {
         }
 
         private String methodName(VariableDeclarator vd) {
-            return customName().orElseGet(() -> makeAdderName(vd));
+            return customName().orElseGet(() -> standardAdderName(vd));
         }
 
-        private String makeAdderName(VariableDeclarator vd) {
-            String name = vd.getNameAsString();
-            return BuilderGenerator.ADDER_PREFIX + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        private String standardAdderName(VariableDeclarator vd) {
+            return BuilderGenerator.ADDER_PREFIX + //
+                    stripPostfix(Util.firstLetterUppercase(vd.getNameAsString()),  "en", "e", "s");
         }
 
         private Optional<String> customName() {
@@ -88,6 +90,15 @@ class AdderMethodDescriptor {
                     .map(Expression::asStringLiteralExpr) //
                     .map(StringLiteralExpr::getValue) //
                     .orElse(null);
+        }
+
+        private String stripPostfix(String name, String... postfixes) {
+            for (String postfix : postfixes) {
+                if (name.endsWith(postfix)) {
+                    return name.substring(0, name.length() - postfix.length());
+                }
+            }
+            return name;
         }
     }
 }
