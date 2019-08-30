@@ -32,6 +32,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.Ignore;
+import io.github.mletkin.numerobis.common.Util;
 
 /**
  * Generates access methods for a product class.
@@ -57,18 +58,13 @@ public class AccessorGenerator {
         allMember(clazz, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> new AccessorMethodDescriptor.Generator(fd, unit).stream()) //
-                .forEach(this::addAccessorMethod);
+                .filter(Util.not(this::hasAccessorMethod)) //
+                .forEach(this::addAccessor);
         return this;
     }
 
     private boolean process(FieldDeclaration fd) {
         return (!fd.isAnnotationPresent(Ignore.class));
-    }
-
-    private void addAccessorMethod(AccessorMethodDescriptor amd) {
-        if (!hasAccessorMethod(amd)) {
-            addAccessor(amd);
-        }
     }
 
     private void addAccessor(AccessorMethodDescriptor amd) {
