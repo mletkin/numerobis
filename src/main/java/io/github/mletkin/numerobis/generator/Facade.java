@@ -18,8 +18,8 @@ package io.github.mletkin.numerobis.generator;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
-import io.github.mletkin.numerobis.annotation.AccessMethods;
-import io.github.mletkin.numerobis.annotation.WithBuilder;
+import io.github.mletkin.numerobis.annotation.GenerateAccessors;
+import io.github.mletkin.numerobis.annotation.GenerateBuilder;
 
 /**
  * Configuration for the generation of different builder classes.
@@ -145,9 +145,18 @@ public class Facade {
         );
     }
 
-    public static CompilationUnit withAccessMethods(CompilationUnit productUnit, String className) {
+    /**
+     * generate accessors for the field in a class.
+     *
+     * @param productUnit
+     *            compilation unit with product class
+     * @param className
+     *            name of the product class
+     * @return compilation unit with the processed product class
+     */
+    public CompilationUnit withAccessors(CompilationUnit productUnit, String className) {
         return new AccessorGenerator(productUnit, className) //
-                .addAccessMethods() //
+                .addAccessors() //
                 .resultUnit();
     }
 
@@ -160,12 +169,12 @@ public class Facade {
      */
     public static boolean isBuilderWanted(CompilationUnit sourceClass) {
         return sourceClass.findAll(ClassOrInterfaceDeclaration.class).stream()
-                .anyMatch(c -> c.isAnnotationPresent(WithBuilder.class));
+                .anyMatch(c -> c.isAnnotationPresent(GenerateBuilder.class));
     }
 
     public static boolean areAccessorsWanted(CompilationUnit sourceClass) {
         return sourceClass.findAll(ClassOrInterfaceDeclaration.class).stream()
-                .anyMatch(c -> c.isAnnotationPresent(AccessMethods.class));
+                .anyMatch(c -> c.isAnnotationPresent(GenerateAccessors.class));
     }
 
 }

@@ -26,6 +26,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(TYPE)
-public @interface AccessMethods {
+public @interface GenerateAccessors {
 
 }

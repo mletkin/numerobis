@@ -15,19 +15,17 @@
  */
 package io.github.mletkin.numerobis.annotation;
 
-import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.TYPE;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that a {@code .with}-Method shall be generated for a field.
- * <p>
- * May be used to define a custom name for the {@code with} method.
+ * Indicates that a Builder Class should be generated.
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target(FIELD)
-public @interface WithMethod {
-    String name() default "";
+@Target(TYPE)
+public @interface GenerateBuilder {
+    // marker annotation
 }

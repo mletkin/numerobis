@@ -49,11 +49,11 @@ public class AccessorGenerator {
     }
 
     /**
-     * Adds an aaccess method feald in the class.
+     * Add an accessor for every variable in every field declaration.
      *
      * @return the generator instance
      */
-    AccessorGenerator addAccessMethods() {
+    AccessorGenerator addAccessors() {
         allMember(clazz, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> new AccessorMethodDescriptor.Generator(fd, unit).stream()) //

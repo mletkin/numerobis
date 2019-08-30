@@ -90,7 +90,7 @@ public class Processor {
                 .map(generator(dest)) //
                 .orElseThrow(GeneratorException::productClassNotFound);
         if (Facade.areAccessorsWanted(dest.product)) {
-            dest.product.getPrimaryTypeName().ifPresent(type -> facade.withAccessMethods(result.productUnit, type));
+            dest.product.getPrimaryTypeName().ifPresent(type -> facade.withAccessors(result.productUnit, type));
         }
         return result;
     }

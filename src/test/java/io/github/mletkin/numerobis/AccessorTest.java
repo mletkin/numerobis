@@ -15,25 +15,20 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
-import static io.github.mletkin.numerobis.Util.uncheckExceptions;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.StaticJavaParser;
-
-import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * Accessor generation in the product class.
  */
 class AccessorTest {
 
+    private TestFacade testFacade = new TestFacade(false);
+
     @Test
     void accessMethodGenerated() {
-        Assertions.assertThat(generateFromResource("Access")).isEqualTo(//
-                "@AccessMethods" //
+        Assertions.assertThat(testFacade.generateAccessors("Access")).isEqualTo(//
+                "@GenerateAccessors" //
                         + "public class Access {" //
                         + "    int foo;" //
                         + "    public int foo() {" //
@@ -44,7 +39,7 @@ class AccessorTest {
 
     @Test
     void accessMethodForListGeneratesStream() {
-        Assertions.assertThat(generateFromResource("WithList")).isEqualTo(//
+        Assertions.assertThat(testFacade.generateAccessors("WithList")).isEqualTo(//
                 "import java.util.List;" //
                         + "import java.util.stream.Stream;" //
                         + "public class WithList {" //
@@ -53,11 +48,6 @@ class AccessorTest {
                         + "        return x.stream();" //
                         + "    }" //
                         + "}");
-    }
-
-    private String generateFromResource(String className) {
-        return uncheckExceptions(() -> asString(
-                Facade.withAccessMethods(StaticJavaParser.parseResource(className + ".java"), className)));
     }
 
 }

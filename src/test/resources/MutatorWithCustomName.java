@@ -2,7 +2,7 @@ import io.github.mletkin.numerobis.WithMethod;
 
 public class MutatorWithCustomName {
     
-    @WithMethod(name = "fillX")
+    @GenerateMutator(name = "fillX")
     int x;
 
 }

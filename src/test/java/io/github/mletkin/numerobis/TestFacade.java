@@ -31,17 +31,17 @@ public class TestFacade {
 
     private Facade facade;
 
-    TestFacade(boolean mutableByDefault) {
+    public TestFacade(boolean mutableByDefault) {
         facade = new Facade(mutableByDefault);
     }
 
-    String externalWithConstructors(String className) {
+    public String externalWithConstructors(String className) {
         return uncheckExceptions(() -> //
         asString(facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,
                 new CompilationUnit()).builderUnit));
     }
 
-    String externalWithConstructors(String className, String builderClass) {
+    public String externalWithConstructors(String className, String builderClass) {
         return uncheckExceptions(() -> {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
@@ -50,20 +50,20 @@ public class TestFacade {
         });
     }
 
-    String internalWithConstructors(String className) {
+    public String internalWithConstructors(String className) {
         return uncheckExceptions(() -> asString(extractBuilder(//
                 facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className) //
                         .productUnit,
                 className)));
     }
 
-    String externalWithFactories(String className) {
+    public String externalWithFactories(String className) {
         return uncheckExceptions(
                 () -> asString(facade.withFactoryMethods(StaticJavaParser.parseResource(className + ".java"), className,
                         new CompilationUnit()).builderUnit));
     }
 
-    String externalWithFactories(String className, String builderClass) {
+    public String externalWithFactories(String className, String builderClass) {
         return uncheckExceptions(() -> {
             CompilationUnit source = StaticJavaParser.parseResource(className + ".java");
             CompilationUnit target = StaticJavaParser.parse(builderClass);
@@ -72,10 +72,15 @@ public class TestFacade {
         });
     }
 
-    String internalWithFactories(String className) {
+    public String internalWithFactories(String className) {
         return uncheckExceptions(() -> asString(extractBuilder(
                 facade.withFactoryMethods(StaticJavaParser.parseResource(className + ".java"), className).productUnit,
                 className)));
+    }
+
+    public String generateAccessors(String className) {
+        return uncheckExceptions(() -> asString(
+                facade.withAccessors(StaticJavaParser.parseResource(className + ".java"), className)));
     }
 
 }

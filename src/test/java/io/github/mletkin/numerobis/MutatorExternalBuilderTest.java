@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * Mutator generation for generated internal builder.
+ * Mutator generation for generated external builder.
  */
 class MutatorExternalBuilderTest {
 

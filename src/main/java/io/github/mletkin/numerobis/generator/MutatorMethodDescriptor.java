@@ -27,7 +27,7 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.Type;
 
-import io.github.mletkin.numerobis.annotation.WithMethod;
+import io.github.mletkin.numerobis.annotation.GenerateMutator;
 
 /**
  * Descriptor for the generation of a mutator for a field.
@@ -79,7 +79,7 @@ class MutatorMethodDescriptor {
         }
 
         private Optional<String> customName() {
-            return field.getAnnotationByClass(WithMethod.class) //
+            return field.getAnnotationByClass(GenerateMutator.class) //
                     .flatMap(AnnotationExpr::toNormalAnnotationExpr) //
                     .map(a -> value(a, "name"));
         }
