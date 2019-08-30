@@ -33,7 +33,6 @@ import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -45,7 +44,6 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.Ignore;
 import io.github.mletkin.numerobis.annotation.Immutable;
@@ -221,11 +219,7 @@ public class BuilderGenerator {
     private boolean hasManipulationConstructor() {
         return exists(//
                 allMember(builderclass, ConstructorDeclaration.class) //
-                        .filter(hasSingleParameterOfType(productClassType())));
-    }
-
-    private Predicate<ConstructorDeclaration> hasSingleParameterOfType(Type type) {
-        return md -> md.getParameters().size() == 1 && md.getParameter(0).getType().equals(type);
+                        .filter(ClassUtil.hasSingleParameter(productClassType())));
     }
 
     private void addManipulationConstructor() {
@@ -296,7 +290,7 @@ public class BuilderGenerator {
                         .filter(MethodDeclaration::isStatic) //
                         .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
                         .filter(md -> md.getTypeAsString().equals(builderClassName())) //
-                        .filter(hasSingleParameter(productClassType())));
+                        .filter(ClassUtil.hasSingleParameter(productClassType())));
     }
 
     private void addManipulationFactoryMethod() {
@@ -399,12 +393,8 @@ public class BuilderGenerator {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
                         .filter(md -> md.getNameAsString().equals(mmd.methodName)) //
-                        .filter(hasSingleParameter(mmd.parameterType)) //
+                        .filter(ClassUtil.hasSingleParameter(mmd.parameterType)) //
                         .filter(md -> md.getType().equals(builderClassType())));
-    }
-
-    private Predicate<MethodDeclaration> hasSingleParameter(Type type) {
-        return md -> md.getParameters().size() == 1 && md.getParameter(0).getType().equals(type);
     }
 
     /**
@@ -463,7 +453,7 @@ public class BuilderGenerator {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
                         .filter(md -> md.getNameAsString().equals(amd.methodName)) //
-                        .filter(hasSingleParameter(amd.parameterType)) //
+                        .filter(ClassUtil.hasSingleParameter(amd.parameterType)) //
                         .filter(md -> md.getType().equals(builderClassType())));
     }
 

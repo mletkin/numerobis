@@ -30,6 +30,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.Ignore;
 
@@ -164,5 +165,16 @@ public final class ClassUtil {
 
     private static Predicate<Node> isMember(Node parent) {
         return node -> node.getParentNode().orElse(null) == parent;
+    }
+
+    /**
+     * Produces a predicate to check that a method has exactly one parameter.
+     *
+     * @param type
+     *            the type, the parameter must have
+     * @return the predicate
+     */
+    static Predicate<CallableDeclaration<?>> hasSingleParameter(Type type) {
+        return md -> md.getParameters().size() == 1 && md.getParameter(0).getType().equals(type);
     }
 }
