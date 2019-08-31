@@ -32,6 +32,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
+
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class BuilderMojo extends AbstractMojo {
 
@@ -72,6 +74,9 @@ public class BuilderMojo extends AbstractMojo {
     @Parameter
     private boolean productsAreMutable;
 
+    @Parameter
+    private List<Variant> listAdderVariants;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         logConfiguration();
@@ -85,6 +90,8 @@ public class BuilderMojo extends AbstractMojo {
         getLog().info("builder creation: " + builderCreation);
         getLog().info("builder location: " + builderLocation);
         getLog().info("products are " + (productsAreMutable ? "mutable" : "immutable") + " by default");
+        getLog().info("list adder variants: ");
+        stream(listAdderVariants).map(Variant::name).forEach(getLog()::info);
     }
 
     /**
@@ -101,8 +108,9 @@ public class BuilderMojo extends AbstractMojo {
                     .filter(f -> f.getName().endsWith(".java")) //
                     .forEach(new Processor(targetDirectory, //
                             builderCreation, //
-                            builderLocation,
-                            productsAreMutable//
+                            builderLocation, //
+                            productsAreMutable, //
+                            stream(listAdderVariants).toArray(Variant[]::new) //
                     )::process);
         } catch (IOException e) {
             e.printStackTrace();

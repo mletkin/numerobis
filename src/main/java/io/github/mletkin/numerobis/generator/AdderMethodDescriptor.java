@@ -21,12 +21,9 @@ import java.util.stream.Stream;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.MemberValuePair;
-import com.github.javaparser.ast.expr.NormalAnnotationExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.Type;
 
+import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.common.Util;
 
 /**
@@ -37,6 +34,7 @@ class AdderMethodDescriptor {
     String fieldName;
     String methodName;
     Type parameterType;
+    Variant variant;
 
     /**
      * Generator for withMethod-Descriptor-Objects.
@@ -44,30 +42,38 @@ class AdderMethodDescriptor {
      * One declaration can contain more than one variable ( e.g. {@code int x,y;})
      */
     static class Generator {
-        FieldDeclaration field;
+        private FieldDeclaration field;
+        private Variant[] variants;
         private CompilationUnit cu;
 
-        Generator(FieldDeclaration field, CompilationUnit cu) {
+        Generator(FieldDeclaration field, Variant[] variants, CompilationUnit cu) {
             this.field = field;
+            this.variants = variants;
             this.cu = cu;
         }
 
         /**
-         * Produces a stream of method Descriptors from a field declaration.
+         * Produces a stream of method descriptors from a field declaration.
          *
          * @return Stream<MutatorMethodDescriptor>
          */
         Stream<AdderMethodDescriptor> stream() {
             return field.getVariables().stream() //
                     .filter(vd -> ClassUtil.implementsCollection(vd, cu)) //
-                    .map(this::map);
+                    .flatMap(this::toVariants);
         }
 
-        private AdderMethodDescriptor map(VariableDeclarator vd) {
+        private Stream<AdderMethodDescriptor> toVariants(VariableDeclarator vd) {
+            return Stream.of(variants) //
+                    .map(v -> map(vd, v));
+        }
+
+        private AdderMethodDescriptor map(VariableDeclarator vd, Variant variant) {
             AdderMethodDescriptor result = new AdderMethodDescriptor();
             result.methodName = methodName(vd);
             result.fieldName = vd.getNameAsString();
             result.parameterType = vd.getType().asClassOrInterfaceType().getTypeArguments().get().get(0);
+            result.variant = variant;
             return result;
         }
 
@@ -77,19 +83,11 @@ class AdderMethodDescriptor {
 
         private String standardAdderName(VariableDeclarator vd) {
             return BuilderGenerator.ADDER_PREFIX + //
-                    stripPostfix(Util.firstLetterUppercase(vd.getNameAsString()),  "en", "e", "s");
+                    stripPostfix(Util.firstLetterUppercase(vd.getNameAsString()), "en", "e", "s");
         }
 
         private Optional<String> customName() {
             return Optional.empty();
-        }
-
-        private String value(NormalAnnotationExpr anno, String name) {
-            return anno.getPairs().stream().filter(p -> p.getNameAsString().equals(name)).findFirst()
-                    .map(MemberValuePair::getValue) //
-                    .map(Expression::asStringLiteralExpr) //
-                    .map(StringLiteralExpr::getValue) //
-                    .orElse(null);
         }
 
         private String stripPostfix(String name, String... postfixes) {

@@ -28,6 +28,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
 
+import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.Facade.Result;
@@ -44,7 +45,6 @@ public class Processor {
     private boolean embeddedBuilder;
     private Facade facade;
 
-
     /**
      * Creates a processor for the given configuration.
      *
@@ -56,13 +56,15 @@ public class Processor {
      *            use an embedded or a separate builder class
      * @param productsAreMutable
      *            consider products objects as mutable by default
+     * @param adderListVariants
      */
     public Processor(String destinationPath, BuilderMojo.Creation creation, BuilderMojo.Location location,
-            boolean productsAreMutable) {
+            boolean productsAreMutable, Variant[] adderListVariants) {
         this.destinationPath = destinationPath == null ? "" : destinationPath.trim();
         this.useFactoryMethods = creation.flag();
         this.embeddedBuilder = location.flag();
         facade = new Facade(productsAreMutable);
+        ofNullable(adderListVariants).ifPresent(facade::withAdderVariants);
     }
 
     /**

@@ -25,7 +25,6 @@ import static io.github.mletkin.numerobis.generator.ClassUtil.hasProductConstruc
 import static io.github.mletkin.numerobis.generator.GenerationUtil.args;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.assignExpr;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.fieldAccess;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.methodCall;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.nameExpr;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.newExpr;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
@@ -45,6 +44,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
+import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.annotation.Ignore;
 import io.github.mletkin.numerobis.annotation.Immutable;
 import io.github.mletkin.numerobis.annotation.Mutable;
@@ -55,7 +55,7 @@ import io.github.mletkin.numerobis.annotation.Mutable;
 public class BuilderGenerator {
 
     private static final String BUILDER_PACKAGE = "io.github.mletkin.numerobis";
-    private final static String FIELD = "product";
+    final static String FIELD = "product";
     private final static String CLASS_POSTFIX = "Builder";
 
     final static String BUILD_METHOD = "build";
@@ -69,8 +69,10 @@ public class BuilderGenerator {
     private CompilationUnit productUnit;
     private CompilationUnit builderUnit;
 
-    private ClassOrInterfaceDeclaration builderclass;
+    ClassOrInterfaceDeclaration builderclass;
     private ClassOrInterfaceDeclaration productclass;
+
+    private AdderHelper adderHelper = new AdderHelper(this);
 
     /**
      * Creates a generator for an internal builder class.
@@ -202,18 +204,17 @@ public class BuilderGenerator {
      * @return the generator instance
      */
     BuilderGenerator addConstructors() {
-        addDefaultConstructorIfNeeded();
+        if (!hasExplicitConstructor(productclass) && !hasDefaultConstructor(builderclass)) {
+            addDefaultConstructor();
+        }
         allMember(productclass, ConstructorDeclaration.class) //
                 .filter(this::process) //
+                .filter(not(this::hasMatchingConstructor)) //
                 .forEach(this::addMatchingConstructor);
-        addManipulationConstructorIfNeeded();
-        return this;
-    }
-
-    private void addManipulationConstructorIfNeeded() {
         if (isProductMutable() && !hasManipulationConstructor()) {
             addManipulationConstructor();
         }
+        return this;
     }
 
     private boolean hasManipulationConstructor() {
@@ -239,21 +240,17 @@ public class BuilderGenerator {
         return true;
     }
 
-    private void addDefaultConstructorIfNeeded() {
-        if (!hasExplicitConstructor(productclass) && !hasDefaultConstructor(builderclass)) {
-            builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
-                    .createBody() //
-                    .addStatement(assignExpr(FIELD, newExpr(productClassType())));
-        }
+    private void addDefaultConstructor() {
+        builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
+                .createBody() //
+                .addStatement(assignExpr(FIELD, newExpr(productClassType())));
     }
 
     private void addMatchingConstructor(ConstructorDeclaration productConstructor) {
-        if (!hasMatchingConstructor(productConstructor)) {
-            ConstructorDeclaration builderconstructor = builderclass.addConstructor(Modifier.Keyword.PUBLIC);
-            productConstructor.getParameters().stream().forEach(builderconstructor::addParameter);
-            builderconstructor.createBody() //
-                    .addStatement(assignExpr(FIELD, newExpr(productClassType(), args(productConstructor))));
-        }
+        ConstructorDeclaration builderconstructor = builderclass.addConstructor(Modifier.Keyword.PUBLIC);
+        productConstructor.getParameters().stream().forEach(builderconstructor::addParameter);
+        builderconstructor.createBody() //
+                .addStatement(assignExpr(FIELD, newExpr(productClassType(), args(productConstructor))));
     }
 
     private boolean hasMatchingConstructor(ConstructorDeclaration productConstructor) {
@@ -300,7 +297,6 @@ public class BuilderGenerator {
         factoryMethod.addParameter(productClassName(), FIELD);
         factoryMethod.createBody() //
                 .addStatement(returnStmt(newExpr(builderClassType(), nameExpr(FIELD))));
-
     }
 
     /**
@@ -421,43 +417,19 @@ public class BuilderGenerator {
 
     /**
      * Adds an adder method for each list implementing field in the product.
+     *
+     * @param adderVariants
      */
-    BuilderGenerator addAdderMethods() {
+    BuilderGenerator addAdderMethods(Variant[] adderVariants) {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
-                .flatMap(fd -> new AdderMethodDescriptor.Generator(fd, productUnit).stream()) //
-                .filter(not(this::hasAdderMethod)) //
-                .forEach(this::addAdderMethod);
+                .flatMap(fd -> new AdderMethodDescriptor.Generator(fd, adderVariants, productUnit).stream()) //
+                .filter(not(adderHelper::hasAdderMethod)) //
+                .forEach(adderHelper::addAdderMethod);
         return this;
     }
 
-    private void addAdderMethod(AdderMethodDescriptor amd) {
-        MethodDeclaration meth = builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
-        meth.addParameter(amd.parameterType, "item");
-        meth.setType(builderClassType());
-        meth.createBody() //
-                .addStatement(methodCall(fieldAccess(nameExpr(FIELD), amd.fieldName), "add", nameExpr("item"))) //
-                .addStatement(returnStmt(thisExpr()));
-    }
-
-    /**
-     * Checks for an add method in the builder class.
-     * <p>
-     * signature {@code Builder addName(Type item)}
-     *
-     * @param amd
-     *            adder descriptor
-     * @return {@code true} if the method exists
-     */
-    private boolean hasAdderMethod(AdderMethodDescriptor amd) {
-        return exists(//
-                allMember(builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(amd.methodName)) //
-                        .filter(ClassUtil.hasSingleParameter(amd.parameterType)) //
-                        .filter(md -> md.getType().equals(builderClassType())));
-    }
-
-    private ClassOrInterfaceType builderClassType() {
+    ClassOrInterfaceType builderClassType() {
         return new ClassOrInterfaceType(builderClassName());
     }
 

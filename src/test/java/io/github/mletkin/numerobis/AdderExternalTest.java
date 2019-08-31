@@ -20,6 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
+import io.github.mletkin.numerobis.generator.Facade;
+
 /**
  * Adder generation for generated external builder.
  */
@@ -82,6 +85,80 @@ class AdderExternalTest {
                         + "        return product;" //
                         + "    }" //
                         + "}");
+    }
+
+    @Test
+    void addsStreamAdder() {
+        Variant[] variants = { Variant.STREAM };
+        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList"))
+                .contains(//
+                        "public WithListBuilder addX(Stream<String> stream) {" //
+                                + "        stream.forEach(product.x::add);" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    @Test
+    void retainsStreamAdder() {
+        Variant[] variants = { Variant.STREAM };
+        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList", //
+                "public class WithListBuilder {" //
+                        + "    public WithListBuilder addX(Stream<String> foo) {" //
+                        + "        return null;" //
+                        + "    }" //
+                        + "}") //
+        ).doesNotContain(//
+                "public WithListBuilder addX(Stream<String> stream)");
+    }
+
+    @Test
+    void addCollectionAdder() {
+        Variant[] variants = { Variant.COLLECTION };
+        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList"))
+                .contains(//
+                        "public WithListBuilder addX(Collection<String> collection) {" //
+                                + "        product.x.addAll(collection);" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    @Test
+    void retainsCollectionAdder() {
+        Variant[] variants = { Variant.COLLECTION };
+        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList", //
+                "public class WithListBuilder {" //
+                        + "    public WithListBuilder addX(Collection<String> foo) {" //
+                        + "        return null;" //
+                        + "    }" //
+                        + "}") //
+        ).doesNotContain(//
+                "public WithListBuilder addX(Collection<String> collection)" //
+        );
+    }
+
+    @Test
+    void addsVarArgAdder() {
+        Variant[] variants = { Variant.VARARG };
+        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList"))
+                .contains(//
+                        "public WithListBuilder addX(String... items) {" //
+                                + "        Stream.of(items).forEach(product.x::add);" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    @Test
+    void retainsVarArgAdder() {
+        Variant[] variants = { Variant.VARARG };
+        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList", //
+                "public class WithListBuilder {" //
+                        + "    public WithListBuilder addX(String... foo) {" //
+                        + "        return null;" //
+                        + "    }" //
+                        + "}") //
+        ).doesNotContain(//
+                "public WithListBuilder addX(String... items)" //
+        );
     }
 
 }

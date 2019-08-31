@@ -24,6 +24,7 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
@@ -52,8 +53,26 @@ public final class GenerationUtil {
         return new ObjectCreationExpr(null, type, new NodeList<>(args));
     }
 
+    /**
+     * Creates an expression fom a name.
+     *
+     * @param name
+     *            name to use
+     * @return the name expression
+     */
     static NameExpr nameExpr(String name) {
         return new NameExpr(name);
+    }
+
+    /**
+     * Creates an expression fom the simple name of a class.
+     *
+     * @param clazz
+     *            class object
+     * @return the name expression
+     */
+    static NameExpr nameExpr(Class<?> clazz) {
+        return new NameExpr(clazz.getSimpleName());
     }
 
     static ReturnStmt returnStmt(Expression value) {
@@ -69,6 +88,19 @@ public final class GenerationUtil {
 
     static MethodCallExpr methodCall(Expression scope, String name, Expression... args) {
         return new MethodCallExpr(scope, name, new NodeList<>(args));
+    }
+
+    /**
+     * Creates method reference expression.
+     *
+     * @param scope
+     *            object expression or class name
+     * @param name
+     *            method name to call
+     * @return method reference expression (like {@code dings:: bums})
+     */
+    static MethodReferenceExpr methodReference(Expression scope, String name) {
+        return new MethodReferenceExpr(scope, null, name);
     }
 
     static ThisExpr thisExpr() {
@@ -104,4 +136,18 @@ public final class GenerationUtil {
                 .setName("Stream") //
                 .setTypeArguments(argumentType);
     }
+
+    /**
+     * Returns the {@code Collection} type for a {@code Argument} type.
+     *
+     * @param argumentType
+     *            argument type for the stream
+     * @return the stream type
+     */
+    public static Type collectionType(Type argumentType) {
+        return new ClassOrInterfaceType() //
+                .setName("Collection") //
+                .setTypeArguments(argumentType);
+    }
+
 }

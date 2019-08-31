@@ -35,6 +35,10 @@ public class TestFacade {
         facade = new Facade(mutableByDefault);
     }
 
+    public TestFacade(Facade facade) {
+        this.facade = facade;
+    }
+
     public String externalWithConstructors(String className) {
         return uncheckExceptions(() -> //
         asString(facade.withConstructors(StaticJavaParser.parseResource(className + ".java"), className,

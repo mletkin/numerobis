@@ -19,6 +19,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
 import io.github.mletkin.numerobis.annotation.GenerateAccessors;
+import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.annotation.GenerateBuilder;
 
 /**
@@ -27,9 +28,15 @@ import io.github.mletkin.numerobis.annotation.GenerateBuilder;
 public class Facade {
 
     private boolean productsAreMutable;
+    private Variant[] adderVariants = { Variant.ITEM };
 
     public Facade(boolean productsAreMutable) {
         this.productsAreMutable = productsAreMutable;
+    }
+
+    public Facade withAdderVariants(Variant[] adderVariants) {
+        this.adderVariants = adderVariants;
+        return this;
     }
 
     public static class Result {
@@ -68,7 +75,7 @@ public class Facade {
                         .addProductField() //
                         .addConstructors() //
                         .addMutator() //
-                        .addAdderMethods() //
+                        .addAdderMethods(adderVariants) //
                         .addBuildMethod() //
                         .builderUnit() //
         );
@@ -94,7 +101,7 @@ public class Facade {
                         .addProductField() //
                         .addFactoryMethods() //
                         .addMutator() //
-                        .addAdderMethods() //
+                        .addAdderMethods(adderVariants) //
                         .addBuildMethod() //
                         .builderUnit() //
         );
@@ -116,7 +123,7 @@ public class Facade {
                         .addProductField() //
                         .addConstructors() //
                         .addMutator() //
-                        .addAdderMethods() //
+                        .addAdderMethods(adderVariants) //
                         .addBuildMethod() //
                         .builderUnit() //
         );
@@ -139,7 +146,7 @@ public class Facade {
                         .addProductField() //
                         .addFactoryMethods() //
                         .addMutator() //
-                        .addAdderMethods() //
+                        .addAdderMethods(adderVariants) //
                         .addBuildMethod() //
                         .builderUnit() //
         );
