@@ -11,7 +11,7 @@ The (generated) class that builds the object instances is the **builder**.
 The object it builds is the **product**.
 The class which defines the product is the **product class**.
 A method of the builder that sets the value of a product field is a **mutator**.
-A mutator that adds somethong (e.g. an Object to a Collection) is an **adder**.
+A mutator that adds something (e.g. an Object to a Collection) is an **adder**.
 The method in the builder that provides the **product** is the **build method**.
 A method of the product class that returns the content of a field is an **accessor**.
 
@@ -33,7 +33,7 @@ Add the following to the plugin section of your pom.xml
     </executions>
 </plugin>
 ```
-Add the annotation `@WithBuilder`to each class for which you want to create a builder.
+Add the annotation `@GenerateBuilder`to each class for which you want to create a builder.
 Builder code is generated in the `generate-sources` phase of the maven build. 
 
 ## Configuration
@@ -81,7 +81,7 @@ The directory in which the generated builder classes are stored. File paths are 
 The default is the generation in the same directory as the product class.
 ### products are mutable by default
 If set to true product classes are considered mutable. For the modification of product class instances a constructor (or factory method) will be created in the builder class. This modificaton method accepts a product class instance as parameter.
-The default value is **false**. The product objetcs are considered immutable and no method for modification is generated.
+The default value is **false**. This means that the product objetcs are considered immutable and no method for modification is generated.
 ```
 <configuration>
     <productsAreMutable>true</productsAreMutable>
@@ -89,11 +89,11 @@ The default value is **false**. The product objetcs are considered immutable and
 ```
 ## Annotations
 Most of the behavior of the builder generator is controlled through annotations.
-The generator will stick to th annotation concept. The names might change and options may be set via annotation parameters. 
+The generator will stick to the annotation concept. The names might change and options may be set via annotation parameters. 
 All annotations are located in the package ```io.github.mletkin.numerobis.annotation```
 ### GenerateBuilder
 Used on product classes.
-This is the most important annotation. Only classes annotated with ```@WithBuilder``` will be processed.
+This is the most important annotation. Only classes annotated with ```@GenerateBuilder``` will be processed.
 ### GenerateAccessors
 Used on product classes.
 For every field in the product class an accessor will be generated. Accessors have the same name as the field.
@@ -102,7 +102,7 @@ Mutator generation is the default. This annotation is a means to specify a custo
 ### Ignore
 Used on product fields.
 Field annotated with ```@Ignore``` are ignored by the generator, no mutators are generated.
-### Mutable an Immutable
+### Mutable and Immutable
 Used on product classes.
 Overrides the default setting for "product classes are immutable/mutable by default".
 
