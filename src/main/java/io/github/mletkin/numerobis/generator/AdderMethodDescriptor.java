@@ -65,6 +65,7 @@ class AdderMethodDescriptor {
 
         private Stream<AdderMethodDescriptor> toVariants(VariableDeclarator vd) {
             return Stream.of(variants) //
+                    .filter(v -> v != Variant.NONE) //
                     .map(v -> map(vd, v));
         }
 

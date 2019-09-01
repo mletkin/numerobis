@@ -30,7 +30,7 @@ public @interface GenerateAdder {
         NONE, // no adder for the list field
         OBJECT, // pass complete object -- non adder use only
         VARARG, // pass items as vararg parameter list
-        ITEM, // pass a single item
+        ITEM, // pass a single item -- adder use only
         STREAM, // pass items as stream
         COLLECTION, // pass items as collection
         ;

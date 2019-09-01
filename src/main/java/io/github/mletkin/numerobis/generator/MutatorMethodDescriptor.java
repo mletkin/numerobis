@@ -70,7 +70,9 @@ class MutatorMethodDescriptor {
 
         private Stream<MutatorMethodDescriptor> toVariants(VariableDeclarator vd) {
             if (ClassUtil.implementsCollection(vd, cu)) {
-                return Stream.of(variants).map(v -> map(vd, v));
+                return Stream.of(variants) //
+                        .filter(v -> v != Variant.NONE) //
+                        .map(v -> map(vd, v));
             } else {
                 return Stream.of(map(vd, Variant.OBJECT));
             }
