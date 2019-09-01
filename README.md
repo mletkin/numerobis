@@ -1,4 +1,4 @@
-# Maven Builder Generator Plugin (Version 2.0)
+# Maven Builder Generator Plugin (Version 2.1)
 This is a simple maven plugin that generates builder classes for classes that have the appropriate annotation. The builders are generated during the generate-sources phase of the maven build. The current version is restricted to the use of default settings. Customization is currently in a proof of concept state.
 
 The generator creates the builders as a fully functional skeleton. It can be used "as is" without manual changes. On the other hand is it possible to change and extend the generated builder. Methods can be added and implementation can be changed. When the generator runs a second time, missing methods will be created existing methods will not be changeed. When the builder class was deleted or renamed a new one will be created.
@@ -26,7 +26,8 @@ The result is java source, no byte code manipulation is done.
 2. Generated code should always be changable
 The generator produces methods with default implementations. The implementation may ge changed, the generator
 should never change the implementation after generation. Deleted methods will be generated again.
-
+3. The generated code performs no null checks. This is important when dealing with collections.
+A collection object should never contain a null value.
 
 ## Usage
 Add the following to the plugin section of your pom.xml
@@ -98,6 +99,44 @@ The default value is **false**. This means that the product objetcs are consider
     <productsAreMutable>true</productsAreMutable>
 <configuration>
 ```
+## mutator and adder generation for lists and sets
+Lists and sets are special. You may want to fill a list with one statement (e.g. from a stream or with a list if values).
+Or maybe you want to add values without clearinging the list collected to far. The generator generates two sets of methods:
+Plain mutator methods drop the current list and replace it with another list. Adder methods retain the list content and add
+values to the list. You my specify a list of mutator/adder vatiants in the plugin configuration. The possible values are
+collected in the enum ```GenerateAdder.Variants```. The following values are available:
+- *NONE*, ignored, might be used to define an emptry list
+- *OBJECT*, create a method that replaces the list object with the given list object, not valid for adder use
+- *VARARG*, create a method that takes the values as vararg parameter list
+- *ITEM*, create a method with a single value, obly valid for adder use
+- *STREAM*, create a method that takes a stream of values as parameter
+- *COLLECTION* , creates a method that takes a collection of values as parameter
+
+The difference between *OBJECT* an *COLLECTION*  is that *COLLCTION* copies the values into the list (or a new list)
+while *OBJECT* uses the reference of the List or Set object. 
+
+None of the generated methods checks the arguments for ```null``` values and none of the adder methods checks
+that the list or set field contains an object. You should initialize the list in the product class. A list object
+should never ever contain ```null```.
+
+### mutator configuration
+Mutator variants are defined like this:
+```
+<listMutatorVariants>
+    <listMutatorVariant>STREAM</listMutatorVariant>
+    <listMutatorVariant>VARARG</listMutatorVariant>
+    <listMutatorVariant>COLLECTION</listMutatorVariant>
+</listMutatorVariants>
+```
+### adder configuration
+Adder variants are defined like this:
+```
+<listAdderVariants>
+    <listAdderVariant>STREAM</listAdderVariant>
+    <listAdderVariant>VARARG</listAdderVariant>
+</listAdderVariants>
+```
+
 ## Annotations
 Most of the behavior of the builder generator is controlled through annotations.
 The generator will stick to the annotation concept. The names might change and options may be set via annotation parameters. 
