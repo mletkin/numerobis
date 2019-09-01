@@ -27,6 +27,7 @@ import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.streamType;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
 
+import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -152,6 +153,7 @@ public class MutatorHelper {
                 .addStatement(returnStmt(thisExpr()));
 
         owner.builderUnit().addImport(Collectors.class);
+        owner.builderUnit().addImport(Collection.class);
     }
 
     private void addVarArgMutator(MutatorMethodDescriptor mmd) {
