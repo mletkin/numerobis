@@ -39,6 +39,17 @@ class ListMutatorExternalTest {
     }
 
     @Test
+    void addsObjectMutatorForSet() {
+        Variant[] variants = { Variant.OBJECT };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).externalWithConstructors("WithSet"))
+                .contains(//
+                        "public WithSetBuilder withX(Set<String> x) {" //
+                                + "        product.x = x;" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    @Test
     void retainsObjectMutatorForList() {
         Variant[] variants = { Variant.OBJECT };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).externalWithConstructors("WithList",
@@ -61,6 +72,17 @@ class ListMutatorExternalTest {
                 .contains(//
                         "public WithListBuilder withX(Stream<String> items) {" //
                                 + "        product.x = items.collect(Collectors.toList());" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    @Test
+    void addsStreamMutatorForSet() {
+        Variant[] variants = { Variant.STREAM };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).externalWithConstructors("WithSet"))
+                .contains(//
+                        "public WithSetBuilder withX(Stream<String> items) {" //
+                                + "        product.x = items.collect(Collectors.toSet());" //
                                 + "        return this;" //
                                 + "    }");
     }
@@ -93,6 +115,17 @@ class ListMutatorExternalTest {
     }
 
     @Test
+    void addsCollectionMutatorForSet() {
+        Variant[] variants = { Variant.COLLECTION };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).externalWithConstructors("WithSet"))
+                .contains(//
+                        "public WithSetBuilder withX(Collection<String> items) {" //
+                                + "        product.x = items.stream().collect(Collectors.toSet());" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    @Test
     void retainsCollectionMutator() {
         Variant[] variants = { Variant.COLLECTION };
         assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList", //
@@ -115,6 +148,17 @@ class ListMutatorExternalTest {
                 .contains(//
                         "public WithListBuilder withX(String... items) {" //
                                 + "        product.x = Stream.of(items).collect(Collectors.toList());" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    @Test
+    void addsVarArgMutatorForSet() {
+        Variant[] variants = { Variant.VARARG };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).externalWithConstructors("WithSet"))
+                .contains(//
+                        "public WithSetBuilder withX(String... items) {" //
+                                + "        product.x = Stream.of(items).collect(Collectors.toSet());" //
                                 + "        return this;" //
                                 + "    }");
     }

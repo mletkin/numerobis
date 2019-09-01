@@ -38,21 +38,33 @@ class ListMutatorInternalTest {
                                 + "    }");
     }
 
-//    @Test
-//    void retainsObjectMutatorForList() {
-//        Variant[] variants = { Variant.OBJECT };
-//        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList",
-//                "public class Builder {" //
-//                        + "    public Builder withX(List<String> foo) {" //
-//                        + "        return null;" //
-//                        + "    }" //
-//                        + "}") //
-//        ).contains(//
-//                "public Builder withX(List<String> foo) {" //
-//                        + "        return null;" //
-//                        + "    }" //
-//        ).doesNotContain("public Builder withX(List<String> x)");
-//    }
+    @Test
+    void addsObjectMutatorForSet() {
+        Variant[] variants = { Variant.OBJECT };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
+                .contains(//
+                        "public Builder withX(Set<String> x) {" //
+                                + "        product.x = x;" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    // @Test
+    // void retainsObjectMutatorForList() {
+    // Variant[] variants = { Variant.OBJECT };
+    // assertThat(new TestFacade(new
+    // Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList",
+    // "public class Builder {" //
+    // + " public Builder withX(List<String> foo) {" //
+    // + " return null;" //
+    // + " }" //
+    // + "}") //
+    // ).contains(//
+    // "public Builder withX(List<String> foo) {" //
+    // + " return null;" //
+    // + " }" //
+    // ).doesNotContain("public Builder withX(List<String> x)");
+    // }
 
     @Test
     void addsStreamMutatorForList() {
@@ -65,21 +77,34 @@ class ListMutatorInternalTest {
                                 + "    }");
     }
 
-//    @Test
-//    void retainsStreamMutator() {
-//        Variant[] variants = { Variant.STREAM };
-//        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList", //
-//                "public class Builder {" //
-//                        + "    public Builder withX(Stream<String> foo) {" //
-//                        + "        return null;" //
-//                        + "    }" //
-//                        + "}") //
-//        ).contains(//
-//                "public Builder withX(Stream<String> foo) {" //
-//                        + "        return null;" //
-//                        + "    }" //
-//        ).doesNotContain("public Builder withX(Stream<String> items)");
-//    }
+    @Test
+    void addsStreamMutatorForSet() {
+        Variant[] variants = { Variant.STREAM };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
+                .contains(//
+                        "public Builder withX(Stream<String> items) {" //
+                                + "        product.x = items.collect(Collectors.toSet());" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    // @Test
+    // void retainsStreamMutator() {
+    // Variant[] variants = { Variant.STREAM };
+    // assertThat(new TestFacade(new
+    // Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList",
+    // //
+    // "public class Builder {" //
+    // + " public Builder withX(Stream<String> foo) {" //
+    // + " return null;" //
+    // + " }" //
+    // + "}") //
+    // ).contains(//
+    // "public Builder withX(Stream<String> foo) {" //
+    // + " return null;" //
+    // + " }" //
+    // ).doesNotContain("public Builder withX(Stream<String> items)");
+    // }
 
     @Test
     void addsCollectionMutatorForList() {
@@ -92,21 +117,34 @@ class ListMutatorInternalTest {
                                 + "    }");
     }
 
-//    @Test
-//    void retainsCollectionMutator() {
-//        Variant[] variants = { Variant.COLLECTION };
-//        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList", //
-//                "public class Builder {" //
-//                        + "    public Builder withX(Collection<String> foo) {" //
-//                        + "        return null;" //
-//                        + "    }" //
-//                        + "}") //
-//        ).contains(//
-//                "public Builder withX(Collection<String> foo) {" //
-//                        + "        return null;" //
-//                        + "    }" //
-//        ).doesNotContain("public Builder withX(Collection<String> items)");
-//    }
+    @Test
+    void addsCollectionMutatorForSet() {
+        Variant[] variants = { Variant.COLLECTION };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
+                .contains(//
+                        "public Builder withX(Collection<String> items) {" //
+                                + "        product.x = items.stream().collect(Collectors.toSet());" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    // @Test
+    // void retainsCollectionMutator() {
+    // Variant[] variants = { Variant.COLLECTION };
+    // assertThat(new TestFacade(new
+    // Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList",
+    // //
+    // "public class Builder {" //
+    // + " public Builder withX(Collection<String> foo) {" //
+    // + " return null;" //
+    // + " }" //
+    // + "}") //
+    // ).contains(//
+    // "public Builder withX(Collection<String> foo) {" //
+    // + " return null;" //
+    // + " }" //
+    // ).doesNotContain("public Builder withX(Collection<String> items)");
+    // }
 
     @Test
     void addsVarArgMutatorForList() {
@@ -119,21 +157,34 @@ class ListMutatorInternalTest {
                                 + "    }");
     }
 
-//    @Disabled
-//    @Test
-//    void retainsVarArgMutator() {
-//        Variant[] variants = { Variant.VARARG };
-//        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList", //
-//                "public class Builder {" //
-//                        + "    public Builder withX(String... foo) {" //
-//                        + "        return null;" //
-//                        + "    }" //
-//                        + "}") //
-//        ).contains(//
-//                "public Builder withX(String... foo) {" //
-//                        + "        return null;" //
-//                        + "    }" //
-//        ).doesNotContain("public Builder withX(String... items)");
-//    }
+    @Test
+    void addsVarArgMutatorForSet() {
+        Variant[] variants = { Variant.VARARG };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
+                .contains(//
+                        "public Builder withX(String... items) {" //
+                                + "        product.x = Stream.of(items).collect(Collectors.toSet());" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    // @Disabled
+    // @Test
+    // void retainsVarArgMutator() {
+    // Variant[] variants = { Variant.VARARG };
+    // assertThat(new TestFacade(new
+    // Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList",
+    // //
+    // "public class Builder {" //
+    // + " public Builder withX(String... foo) {" //
+    // + " return null;" //
+    // + " }" //
+    // + "}") //
+    // ).contains(//
+    // "public Builder withX(String... foo) {" //
+    // + " return null;" //
+    // + " }" //
+    // ).doesNotContain("public Builder withX(String... items)");
+    // }
 
 }

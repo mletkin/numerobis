@@ -104,8 +104,32 @@ public final class ClassUtil {
         return !cd.isPrivate() && !cd.isAnnotationPresent(Ignore.class);
     }
 
+    /**
+     * Checks, whether a variable type implements {@code Collection}.
+     *
+     * @param vd
+     *            declaration of the variable to check
+     * @param cu
+     *            Compilation unit with imports
+     * @return {@code true}, if the varaibale type implements {@code Collection}
+     */
     static boolean implementsCollection(VariableDeclarator vd, CompilationUnit cu) {
-        String typ = vd.getType().findFirst(SimpleName.class).map(SimpleName::asString).orElse("#");
+        return implementsInterface(vd.getType(), Collection.class, cu);
+    }
+
+    /**
+     * Checks, whether a type implements a given interface.
+     *
+     * @param type
+     *            Type to check
+     * @param clazz
+     *            Class object of the interface
+     * @param cu
+     *            Compilation unit with imports
+     * @return {@code true}, if the type implements the interface
+     */
+    static boolean implementsInterface(Type type, Class<?> clazz, CompilationUnit cu) {
+        String typ = type.findFirst(SimpleName.class).map(SimpleName::asString).orElse("#");
 
         Optional<String> fullType = cu.getImports().stream() //
                 .map(ImportDeclaration::getNameAsString) //
@@ -115,7 +139,7 @@ public final class ClassUtil {
         try {
             if (fullType.isPresent()) {
                 Class<?> c = Class.forName(fullType.get());
-                c.asSubclass(Collection.class);
+                c.asSubclass(clazz);
                 return true;
             }
         } catch (ClassCastException | ClassNotFoundException e) {
@@ -125,14 +149,13 @@ public final class ClassUtil {
     }
 
     /**
-     * Compares the types of the parameter Lists of two method or coantructor
-     * declarations.
+     * Compares the parameter types of two method or constructor declarations.
      *
      * @param a
      *            first declaration to compare
      * @param b
      *            second declaration to compare
-     * @return {@code true} if both type lists are identicalx
+     * @return {@code true} if both type lists are identical
      */
     static boolean matchesParameter(CallableDeclaration<?> a, CallableDeclaration<?> b) {
         if (a.getParameters().size() != b.getParameters().size()) {
@@ -147,7 +170,7 @@ public final class ClassUtil {
     }
 
     /**
-     * Gets all members of a given type for a class declaration.
+     * Returns all members of a given type for a class declaration.
      *
      * @param <T>
      *            member Type

@@ -28,6 +28,8 @@ import static io.github.mletkin.numerobis.generator.GenerationUtil.streamType;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -135,11 +137,21 @@ public class MutatorHelper {
                         methodCall(//
                                 nameExpr("items"), //
                                 "collect", //
-                                methodCall(nameExpr(Collectors.class), "toList")))) //
+                                methodCall(nameExpr(Collectors.class), collector(mmd))))) //
                 .addStatement(returnStmt(thisExpr()));
 
         owner.builderUnit().addImport(Stream.class);
         owner.builderUnit().addImport(Collectors.class);
+    }
+
+    private String collector(MutatorMethodDescriptor mmd) {
+        if (ClassUtil.implementsInterface(mmd.parameterType, List.class, owner.productUnit)) {
+            return "toList";
+        }
+        if (ClassUtil.implementsInterface(mmd.parameterType, Set.class, owner.productUnit)) {
+            return "toSet";
+        }
+        throw new IllegalArgumentException();
     }
 
     private void addCollectionMutator(MutatorMethodDescriptor mmd) {
@@ -149,7 +161,7 @@ public class MutatorHelper {
                         methodCall(//
                                 methodCall(nameExpr("items"), "stream"), //
                                 "collect", //
-                                methodCall(nameExpr(Collectors.class), "toList")))) //
+                                methodCall(nameExpr(Collectors.class), collector(mmd))))) //
                 .addStatement(returnStmt(thisExpr()));
 
         owner.builderUnit().addImport(Collectors.class);
@@ -163,7 +175,7 @@ public class MutatorHelper {
                         methodCall(//
                                 methodCall(nameExpr(Stream.class), "of", nameExpr("items")), //
                                 "collect", //
-                                methodCall(nameExpr(Collectors.class), "toList")))) //
+                                methodCall(nameExpr(Collectors.class), collector(mmd))))) //
                 .addStatement(returnStmt(thisExpr()));
 
         owner.builderUnit().addImport(Stream.class);
@@ -178,7 +190,7 @@ public class MutatorHelper {
     }
 
     /**
-     * Returns the paraneter type of the mutator method.
+     * Returns the parameter type of a mutator method.
      *
      * @param mmd
      *            mutator method descriptor

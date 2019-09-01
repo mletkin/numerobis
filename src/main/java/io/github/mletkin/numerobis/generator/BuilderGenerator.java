@@ -66,7 +66,7 @@ public class BuilderGenerator {
     private boolean separateClass = true;
     private boolean mutableByDefault = false;
 
-    private CompilationUnit productUnit;
+    CompilationUnit productUnit;
     private CompilationUnit builderUnit;
 
     ClassOrInterfaceDeclaration builderclass;
