@@ -191,4 +191,14 @@ public final class ClassUtil {
                 && md.getParameter(0).isVarArgs();
     }
 
+    /**
+     * Returns the type of the first type parameter.
+     *
+     * @param type
+     *            type with parameters
+     * @return type of the first type parameter
+     */
+    static Type firstTypeArgument(Type type) {
+        return type.asClassOrInterfaceType().getTypeArguments().get().get(0);
+    }
 }

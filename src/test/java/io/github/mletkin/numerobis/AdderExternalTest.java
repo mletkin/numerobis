@@ -88,12 +88,23 @@ class AdderExternalTest {
     }
 
     @Test
+    void addsItemAdder() {
+        Variant[] variants = { Variant.ITEM };
+        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList"))
+                .contains(//
+                        "public WithListBuilder addX(String item) {" //
+                                + "        product.x.add(item);" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    @Test
     void addsStreamAdder() {
         Variant[] variants = { Variant.STREAM };
         assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList"))
                 .contains(//
-                        "public WithListBuilder addX(Stream<String> stream) {" //
-                                + "        stream.forEach(product.x::add);" //
+                        "public WithListBuilder addX(Stream<String> items) {" //
+                                + "        items.forEach(product.x::add);" //
                                 + "        return this;" //
                                 + "    }");
     }
@@ -116,8 +127,8 @@ class AdderExternalTest {
         Variant[] variants = { Variant.COLLECTION };
         assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList"))
                 .contains(//
-                        "public WithListBuilder addX(Collection<String> collection) {" //
-                                + "        product.x.addAll(collection);" //
+                        "public WithListBuilder addX(Collection<String> items) {" //
+                                + "        product.x.addAll(items);" //
                                 + "        return this;" //
                                 + "    }");
     }

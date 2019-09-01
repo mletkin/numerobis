@@ -57,14 +57,18 @@ public class Processor {
      * @param productsAreMutable
      *            consider products objects as mutable by default
      * @param adderListVariants
+     *            defines which adders should be generated for list fields
+     * @param mutatorListVariants
+     *            defines which mutators should be generated for list fields
      */
     public Processor(String destinationPath, BuilderMojo.Creation creation, BuilderMojo.Location location,
-            boolean productsAreMutable, Variant[] adderListVariants) {
+            boolean productsAreMutable, Variant[] adderListVariants, Variant[] mutatorListVariants) {
         this.destinationPath = destinationPath == null ? "" : destinationPath.trim();
         this.useFactoryMethods = creation.flag();
         this.embeddedBuilder = location.flag();
         facade = new Facade(productsAreMutable);
         ofNullable(adderListVariants).ifPresent(facade::withAdderVariants);
+        ofNullable(mutatorListVariants).ifPresent(facade::withMutatorVariants);
     }
 
     /**

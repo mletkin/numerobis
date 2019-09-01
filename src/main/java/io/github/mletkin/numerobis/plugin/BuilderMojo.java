@@ -77,6 +77,9 @@ public class BuilderMojo extends AbstractMojo {
     @Parameter
     private List<Variant> listAdderVariants;
 
+    @Parameter
+    private List<Variant> listMutatorVariants;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         logConfiguration();
@@ -110,7 +113,8 @@ public class BuilderMojo extends AbstractMojo {
                             builderCreation, //
                             builderLocation, //
                             productsAreMutable, //
-                            stream(listAdderVariants).toArray(Variant[]::new) //
+                            stream(listAdderVariants).toArray(Variant[]::new), //
+                            stream(listMutatorVariants).toArray(Variant[]::new) //
                     )::process);
         } catch (IOException e) {
             e.printStackTrace();

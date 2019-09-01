@@ -73,6 +73,7 @@ public class BuilderGenerator {
     private ClassOrInterfaceDeclaration productclass;
 
     private AdderHelper adderHelper = new AdderHelper(this);
+    private MutatorHelper mutatorHelper = new MutatorHelper(this);
 
     /**
      * Creates a generator for an internal builder class.
@@ -357,12 +358,12 @@ public class BuilderGenerator {
      *
      * @return the generator instance
      */
-    BuilderGenerator addMutator() {
+    BuilderGenerator addMutator(Variant[] mutatorVariants) {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
-                .flatMap(fd -> new MutatorMethodDescriptor.Generator(fd).stream()) //
-                .filter(not(this::hasMutator)) //
-                .forEach(this::addMutator);
+                .flatMap(fd -> new MutatorMethodDescriptor.Generator(fd, mutatorVariants, productUnit).stream()) //
+                .filter(not(mutatorHelper::hasMutator)) //
+                .forEach(mutatorHelper::addMutator);
         return this;
     }
 
@@ -374,23 +375,6 @@ public class BuilderGenerator {
             return false;
         }
         return true;
-    }
-
-    private void addMutator(MutatorMethodDescriptor mmd) {
-        MethodDeclaration meth = builderclass.addMethod(mmd.methodName, Modifier.Keyword.PUBLIC);
-        meth.addParameter(mmd.parameterType, mmd.parameterName);
-        meth.setType(builderClassType());
-        meth.createBody() //
-                .addStatement(assignExpr(fieldAccess(nameExpr(FIELD), mmd.parameterName), nameExpr(mmd.parameterName))) //
-                .addStatement(returnStmt(thisExpr()));
-    }
-
-    private boolean hasMutator(MutatorMethodDescriptor mmd) {
-        return exists(//
-                allMember(builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(mmd.methodName)) //
-                        .filter(ClassUtil.hasSingleParameter(mmd.parameterType)) //
-                        .filter(md -> md.getType().equals(builderClassType())));
     }
 
     /**
@@ -420,12 +404,12 @@ public class BuilderGenerator {
      *
      * @param adderVariants
      */
-    BuilderGenerator addAdderMethods(Variant[] adderVariants) {
+    BuilderGenerator addAdder(Variant[] adderVariants) {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> new AdderMethodDescriptor.Generator(fd, adderVariants, productUnit).stream()) //
-                .filter(not(adderHelper::hasAdderMethod)) //
-                .forEach(adderHelper::addAdderMethod);
+                .filter(not(adderHelper::hasAdder)) //
+                .forEach(adderHelper::addAdder);
         return this;
     }
 

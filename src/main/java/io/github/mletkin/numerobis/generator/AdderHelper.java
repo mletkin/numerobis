@@ -17,7 +17,6 @@ package io.github.mletkin.numerobis.generator;
 
 import static io.github.mletkin.numerobis.common.Util.exists;
 import static io.github.mletkin.numerobis.generator.ClassUtil.allMember;
-import static io.github.mletkin.numerobis.generator.ClassUtil.hasSingleVarArgParameter;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.fieldAccess;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.methodCall;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.methodReference;
@@ -26,22 +25,38 @@ import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
 import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.type.Type;
+
+import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 
 /**
  * Generates and adds adder methods to the builder class.
  * <p>
- * Contains Methods extracted from the builder generater to reduce class size.
- * <p>
- * FIXME: add imports
+ * An adder method
+ * <ul>
+ * <li>has the name "add&lt;field name&gt;" first letter of field name is
+ * uppercase
+ * <li>has one parameter
+ * <li>returns the builder instance
+ * <li>retains the original content of the field
+ * </ul>
  */
 public class AdderHelper {
 
     BuilderGenerator owner;
 
+    /**
+     * Creates a helper instance for adder creation.
+     *
+     * @param owner
+     *            builder generator that maintains the builder.
+     */
     AdderHelper(BuilderGenerator owner) {
         this.owner = owner;
     }
@@ -55,7 +70,7 @@ public class AdderHelper {
      *            adder descriptor
      * @return {@code true} if the method exists
      */
-    void addAdderMethod(AdderMethodDescriptor amd) {
+    void addAdder(AdderMethodDescriptor amd) {
         switch (amd.variant) {
         case ITEM:
             addItemAdder(amd);
@@ -75,7 +90,7 @@ public class AdderHelper {
     }
 
     /**
-     * Checks for an add method in the builder class.
+     * Checks for an adder method in the builder class.
      * <p>
      * signature {@code Builder addName(Type item)}
      *
@@ -83,94 +98,59 @@ public class AdderHelper {
      *            adder descriptor
      * @return {@code true} if the method exists
      */
-    boolean hasAdderMethod(AdderMethodDescriptor amd) {
+    boolean hasAdder(AdderMethodDescriptor amd) {
         switch (amd.variant) {
         case ITEM:
-            return hasItemAdder(amd);
         case STREAM:
-            return hasStreamAdder(amd);
         case COLLECTION:
-            return hasCollectionAdder(amd);
         case VARARG:
-            return hasVarArgAdder(amd);
+            return hasAdderMethod(amd);
         default:
             throw new IllegalArgumentException();
         }
     }
 
-    private boolean hasItemAdder(AdderMethodDescriptor amd) {
+    private boolean hasAdderMethod(AdderMethodDescriptor amd) {
+        Predicate<CallableDeclaration<?>> parameterFilter = amd.variant == Variant.VARARG //
+                ? ClassUtil.hasSingleVarArgParameter(adderParameterType(amd))
+                : ClassUtil.hasSingleParameter(adderParameterType(amd));
+
         return exists(//
                 allMember(owner.builderclass, MethodDeclaration.class) //
                         .filter(md -> md.getNameAsString().equals(amd.methodName)) //
-                        .filter(ClassUtil.hasSingleParameter(amd.parameterType)) //
+                        .filter(parameterFilter) //
                         .filter(md -> md.getType().equals(owner.builderClassType())));
     }
 
     private void addItemAdder(AdderMethodDescriptor amd) {
-        MethodDeclaration meth = owner.builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
-        meth.addParameter(amd.parameterType, "item");
-        meth.setType(owner.builderClassType());
-        meth.createBody() //
+        createAdder(amd, "item").createBody() // product.x.add(item)
                 .addStatement(methodCall(fieldAccess(nameExpr(BuilderGenerator.FIELD), amd.fieldName), "add",
                         nameExpr("item"))) //
                 .addStatement(returnStmt(thisExpr()));
     }
 
-    private boolean hasStreamAdder(AdderMethodDescriptor amd) {
-        return exists(//
-                allMember(owner.builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(amd.methodName)) //
-                        .filter(ClassUtil.hasSingleParameter(GenerationUtil.streamType(amd.parameterType))) //
-                        .filter(md -> md.getType().equals(owner.builderClassType())));
-    }
-
     private void addStreamAdder(AdderMethodDescriptor amd) {
-        MethodDeclaration meth = owner.builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
-        meth.addParameter(GenerationUtil.streamType(amd.parameterType), "stream");
-        meth.setType(owner.builderClassType());
-        meth.createBody() //
+        createAdder(amd, "items").createBody() // stream.forEach(product.x::add)
                 .addStatement(methodCall(//
-                        nameExpr("stream"), //
+                        nameExpr("items"), //
                         "forEach", //
                         methodReference(fieldAccess(nameExpr(BuilderGenerator.FIELD), amd.fieldName), "add")))
                 .addStatement(returnStmt(thisExpr()));
         owner.builderUnit().addImport(Stream.class);
     }
 
-    private boolean hasCollectionAdder(AdderMethodDescriptor amd) {
-        return exists(//
-                allMember(owner.builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(amd.methodName)) //
-                        .filter(ClassUtil.hasSingleParameter(GenerationUtil.collectionType(amd.parameterType))) //
-                        .filter(md -> md.getType().equals(owner.builderClassType())));
-    }
-
     private void addCollectionAdder(AdderMethodDescriptor amd) {
-        MethodDeclaration meth = owner.builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
-        meth.addParameter(GenerationUtil.collectionType(amd.parameterType), "collection");
-        meth.setType(owner.builderClassType()); //
-        meth.createBody() //
+        createAdder(amd, "items").createBody() // product.x.addAll(collection)
                 .addStatement(methodCall( //
                         fieldAccess(nameExpr(BuilderGenerator.FIELD), amd.fieldName), //
                         "addAll", //
-                        nameExpr("collection"))) //
+                        nameExpr("items"))) //
                 .addStatement(returnStmt(thisExpr()));
         owner.builderUnit().addImport(Collection.class);
     }
 
-    private boolean hasVarArgAdder(AdderMethodDescriptor amd) {
-        return exists(//
-                allMember(owner.builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(amd.methodName)) //
-                        .filter(hasSingleVarArgParameter(amd.parameterType)) //
-                        .filter(md -> md.getType().equals(owner.builderClassType())));
-    }
-
     private void addVarArgAdder(AdderMethodDescriptor amd) {
-        MethodDeclaration meth = owner.builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
-        meth.addAndGetParameter(amd.parameterType, "items").setVarArgs(true);
-        meth.setType(owner.builderClassType()); //
-        meth.createBody() //
+        createAdder(amd, "items").createBody() // Stream.of(items).forEach(product.x::add)
                 .addStatement(methodCall( //
                         methodCall(nameExpr(Stream.class), "of", nameExpr("items")), //
                         "forEach", //
@@ -179,6 +159,35 @@ public class AdderHelper {
                                 "add"))) //
                 .addStatement(returnStmt(thisExpr()));
         owner.builderUnit().addImport(Stream.class);
+    }
+
+    private MethodDeclaration createAdder(AdderMethodDescriptor amd, String parameterName) {
+        MethodDeclaration meth = owner.builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
+        meth.addAndGetParameter(adderParameterType(amd), parameterName).setVarArgs(amd.variant == Variant.VARARG);
+        meth.setType(owner.builderClassType());
+        return meth;
+    }
+
+    /**
+     * Returns the paraneter type of the mutator method.
+     *
+     * @param amd
+     *            mutator method descriptor
+     * @return the parameter type
+     */
+    private Type adderParameterType(AdderMethodDescriptor amd) {
+        switch (amd.variant) {
+        case ITEM:
+            return amd.parameterType;
+        case STREAM:
+            return GenerationUtil.streamType(amd.parameterType);
+        case COLLECTION:
+            return GenerationUtil.collectionType(amd.parameterType);
+        case VARARG:
+            return amd.parameterType;
+        default:
+            throw new IllegalArgumentException();
+        }
     }
 
 }

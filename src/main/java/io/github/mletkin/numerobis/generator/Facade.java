@@ -29,6 +29,7 @@ public class Facade {
 
     private boolean productsAreMutable;
     private Variant[] adderVariants = { Variant.ITEM };
+    private Variant[] mutatorVariants = { Variant.OBJECT };
 
     public Facade(boolean productsAreMutable) {
         this.productsAreMutable = productsAreMutable;
@@ -36,6 +37,11 @@ public class Facade {
 
     public Facade withAdderVariants(Variant[] adderVariants) {
         this.adderVariants = adderVariants;
+        return this;
+    }
+
+    public Facade withMutatorVariants(Variant[] mutatorVariants) {
+        this.mutatorVariants = mutatorVariants;
         return this;
     }
 
@@ -74,8 +80,8 @@ public class Facade {
                         .mutableByDefault(productsAreMutable) //
                         .addProductField() //
                         .addConstructors() //
-                        .addMutator() //
-                        .addAdderMethods(adderVariants) //
+                        .addMutator(mutatorVariants) //
+                        .addAdder(adderVariants) //
                         .addBuildMethod() //
                         .builderUnit() //
         );
@@ -100,8 +106,8 @@ public class Facade {
                         .mutableByDefault(productsAreMutable) //
                         .addProductField() //
                         .addFactoryMethods() //
-                        .addMutator() //
-                        .addAdderMethods(adderVariants) //
+                        .addMutator(mutatorVariants) //
+                        .addAdder(adderVariants) //
                         .addBuildMethod() //
                         .builderUnit() //
         );
@@ -122,8 +128,8 @@ public class Facade {
                         .mutableByDefault(productsAreMutable) //
                         .addProductField() //
                         .addConstructors() //
-                        .addMutator() //
-                        .addAdderMethods(adderVariants) //
+                        .addMutator(mutatorVariants) //
+                        .addAdder(adderVariants) //
                         .addBuildMethod() //
                         .builderUnit() //
         );
@@ -145,8 +151,8 @@ public class Facade {
                         .mutableByDefault(productsAreMutable) //
                         .addProductField() //
                         .addFactoryMethods() //
-                        .addMutator() //
-                        .addAdderMethods(adderVariants) //
+                        .addMutator(mutatorVariants) //
+                        .addAdder(adderVariants) //
                         .addBuildMethod() //
                         .builderUnit() //
         );

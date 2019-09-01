@@ -28,6 +28,7 @@ public @interface GenerateAdder {
 
     public enum Variant {
         NONE, // no adder for the list field
+        OBJECT, // pass complete object -- non adder use only
         VARARG, // pass items as vararg parameter list
         ITEM, // pass a single item
         STREAM, // pass items as stream

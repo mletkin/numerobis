@@ -74,37 +74,50 @@ class AdderInternalTest {
     }
 
     @Test
-    void addsStreamAdder() {
-        Variant[] variants = { Variant.STREAM };
+    void addsItemAdder() {
+        Variant[] variants = { Variant.ITEM };
         assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList"))
                 .contains(//
-                        "public Builder addX(Stream<String> stream) {" //
-                                + "        stream.forEach(product.x::add);" //
+                        "public Builder addX(String item) {" //
+                                + "        product.x.add(item);" //
                                 + "        return this;" //
                                 + "    }");
     }
 
-//    @Test
-//    void retainsStreamAdder() {
-//        Variant[] variants = { Variant.STREAM };
-//        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList", //
-//                "public static class Builder {" //
-//                        + "    public WithListBuilder addX(Stream<String> foo) {" //
-//                        + "        return null;" //
-//                        + "    }" //
-//                        + "}") //
-//        ).doesNotContain(//
-//                "public Builder addX(Stream<String> stream) {" //
-//);
-//    }
+    @Test
+    void addsStreamAdder() {
+        Variant[] variants = { Variant.STREAM };
+        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList"))
+                .contains(//
+                        "public Builder addX(Stream<String> items) {" //
+                                + "        items.forEach(product.x::add);" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    // @Test
+    // void retainsStreamAdder() {
+    // Variant[] variants = { Variant.STREAM };
+    // assertThat(new TestFacade(new
+    // Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList",
+    // //
+    // "public static class Builder {" //
+    // + " public WithListBuilder addX(Stream<String> foo) {" //
+    // + " return null;" //
+    // + " }" //
+    // + "}") //
+    // ).doesNotContain(//
+    // "public Builder addX(Stream<String> stream) {" //
+    // );
+    // }
 
     @Test
     void addCollectionAdder() {
         Variant[] variants = { Variant.COLLECTION };
         assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList"))
                 .contains(//
-                        "public Builder addX(Collection<String> collection) {" //
-                                + "        product.x.addAll(collection);" //
+                        "public Builder addX(Collection<String> items) {" //
+                                + "        product.x.addAll(items);" //
                                 + "        return this;" //
                                 + "    }");
     }
@@ -135,10 +148,9 @@ class AdderInternalTest {
                                 + "    }");
     }
 
-
     @Test
     void retainsVarArgAdder() {
-        Variant[] variants = { Variant.VARARG};
+        Variant[] variants = { Variant.VARARG };
         assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList", //
                 "public class WithListBuilder {" //
                         + "    public WithListBuilder addX(String... foo) {" //

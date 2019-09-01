@@ -18,6 +18,7 @@ package io.github.mletkin.numerobis.generator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -27,6 +28,7 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.Type;
 
+import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.annotation.GenerateMutator;
 import io.github.mletkin.numerobis.common.Util;
 
@@ -37,19 +39,23 @@ class MutatorMethodDescriptor {
 
     String methodName;
     String parameterName;
-    Type parameterType;
+    Type parameterType; // actually the field type
+    Variant variant;
 
     /**
-     * Generator for withMethod-Descriptor-Objects.
+     * Generator for mutator descriptor objects.
      * <p>
      * One declaration can contain more than one variable ( e.g. {@code int x,y;})
      */
     static class Generator {
+        private FieldDeclaration field;
+        private Variant[] variants = { Variant.OBJECT };
+        private CompilationUnit cu;
 
-        FieldDeclaration field;
-
-        Generator(FieldDeclaration field) {
+        Generator(FieldDeclaration field, Variant[] variants, CompilationUnit cu) {
             this.field = field;
+            this.variants = variants;
+            this.cu = cu;
         }
 
         /**
@@ -59,14 +65,23 @@ class MutatorMethodDescriptor {
          */
         Stream<MutatorMethodDescriptor> stream() {
             return field.getVariables().stream() //
-                    .map(this::map);
+                    .flatMap(this::toVariants);
         }
 
-        private MutatorMethodDescriptor map(VariableDeclarator vd) {
+        private Stream<MutatorMethodDescriptor> toVariants(VariableDeclarator vd) {
+            if (ClassUtil.implementsCollection(vd, cu)) {
+                return Stream.of(variants).map(v -> map(vd, v));
+            } else {
+                return Stream.of(map(vd, Variant.OBJECT));
+            }
+        }
+
+        private MutatorMethodDescriptor map(VariableDeclarator vd, Variant variant) {
             MutatorMethodDescriptor result = new MutatorMethodDescriptor();
             result.methodName = methodName(vd);
             result.parameterName = vd.getNameAsString();
             result.parameterType = vd.getType();
+            result.variant = variant;
             return result;
         }
 
