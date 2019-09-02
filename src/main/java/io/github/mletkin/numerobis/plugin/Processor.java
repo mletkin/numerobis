@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.github.javaparser.StaticJavaParser;
@@ -91,14 +92,19 @@ public class Processor {
         }
     }
 
-    private Result generate(Destination dest) throws FileNotFoundException {
-        Result result = dest.product.getPrimaryTypeName() //
+    Result generate(Destination dest) {
+        Result result = productTypeName(dest) //
                 .map(generator(dest)) //
                 .orElseThrow(GeneratorException::productClassNotFound);
+        result.productUnit = dest.product;
         if (Facade.areAccessorsWanted(dest.product)) {
-            dest.product.getPrimaryTypeName().ifPresent(type -> facade.withAccessors(result.productUnit, type));
+            productTypeName(dest).ifPresent(type -> facade.withAccessors(result.productUnit, type));
         }
         return result;
+    }
+
+    protected Optional<String> productTypeName(Destination dest) {
+        return dest.product.getPrimaryTypeName();
     }
 
     private Function<String, Result> generator(Destination dest) {
@@ -119,7 +125,7 @@ public class Processor {
         return result;
     }
 
-    private static class Destination {
+    protected static class Destination {
         private CompilationUnit builder;
         private Path builderPath;
 
