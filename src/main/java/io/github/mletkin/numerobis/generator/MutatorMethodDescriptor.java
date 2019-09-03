@@ -48,18 +48,23 @@ class MutatorMethodDescriptor {
      * One declaration can contain more than one variable ( e.g. {@code int x,y;})
      */
     static class Generator {
+        private static Variant[] DEFAULT = { Variant.OBJECT };
+
         private FieldDeclaration field;
-        private Variant[] variants = { Variant.OBJECT };
+        private Variant[] variants;
         private CompilationUnit cu;
 
         Generator(FieldDeclaration field, Variant[] variants, CompilationUnit cu) {
             this.field = field;
-            this.variants = variants;
+            this.variants = Util.firstNotEmpty( //
+                    new VariantExtractor(GenerateMutator.class).variants(field), //
+                    variants) //
+                    .orElse(DEFAULT);
             this.cu = cu;
         }
 
         /**
-         * Produces a stream of method Descriptors from a field declaration.
+         * Produces a stream of method descriptors from a field declaration.
          *
          * @return Stream<MutatorMethodDescriptor>
          */

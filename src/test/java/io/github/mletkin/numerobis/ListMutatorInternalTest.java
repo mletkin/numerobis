@@ -28,6 +28,16 @@ import io.github.mletkin.numerobis.generator.Facade;
 class ListMutatorInternalTest {
 
     @Test
+    void defaultMutatorForListIsObject() {
+        assertThat(new TestFacade(new Facade(false)).internalWithConstructors("WithList"))//
+                .contains(//
+                        "public Builder withX(List<String> x) {" //
+                                + "        product.x = x;" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
+    @Test
     void addsObjectMutatorForList() {
         Variant[] variants = { Variant.OBJECT };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList"))

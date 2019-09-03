@@ -23,6 +23,7 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.Type;
 
+import io.github.mletkin.numerobis.annotation.GenerateAdder;
 import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.common.Util;
 
@@ -42,20 +43,25 @@ class AdderMethodDescriptor {
      * One declaration can contain more than one variable ( e.g. {@code int x,y;})
      */
     static class Generator {
+        private static Variant[] DEFAULT = { Variant.ITEM };
+
         private FieldDeclaration field;
         private Variant[] variants;
         private CompilationUnit cu;
 
         Generator(FieldDeclaration field, Variant[] variants, CompilationUnit cu) {
             this.field = field;
-            this.variants = variants;
+            this.variants = Util.firstNotEmpty( //
+                    new VariantExtractor(GenerateAdder.class).variants(field), //
+                    variants) //
+                    .orElse(DEFAULT);
             this.cu = cu;
         }
 
         /**
          * Produces a stream of method descriptors from a field declaration.
          *
-         * @return Stream<MutatorMethodDescriptor>
+         * @return Stream<AdderMethodDescriptor>
          */
         Stream<AdderMethodDescriptor> stream() {
             return field.getVariables().stream() //

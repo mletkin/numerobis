@@ -18,6 +18,8 @@ package io.github.mletkin.numerobis.common;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -110,5 +112,21 @@ public final class Util {
      */
     public static String firstLetterUppercase(String word) {
         return Character.toUpperCase(word.charAt(0)) + word.substring(1);
+    }
+
+    /**
+     * Returns the first non empty array in the list.
+     *
+     * @param <T>
+     *            item type of the arrays
+     * @param list
+     *            list of arrays
+     * @return the first non empty array in the list, wrapped in an optional
+     */
+    public static <T> Optional<T[]> firstNotEmpty(T[]... list) {
+        return Stream.of(list)//
+                .filter(Objects::nonNull)//
+                .filter(a -> a.length > 0)//
+                .findFirst();
     }
 }
