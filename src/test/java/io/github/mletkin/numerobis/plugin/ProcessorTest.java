@@ -32,7 +32,8 @@ class ProcessorTest {
     static class Proc extends Processor {
 
         Proc() {
-            super("", BuilderMojo.Creation.CONSTRUCTOR, BuilderMojo.Location.SEPARATE, false, null, null);
+            super(new Order.Builder().withBuilderCreation(BuilderMojo.Creation.CONSTRUCTOR)
+                    .withBuilderLocation(BuilderMojo.Location.SEPARATE).build());
         }
 
         @Override

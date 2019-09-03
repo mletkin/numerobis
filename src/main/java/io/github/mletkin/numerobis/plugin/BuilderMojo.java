@@ -109,13 +109,14 @@ public class BuilderMojo extends AbstractMojo {
                     .map(Path::toFile) //
                     .filter(File::isFile) //
                     .filter(f -> f.getName().endsWith(".java")) //
-                    .forEach(new Processor(targetDirectory, //
-                            builderCreation, //
-                            builderLocation, //
-                            productsAreMutable, //
-                            stream(listAdderVariants).toArray(Variant[]::new), //
-                            stream(listMutatorVariants).toArray(Variant[]::new) //
-                    )::process);
+                    .forEach(new Processor(new Order.Builder() //
+                            .withTargetDirectory(targetDirectory) //
+                            .withBuilderCreation(builderCreation) //
+                            .withBuilderLocation(builderLocation) //
+                            .withProductsAreMutable(productsAreMutable) //
+                            .withListAdderVariants(stream(listAdderVariants).toArray(Variant[]::new)) //
+                            .withListMutatorVariants(stream(listMutatorVariants).toArray(Variant[]::new)) //
+                            .build())::process);
         } catch (IOException e) {
             e.printStackTrace();
         }

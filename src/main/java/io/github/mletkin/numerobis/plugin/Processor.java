@@ -29,7 +29,6 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.Facade.Result;
@@ -49,27 +48,18 @@ public class Processor {
     /**
      * Creates a processor for the given configuration.
      *
-     * @param destinationPath
-     *            Where external generated builder classes are stored.
-     * @param creation
-     *            generate factory methods or constructors
-     * @param location
-     *            use an embedded or a separate builder class
-     * @param productsAreMutable
-     *            consider products objects as mutable by default
-     * @param adderListVariants
-     *            defines which adders should be generated for list fields
-     * @param mutatorListVariants
-     *            defines which mutators should be generated for list fields
+     * @param order
+     *            order to process
      */
-    public Processor(String destinationPath, BuilderMojo.Creation creation, BuilderMojo.Location location,
-            boolean productsAreMutable, Variant[] adderListVariants, Variant[] mutatorListVariants) {
+    public Processor(Order order) {
+        String destinationPath = order.targetDirectory();
         this.destinationPath = destinationPath == null ? "" : destinationPath.trim();
-        this.useFactoryMethods = creation.flag();
-        this.embeddedBuilder = location.flag();
-        facade = new Facade(productsAreMutable);
-        ofNullable(adderListVariants).ifPresent(facade::withAdderVariants);
-        ofNullable(mutatorListVariants).ifPresent(facade::withMutatorVariants);
+        this.useFactoryMethods = order.builderCreation().flag();
+        this.embeddedBuilder = order.builderLocation().flag();
+        this.facade = new Facade(order.productsAreMutable());
+
+        ofNullable(order.listAdderVariants()).ifPresent(facade::withAdderVariants);
+        ofNullable(order.listMutatorVariants()).ifPresent(facade::withMutatorVariants);
     }
 
     /**
