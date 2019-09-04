@@ -28,6 +28,9 @@ The generator produces methods with default implementations. The implementation 
 should never change the implementation after generation. Deleted methods will be generated again.
 3. The generated code performs no null checks. This is important when dealing with collections.
 A collection object should never contain a null value.
+4. correct code leads to correct code. If the parsed product class -- and optionally the buiöde class -- iis compiled correctly,
+the generated or modified code is correct too. The reverse must not be true. If the product or builder class has errors,
+the generated code might be correct.
 
 ## Usage
 Add the following to the plugin section of your pom.xml
