@@ -33,8 +33,6 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.Type;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
-
 /**
  * Generates and adds adder methods to the builder class.
  * <p>
@@ -111,7 +109,7 @@ public class AdderHelper {
     }
 
     private boolean hasAdderMethod(AdderMethodDescriptor amd) {
-        Predicate<CallableDeclaration<?>> parameterFilter = amd.variant == Variant.VARARG //
+        Predicate<CallableDeclaration<?>> parameterFilter = amd.variant.isVarArg() //
                 ? ClassUtil.hasSingleVarArgParameter(adderParameterType(amd))
                 : ClassUtil.hasSingleParameter(adderParameterType(amd));
 
@@ -163,7 +161,7 @@ public class AdderHelper {
 
     private MethodDeclaration createAdder(AdderMethodDescriptor amd, String parameterName) {
         MethodDeclaration meth = owner.builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
-        meth.addAndGetParameter(adderParameterType(amd), parameterName).setVarArgs(amd.variant == Variant.VARARG);
+        meth.addAndGetParameter(adderParameterType(amd), parameterName).setVarArgs(amd.variant.isVarArg());
         meth.setType(owner.builderClassType());
         return meth;
     }

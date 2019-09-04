@@ -28,7 +28,7 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.Type;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
+import io.github.mletkin.numerobis.annotation.GenerateListMutator;
 import io.github.mletkin.numerobis.annotation.GenerateMutator;
 import io.github.mletkin.numerobis.common.Util;
 
@@ -40,7 +40,7 @@ class MutatorMethodDescriptor {
     String methodName;
     String parameterName;
     Type parameterType; // actually the field type
-    Variant variant;
+    ListMutatorVariant variant;
 
     /**
      * Generator for mutator descriptor objects.
@@ -48,16 +48,16 @@ class MutatorMethodDescriptor {
      * One declaration can contain more than one variable ( e.g. {@code int x,y;})
      */
     static class Generator {
-        private static Variant[] DEFAULT = { Variant.OBJECT };
+        private static ListMutatorVariant[] DEFAULT = { ListMutatorVariant.OBJECT };
 
         private FieldDeclaration field;
-        private Variant[] variants;
+        private ListMutatorVariant[] variants;
         private CompilationUnit cu;
 
-        Generator(FieldDeclaration field, Variant[] variants, CompilationUnit cu) {
+        Generator(FieldDeclaration field, ListMutatorVariant[] variants, CompilationUnit cu) {
             this.field = field;
             this.variants = Util.firstNotEmpty( //
-                    new VariantExtractor(GenerateMutator.class).variants(field), //
+                    new VariantExtractor(GenerateListMutator.class).variants(field), //
                     variants) //
                     .orElse(DEFAULT);
             this.cu = cu;
@@ -76,14 +76,14 @@ class MutatorMethodDescriptor {
         private Stream<MutatorMethodDescriptor> toVariants(VariableDeclarator vd) {
             if (ClassUtil.implementsCollection(vd, cu)) {
                 return Stream.of(variants) //
-                        .filter(v -> v != Variant.NONE) //
+                        .filter(v -> v != ListMutatorVariant.NONE) //
                         .map(v -> map(vd, v));
             } else {
-                return Stream.of(map(vd, Variant.OBJECT));
+                return Stream.of(map(vd, ListMutatorVariant.OBJECT));
             }
         }
 
-        private MutatorMethodDescriptor map(VariableDeclarator vd, Variant variant) {
+        private MutatorMethodDescriptor map(VariableDeclarator vd, ListMutatorVariant variant) {
             MutatorMethodDescriptor result = new MutatorMethodDescriptor();
             result.methodName = methodName(vd);
             result.parameterName = vd.getNameAsString();

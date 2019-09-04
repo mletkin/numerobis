@@ -1,6 +1,6 @@
 import java.util.List;
 public class AdderAnno {
-    @GenerateAdder(listVariants = {Variant.ITEM, Variant.STREAM})
-    @GenerateMutator(listVariants = {Variant.OBJECT, Variant.STREAM})
+    @GenerateAdder(variants = {Variant.ITEM, Variant.STREAM})
+    @GenerateListMutator(variants = {Variant.OBJECT, Variant.STREAM})
     List<String> products;
 }

@@ -26,15 +26,22 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface GenerateAdder {
 
+    /**
+     * Available adder variants.
+     */
     public enum Variant {
         NONE, // no adder for the list field
-        OBJECT, // pass complete object -- non adder use only
-        VARARG, // pass items as vararg parameter list
-        ITEM, // pass a single item -- adder use only
-        STREAM, // pass items as stream
-        COLLECTION, // pass items as collection
+        VARARG, // adder with vararg parameter list
+        ITEM, // adder with a single item as parameter
+        STREAM, // adder with a stream of items as parameter
+        COLLECTION, // adder with a collection of items as parameter
         ;
     }
 
-    Variant[] listVariants();
+    /**
+     * Adder variants that should be generated
+     *
+     * @return array of adder variants
+     */
+    Variant[] variants();
 }

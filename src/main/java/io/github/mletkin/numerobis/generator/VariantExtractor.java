@@ -25,26 +25,24 @@ import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MemberValuePair;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
-
 /**
  * For the extraction of variants from a mutator or adder annotation.
  */
 class VariantExtractor {
 
-    private static final String LIST_VARIANT_FIELD = "listVariants";
+    private static final String LIST_VARIANT_FIELD = "variants";
     private Class<? extends Annotation> annotationClass;
 
     VariantExtractor(Class<? extends Annotation> annotationClass) {
         this.annotationClass = annotationClass;
     }
 
-    Variant[] variants(FieldDeclaration fd) {
+    ListMutatorVariant[] variants(FieldDeclaration fd) {
         return variantExpressions(fd, LIST_VARIANT_FIELD).stream() //
                 .map(Expression::toString) //
                 .map(this::extractName) //
-                .map(Variant::valueOf) //
-                .toArray(Variant[]::new);
+                .map(ListMutatorVariant::valueOf) //
+                .toArray(ListMutatorVariant[]::new);
     }
 
     private String extractName(String variant) {

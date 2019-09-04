@@ -39,8 +39,6 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.Type;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
-
 /**
  * Helper class for generation of mutator methods.
  * <p>
@@ -112,7 +110,7 @@ public class MutatorHelper {
     }
 
     private boolean hasMutatorMethod(MutatorMethodDescriptor mmd) {
-        Predicate<CallableDeclaration<?>> parameterFilter = mmd.variant == Variant.VARARG //
+        Predicate<CallableDeclaration<?>> parameterFilter = mmd.variant.isVarArg() //
                 ? ClassUtil.hasSingleVarArgParameter(mutatorParameterType(mmd))
                 : ClassUtil.hasSingleParameter(mutatorParameterType(mmd));
 
@@ -184,7 +182,8 @@ public class MutatorHelper {
 
     private MethodDeclaration createMethod(MutatorMethodDescriptor mmd, String parameterName) {
         MethodDeclaration meth = owner.builderclass.addMethod(mmd.methodName, Modifier.Keyword.PUBLIC);
-        meth.addAndGetParameter(mutatorParameterType(mmd), parameterName).setVarArgs(mmd.variant == Variant.VARARG);
+        meth.addAndGetParameter(mutatorParameterType(mmd), parameterName)
+                .setVarArgs(mmd.variant.isVarArg());
         meth.setType(owner.builderClassType());
         return meth;
     }

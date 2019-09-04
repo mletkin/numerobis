@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.generator.Facade;
+import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 
 /**
  * Mutator generation for generated internal builder.
@@ -39,7 +39,7 @@ class ListMutatorInternalTest {
 
     @Test
     void addsObjectMutatorForList() {
-        Variant[] variants = { Variant.OBJECT };
+        ListMutatorVariant[] variants = { ListMutatorVariant.OBJECT };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList"))
                 .contains(//
                         "public Builder withX(List<String> x) {" //
@@ -50,7 +50,7 @@ class ListMutatorInternalTest {
 
     @Test
     void addsObjectMutatorForSet() {
-        Variant[] variants = { Variant.OBJECT };
+        ListMutatorVariant[] variants = { ListMutatorVariant.OBJECT };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
                 .contains(//
                         "public Builder withX(Set<String> x) {" //
@@ -61,7 +61,7 @@ class ListMutatorInternalTest {
 
     // @Test
     // void retainsObjectMutatorForList() {
-    // Variant[] variants = { Variant.OBJECT };
+    // ListMutatorVariant[] variants = { ListMutatorVariant.OBJECT };
     // assertThat(new TestFacade(new
     // Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList",
     // "public class Builder {" //
@@ -78,7 +78,7 @@ class ListMutatorInternalTest {
 
     @Test
     void addsStreamMutatorForList() {
-        Variant[] variants = { Variant.STREAM };
+        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList"))
                 .contains(//
                         "public Builder withX(Stream<String> items) {" //
@@ -89,7 +89,7 @@ class ListMutatorInternalTest {
 
     @Test
     void addsStreamMutatorForSet() {
-        Variant[] variants = { Variant.STREAM };
+        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
                 .contains(//
                         "public Builder withX(Stream<String> items) {" //
@@ -100,7 +100,7 @@ class ListMutatorInternalTest {
 
     // @Test
     // void retainsStreamMutator() {
-    // Variant[] variants = { Variant.STREAM };
+    // ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
     // assertThat(new TestFacade(new
     // Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList",
     // //
@@ -118,7 +118,7 @@ class ListMutatorInternalTest {
 
     @Test
     void addsCollectionMutatorForList() {
-        Variant[] variants = { Variant.COLLECTION };
+        ListMutatorVariant[] variants = { ListMutatorVariant.COLLECTION };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList"))
                 .contains(//
                         "public Builder withX(Collection<String> items) {" //
@@ -129,7 +129,7 @@ class ListMutatorInternalTest {
 
     @Test
     void addsCollectionMutatorForSet() {
-        Variant[] variants = { Variant.COLLECTION };
+        ListMutatorVariant[] variants = { ListMutatorVariant.COLLECTION };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
                 .contains(//
                         "public Builder withX(Collection<String> items) {" //
@@ -140,7 +140,7 @@ class ListMutatorInternalTest {
 
     // @Test
     // void retainsCollectionMutator() {
-    // Variant[] variants = { Variant.COLLECTION };
+    // ListMutatorVariant[] variants = { ListMutatorVariant.COLLECTION };
     // assertThat(new TestFacade(new
     // Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList",
     // //
@@ -158,7 +158,7 @@ class ListMutatorInternalTest {
 
     @Test
     void addsVarArgMutatorForList() {
-        Variant[] variants = { Variant.VARARG };
+        ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList"))
                 .contains(//
                         "public Builder withX(String... items) {" //
@@ -169,7 +169,7 @@ class ListMutatorInternalTest {
 
     @Test
     void addsVarArgMutatorForSet() {
-        Variant[] variants = { Variant.VARARG };
+        ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
         assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
                 .contains(//
                         "public Builder withX(String... items) {" //
@@ -181,7 +181,7 @@ class ListMutatorInternalTest {
     // @Disabled
     // @Test
     // void retainsVarArgMutator() {
-    // Variant[] variants = { Variant.VARARG };
+    // ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
     // assertThat(new TestFacade(new
     // Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList",
     // //

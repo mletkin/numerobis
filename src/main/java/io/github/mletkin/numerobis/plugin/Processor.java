@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -33,10 +34,13 @@ import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.Facade.Result;
 import io.github.mletkin.numerobis.generator.GeneratorException;
+import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 import io.github.mletkin.numerobis.generator.Sorter;
 
 /**
  * Processes a single java files to generate a builder class.
+ * <p>
+ * Maps from the mojo interface to the generator interface.
  */
 public class Processor {
 
@@ -58,8 +62,12 @@ public class Processor {
         this.embeddedBuilder = order.builderLocation().flag();
         this.facade = new Facade(order.productsAreMutable());
 
-        ofNullable(order.listAdderVariants()).ifPresent(facade::withAdderVariants);
-        ofNullable(order.listMutatorVariants()).ifPresent(facade::withMutatorVariants);
+        ofNullable(order.listAdderVariants()).map(this::toVariants).ifPresent(facade::withAdderVariants);
+        ofNullable(order.listMutatorVariants()).map(this::toVariants).ifPresent(facade::withMutatorVariants);
+    }
+
+    private ListMutatorVariant[] toVariants(Enum<?>[] liste) {
+        return Stream.of(liste).map(v -> ListMutatorVariant.valueOf(v.name())).toArray(ListMutatorVariant[]::new);
     }
 
     /**

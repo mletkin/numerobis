@@ -1,5 +1,5 @@
 import java.util.List;
 public class AdderAnnoNone {
-    @GenerateAdder(listVariants = {Variant.NONE})
+    @GenerateAdder(variants = {Variant.NONE})
     List<String> products;
 }

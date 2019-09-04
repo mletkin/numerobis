@@ -44,7 +44,6 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.annotation.Ignore;
 import io.github.mletkin.numerobis.annotation.Immutable;
 import io.github.mletkin.numerobis.annotation.Mutable;
@@ -358,7 +357,7 @@ public class BuilderGenerator {
      *
      * @return the generator instance
      */
-    BuilderGenerator addMutator(Variant[] mutatorVariants) {
+    BuilderGenerator addMutator(ListMutatorVariant[] mutatorVariants) {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> new MutatorMethodDescriptor.Generator(fd, mutatorVariants, productUnit).stream()) //
@@ -404,7 +403,7 @@ public class BuilderGenerator {
      *
      * @param adderVariants
      */
-    BuilderGenerator addAdder(Variant[] adderVariants) {
+    BuilderGenerator addAdder(ListMutatorVariant[] adderVariants) {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> new AdderMethodDescriptor.Generator(fd, adderVariants, productUnit).stream()) //

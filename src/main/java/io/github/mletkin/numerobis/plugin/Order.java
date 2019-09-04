@@ -1,15 +1,34 @@
+/**
+ * (c) 2019 by Ullrich Rieger
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.mletkin.numerobis.plugin;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
+import io.github.mletkin.numerobis.annotation.GenerateAdder;
+import io.github.mletkin.numerobis.annotation.GenerateListMutator;
 
+/**
+ * Parameter container for the {@code Porcessor} objects.
+ */
 public class Order {
 
     String targetDirectory;
     BuilderMojo.Creation builderCreation;
     BuilderMojo.Location builderLocation;
     boolean productsAreMutable;
-    Variant[] listAdderVariants;
-    Variant[] listMutatorVariants;
+    GenerateAdder.Variant[] listAdderVariants;
+    GenerateListMutator.Variant[] listMutatorVariants;
 
     private Order() {
         // builder instantiation only
@@ -31,11 +50,11 @@ public class Order {
         return productsAreMutable;
     }
 
-    public Variant[] listAdderVariants() {
+    public GenerateAdder.Variant[] listAdderVariants() {
         return listAdderVariants;
     }
 
-    public Variant[] listMutatorVariants() {
+    public GenerateListMutator.Variant[] listMutatorVariants() {
         return listMutatorVariants;
     }
 
@@ -67,12 +86,12 @@ public class Order {
             return this;
         }
 
-        public Builder withListAdderVariants(Variant[] listAdderVariants) {
+        public Builder withListAdderVariants(GenerateAdder.Variant[] listAdderVariants) {
             product.listAdderVariants = listAdderVariants;
             return this;
         }
 
-        public Builder withListMutatorVariants(Variant[] listMutatorVariants) {
+        public Builder withListMutatorVariants(GenerateListMutator.Variant[] listMutatorVariants) {
             product.listMutatorVariants = listMutatorVariants;
             return this;
         }

@@ -21,8 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.generator.Facade;
+import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 
 class MutatorAnnotationTest {
 
@@ -88,7 +88,7 @@ class MutatorAnnotationTest {
 
     @Test
     void adderAnnotationOverridesPomInInternalBuilder() {
-        Variant[] variants = { Variant.STREAM };
+        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
         assertThat(
                 new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("AdderAnnoNone"))
                         .doesNotContain(//
@@ -97,7 +97,7 @@ class MutatorAnnotationTest {
 
     @Test
     void adderAnnotationOverridesPomInExternalBuilder() {
-        Variant[] variants = { Variant.STREAM };
+        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
         assertThat(
                 new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("AdderAnnoNone"))
                         .doesNotContain(//
@@ -106,7 +106,7 @@ class MutatorAnnotationTest {
 
     @Test
     void mutatorAnnotationOverridesPomInInternalBuilder() {
-        Variant[] variants = { Variant.STREAM };
+        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
         assertThat(
                 new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("AdderAnnoNone"))
                         .doesNotContain(//
@@ -115,7 +115,7 @@ class MutatorAnnotationTest {
 
     @Test
     void mutatorAnnotationOverridesPomInExternalBuilder() {
-        Variant[] variants = { Variant.STREAM };
+        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
         assertThat(
                 new TestFacade(new Facade(false).withMutatorVariants(variants)).externalWithConstructors("AdderAnnoNone"))
                         .doesNotContain(//

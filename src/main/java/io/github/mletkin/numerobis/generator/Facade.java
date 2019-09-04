@@ -19,7 +19,6 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
 import io.github.mletkin.numerobis.annotation.GenerateAccessors;
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.annotation.GenerateBuilder;
 
 /**
@@ -28,19 +27,19 @@ import io.github.mletkin.numerobis.annotation.GenerateBuilder;
 public class Facade {
 
     private boolean productsAreMutable;
-    private Variant[] adderVariants = { Variant.ITEM };
-    private Variant[] mutatorVariants = { Variant.OBJECT };
+    private ListMutatorVariant[] adderVariants;
+    private ListMutatorVariant[] mutatorVariants;
 
     public Facade(boolean productsAreMutable) {
         this.productsAreMutable = productsAreMutable;
     }
 
-    public Facade withAdderVariants(Variant[] adderVariants) {
+    public Facade withAdderVariants(ListMutatorVariant[] adderVariants) {
         this.adderVariants = adderVariants;
         return this;
     }
 
-    public Facade withMutatorVariants(Variant[] mutatorVariants) {
+    public Facade withMutatorVariants(ListMutatorVariant[] mutatorVariants) {
         this.mutatorVariants = mutatorVariants;
         return this;
     }

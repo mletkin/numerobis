@@ -24,7 +24,6 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.GenerateAdder;
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.common.Util;
 
 /**
@@ -35,7 +34,7 @@ class AdderMethodDescriptor {
     String fieldName;
     String methodName;
     Type parameterType;
-    Variant variant;
+    ListMutatorVariant variant;
 
     /**
      * Generator for withMethod-Descriptor-Objects.
@@ -43,17 +42,17 @@ class AdderMethodDescriptor {
      * One declaration can contain more than one variable ( e.g. {@code int x,y;})
      */
     static class Generator {
-        private static Variant[] DEFAULT = { Variant.ITEM };
+        private static ListMutatorVariant[] DEFAULT = { ListMutatorVariant.ITEM };
 
         private FieldDeclaration field;
-        private Variant[] variants;
+        private ListMutatorVariant[] variants;
         private CompilationUnit cu;
 
-        Generator(FieldDeclaration field, Variant[] variants, CompilationUnit cu) {
+        Generator(FieldDeclaration field, ListMutatorVariant[] ListMutatorVariant, CompilationUnit cu) {
             this.field = field;
             this.variants = Util.firstNotEmpty( //
                     new VariantExtractor(GenerateAdder.class).variants(field), //
-                    variants) //
+                    ListMutatorVariant) //
                     .orElse(DEFAULT);
             this.cu = cu;
         }
@@ -71,11 +70,11 @@ class AdderMethodDescriptor {
 
         private Stream<AdderMethodDescriptor> toVariants(VariableDeclarator vd) {
             return Stream.of(variants) //
-                    .filter(v -> v != Variant.NONE) //
+                    .filter(v -> v != ListMutatorVariant.NONE) //
                     .map(v -> map(vd, v));
         }
 
-        private AdderMethodDescriptor map(VariableDeclarator vd, Variant variant) {
+        private AdderMethodDescriptor map(VariableDeclarator vd, ListMutatorVariant variant) {
             AdderMethodDescriptor result = new AdderMethodDescriptor();
             result.methodName = methodName(vd);
             result.fieldName = vd.getNameAsString();
