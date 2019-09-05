@@ -16,13 +16,13 @@
 package io.github.mletkin.numerobis.generator;
 
 import static io.github.mletkin.numerobis.common.Util.exists;
-import static io.github.mletkin.numerobis.generator.ClassUtil.allMember;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.fieldAccess;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.methodCall;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.methodReference;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.nameExpr;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
+import static io.github.mletkin.numerobis.generator.common.ClassUtil.allMember;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.fieldAccess;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.methodCall;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.methodReference;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.nameExpr;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.returnStmt;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.thisExpr;
 
 import java.util.Collection;
 import java.util.function.Predicate;
@@ -32,6 +32,9 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.Type;
+
+import io.github.mletkin.numerobis.generator.common.ClassUtil;
+import io.github.mletkin.numerobis.generator.common.GenerationUtil;
 
 /**
  * Generates and adds adder methods to the builder class.

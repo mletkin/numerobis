@@ -18,21 +18,22 @@ package io.github.mletkin.numerobis.generator;
 import static io.github.mletkin.numerobis.common.Util.exists;
 import static io.github.mletkin.numerobis.common.Util.ifNotThrow;
 import static io.github.mletkin.numerobis.common.Util.not;
-import static io.github.mletkin.numerobis.generator.ClassUtil.allMember;
-import static io.github.mletkin.numerobis.generator.ClassUtil.hasDefaultConstructor;
-import static io.github.mletkin.numerobis.generator.ClassUtil.hasExplicitConstructor;
-import static io.github.mletkin.numerobis.generator.ClassUtil.hasProductConstructor;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.args;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.assignExpr;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.fieldAccess;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.nameExpr;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.newExpr;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
+import static io.github.mletkin.numerobis.generator.common.ClassUtil.allMember;
+import static io.github.mletkin.numerobis.generator.common.ClassUtil.hasDefaultConstructor;
+import static io.github.mletkin.numerobis.generator.common.ClassUtil.hasExplicitConstructor;
+import static io.github.mletkin.numerobis.generator.common.ClassUtil.hasProductConstructor;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.args;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.assignExpr;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.fieldAccess;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.nameExpr;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.newExpr;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.returnStmt;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.thisExpr;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -47,6 +48,11 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.github.mletkin.numerobis.annotation.Ignore;
 import io.github.mletkin.numerobis.annotation.Immutable;
 import io.github.mletkin.numerobis.annotation.Mutable;
+import io.github.mletkin.numerobis.generator.common.ClassUtil;
+import io.github.mletkin.numerobis.generator.common.GenerationUtil;
+import io.github.mletkin.numerobis.generator.mutator.ListMutatorDescriptorGenerator;
+import io.github.mletkin.numerobis.generator.mutator.MutatorDescriptorGenerator;
+import io.github.mletkin.numerobis.generator.mutator.MutatorMethodDescriptor;
 
 /**
  * Generates builder classes product classes in a seperate compilation unit.
@@ -59,7 +65,7 @@ public class BuilderGenerator {
 
     final static String BUILD_METHOD = "build";
     final static String FACTORY_METHOD = "of";
-    final static String MUTATOR_PREFIX = "with";
+    public final static String MUTATOR_PREFIX = "with";
     final static String ADDER_PREFIX = "add";
 
     private boolean separateClass = true;
@@ -360,11 +366,19 @@ public class BuilderGenerator {
     BuilderGenerator addMutator(ListMutatorVariant[] mutatorVariants) {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
-                .flatMap(fd -> new MutatorMethodDescriptor.Generator(fd, mutatorVariants, productUnit).stream()) //
+                .flatMap(fd -> mutatorDescriptors(mutatorVariants, fd)) //
                 .filter(not(mutatorHelper::hasMutator)) //
                 .forEach(mutatorHelper::addMutator);
         return this;
     }
+
+    private Stream<MutatorMethodDescriptor> mutatorDescriptors(ListMutatorVariant[] mutatorVariants,
+            FieldDeclaration fd) {
+        return ClassUtil.implementsCollection(fd, productUnit) //
+                ? new ListMutatorDescriptorGenerator(fd, mutatorVariants).stream()
+                : new MutatorDescriptorGenerator(fd).stream();
+    }
+
 
     private boolean process(FieldDeclaration fd) {
         if (fd.isAnnotationPresent(Ignore.class)) {

@@ -16,16 +16,16 @@
 package io.github.mletkin.numerobis.generator;
 
 import static io.github.mletkin.numerobis.common.Util.exists;
-import static io.github.mletkin.numerobis.generator.ClassUtil.allMember;
-import static io.github.mletkin.numerobis.generator.ClassUtil.firstTypeArgument;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.assignExpr;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.collectionType;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.fieldAccess;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.methodCall;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.nameExpr;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.streamType;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.thisExpr;
+import static io.github.mletkin.numerobis.generator.common.ClassUtil.allMember;
+import static io.github.mletkin.numerobis.generator.common.ClassUtil.firstTypeArgument;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.assignExpr;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.collectionType;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.fieldAccess;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.methodCall;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.nameExpr;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.returnStmt;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.streamType;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.thisExpr;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +38,9 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.Type;
+
+import io.github.mletkin.numerobis.generator.common.ClassUtil;
+import io.github.mletkin.numerobis.generator.mutator.MutatorMethodDescriptor;
 
 /**
  * Helper class for generation of mutator methods.
@@ -72,7 +75,7 @@ public class MutatorHelper {
      *            mutator method descriptor
      */
     void addMutator(MutatorMethodDescriptor mmd) {
-        switch (mmd.variant) {
+        switch (mmd.variant()) {
         case OBJECT:
             addObjectMutator(mmd);
             break;
@@ -98,7 +101,7 @@ public class MutatorHelper {
      * @return {@code true} if a mutator matching the signature exists
      */
     boolean hasMutator(MutatorMethodDescriptor mmd) {
-        switch (mmd.variant) {
+        switch (mmd.variant()) {
         case OBJECT:
         case STREAM:
         case COLLECTION:
@@ -110,28 +113,28 @@ public class MutatorHelper {
     }
 
     private boolean hasMutatorMethod(MutatorMethodDescriptor mmd) {
-        Predicate<CallableDeclaration<?>> parameterFilter = mmd.variant.isVarArg() //
+        Predicate<CallableDeclaration<?>> parameterFilter = mmd.variant().isVarArg() //
                 ? ClassUtil.hasSingleVarArgParameter(mutatorParameterType(mmd))
                 : ClassUtil.hasSingleParameter(mutatorParameterType(mmd));
 
         return exists(//
                 allMember(owner.builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(mmd.methodName)) //
+                        .filter(md -> md.getNameAsString().equals(mmd.methodName())) //
                         .filter(parameterFilter) //
                         .filter(md -> md.getType().equals(owner.builderClassType())));
     }
 
     private void addObjectMutator(MutatorMethodDescriptor mmd) {
-        createMethod(mmd, mmd.parameterName).createBody() // product.x = x
-                .addStatement(assignExpr(fieldAccess(nameExpr(BuilderGenerator.FIELD), mmd.parameterName),
-                        nameExpr(mmd.parameterName))) //
+        createMethod(mmd, mmd.parameterName()).createBody() // product.x = x
+                .addStatement(assignExpr(fieldAccess(nameExpr(BuilderGenerator.FIELD), mmd.parameterName()),
+                        nameExpr(mmd.parameterName()))) //
                 .addStatement(returnStmt(thisExpr()));
     }
 
     private void addStreamMutator(MutatorMethodDescriptor mmd) {
         createMethod(mmd, "items").createBody() // product.x = items.collect(Collectors.toList())
                 .addStatement(assignExpr(//
-                        fieldAccess(nameExpr(BuilderGenerator.FIELD), mmd.parameterName), //
+                        fieldAccess(nameExpr(BuilderGenerator.FIELD), mmd.parameterName()), //
                         methodCall(//
                                 nameExpr("items"), //
                                 "collect", //
@@ -143,10 +146,10 @@ public class MutatorHelper {
     }
 
     private String collector(MutatorMethodDescriptor mmd) {
-        if (ClassUtil.implementsInterface(mmd.parameterType, List.class, owner.productUnit)) {
+        if (ClassUtil.implementsInterface(mmd.parameterType(), List.class, owner.productUnit)) {
             return "toList";
         }
-        if (ClassUtil.implementsInterface(mmd.parameterType, Set.class, owner.productUnit)) {
+        if (ClassUtil.implementsInterface(mmd.parameterType(), Set.class, owner.productUnit)) {
             return "toSet";
         }
         throw new IllegalArgumentException();
@@ -155,7 +158,7 @@ public class MutatorHelper {
     private void addCollectionMutator(MutatorMethodDescriptor mmd) {
         createMethod(mmd, "items").createBody() // product.x = items.stream().collect(Collectors.toList())
                 .addStatement(assignExpr(//
-                        fieldAccess(nameExpr(BuilderGenerator.FIELD), mmd.parameterName), //
+                        fieldAccess(nameExpr(BuilderGenerator.FIELD), mmd.parameterName()), //
                         methodCall(//
                                 methodCall(nameExpr("items"), "stream"), //
                                 "collect", //
@@ -169,7 +172,7 @@ public class MutatorHelper {
     private void addVarArgMutator(MutatorMethodDescriptor mmd) {
         createMethod(mmd, "items").createBody() // product.x = Stream.of(items).collect(Collectors.toList())
                 .addStatement(assignExpr(//
-                        fieldAccess(nameExpr(BuilderGenerator.FIELD), mmd.parameterName), //
+                        fieldAccess(nameExpr(BuilderGenerator.FIELD), mmd.parameterName()), //
                         methodCall(//
                                 methodCall(nameExpr(Stream.class), "of", nameExpr("items")), //
                                 "collect", //
@@ -181,9 +184,9 @@ public class MutatorHelper {
     }
 
     private MethodDeclaration createMethod(MutatorMethodDescriptor mmd, String parameterName) {
-        MethodDeclaration meth = owner.builderclass.addMethod(mmd.methodName, Modifier.Keyword.PUBLIC);
+        MethodDeclaration meth = owner.builderclass.addMethod(mmd.methodName(), Modifier.Keyword.PUBLIC);
         meth.addAndGetParameter(mutatorParameterType(mmd), parameterName)
-                .setVarArgs(mmd.variant.isVarArg());
+                .setVarArgs(mmd.variant().isVarArg());
         meth.setType(owner.builderClassType());
         return meth;
     }
@@ -196,15 +199,15 @@ public class MutatorHelper {
      * @return the parameter type
      */
     private Type mutatorParameterType(MutatorMethodDescriptor mmd) {
-        switch (mmd.variant) {
+        switch (mmd.variant()) {
         case OBJECT:
-            return mmd.parameterType;
+            return mmd.parameterType();
         case STREAM:
-            return streamType(firstTypeArgument(mmd.parameterType));
+            return streamType(firstTypeArgument(mmd.parameterType()));
         case COLLECTION:
-            return collectionType(firstTypeArgument(mmd.parameterType));
+            return collectionType(firstTypeArgument(mmd.parameterType()));
         case VARARG:
-            return firstTypeArgument(mmd.parameterType);
+            return firstTypeArgument(mmd.parameterType());
         default:
             throw new IllegalArgumentException();
         }

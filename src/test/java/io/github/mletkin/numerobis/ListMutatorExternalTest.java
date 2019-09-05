@@ -188,4 +188,15 @@ class ListMutatorExternalTest {
         ).doesNotContain("public WithListBuilder withX(String... items)");
     }
 
+    @Test
+    void addsMutatorForListWithCustomName() {
+        ListMutatorVariant[] variants = { ListMutatorVariant.OBJECT };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).externalWithConstructors("WithListWithCustomName"))
+                .contains(//
+                        "public WithListWithCustomNameBuilder foo(List<String> x) {" //
+                                + "        product.x = x;" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
 }

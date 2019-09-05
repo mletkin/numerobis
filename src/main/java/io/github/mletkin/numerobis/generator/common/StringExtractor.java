@@ -13,45 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis.generator;
+package io.github.mletkin.numerobis.generator.common;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 
 /**
- * For extraction of the prefix property from an annotation.
+ * For extraction of a string property from an annotation.
  */
-public class PrefixExtractor {
+public class StringExtractor {
 
-    private static final String PREFIX_FIELD = "prefix";
     private Class<? extends Annotation> annotationClass;
+    private String name;
 
     /**
-     * Creates an extractor fot the given annotation class.
+     * Creates an extractor for the given annotation class.
      *
      * @param annotationClass
      *            class of the expected annotation
+     * @param name
+     *            name of the property to extract
      */
-    PrefixExtractor(Class<? extends Annotation> annotationClass) {
+    public StringExtractor(Class<? extends Annotation> annotationClass, String name) {
         this.annotationClass = annotationClass;
+        this.name = name;
     }
 
     /**
-     * Gets the value of the prefix property from the annotation.
+     * Gets the value of the property from the annotation.
      *
-     * @param clazz
-     *            class with annotation
-     * @return the previx value wrapped in an optional
+     * @param node
+     *            node with annotation
+     * @return the value wrapped in an optional
      */
-    Optional<String> prefix(ClassOrInterfaceDeclaration clazz) {
-        return clazz.getAnnotationByClass(annotationClass) //
-                .flatMap(anno -> findByName(anno, PREFIX_FIELD)) //
+    public Optional<String> value(NodeWithAnnotations<?> node) {
+        return node.getAnnotationByClass(annotationClass) //
+                .flatMap(anno -> findByName(anno, name)) //
                 .map(MemberValuePair::getValue) //
                 .map(Expression::asStringLiteralExpr) //
                 .map(StringLiteralExpr::asString);

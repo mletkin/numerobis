@@ -23,6 +23,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.common.Util;
+import io.github.mletkin.numerobis.generator.common.ClassUtil;
 
 /**
  * Describes an accessor method for a class.

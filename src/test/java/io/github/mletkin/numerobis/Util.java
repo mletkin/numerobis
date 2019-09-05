@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
-import io.github.mletkin.numerobis.generator.ClassUtil;
+import io.github.mletkin.numerobis.generator.common.ClassUtil;
 
 /**
  * Utilities for unit tests.

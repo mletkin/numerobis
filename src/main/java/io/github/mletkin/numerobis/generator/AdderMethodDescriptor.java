@@ -25,6 +25,8 @@ import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.GenerateAdder;
 import io.github.mletkin.numerobis.common.Util;
+import io.github.mletkin.numerobis.generator.common.ClassUtil;
+import io.github.mletkin.numerobis.generator.common.VariantExtractor;
 
 /**
  * Descriptor for the generation of an adder for a collection field.
@@ -37,7 +39,7 @@ class AdderMethodDescriptor {
     ListMutatorVariant variant;
 
     /**
-     * Generator for withMethod-Descriptor-Objects.
+     * Generator for adder method-descriptor-objects.
      * <p>
      * One declaration can contain more than one variable ( e.g. {@code int x,y;})
      */

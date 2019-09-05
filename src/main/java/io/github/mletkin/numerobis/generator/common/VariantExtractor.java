@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis.generator;
+package io.github.mletkin.numerobis.generator.common;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
@@ -25,19 +25,21 @@ import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MemberValuePair;
 
+import io.github.mletkin.numerobis.generator.ListMutatorVariant;
+
 /**
  * For the extraction of variants from a mutator or adder annotation.
  */
-class VariantExtractor {
+public class VariantExtractor {
 
     private static final String LIST_VARIANT_FIELD = "variants";
     private Class<? extends Annotation> annotationClass;
 
-    VariantExtractor(Class<? extends Annotation> annotationClass) {
+    public VariantExtractor(Class<? extends Annotation> annotationClass) {
         this.annotationClass = annotationClass;
     }
 
-    ListMutatorVariant[] variants(FieldDeclaration fd) {
+    public ListMutatorVariant[] variants(FieldDeclaration fd) {
         return variantExpressions(fd, LIST_VARIANT_FIELD).stream() //
                 .map(Expression::toString) //
                 .map(this::extractName) //

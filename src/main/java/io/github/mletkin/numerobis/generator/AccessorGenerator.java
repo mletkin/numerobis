@@ -17,10 +17,10 @@ package io.github.mletkin.numerobis.generator;
 
 import static io.github.mletkin.numerobis.common.Util.exists;
 import static io.github.mletkin.numerobis.common.Util.ifNotThrow;
-import static io.github.mletkin.numerobis.generator.ClassUtil.allMember;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.methodCall;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.nameExpr;
-import static io.github.mletkin.numerobis.generator.GenerationUtil.returnStmt;
+import static io.github.mletkin.numerobis.generator.common.ClassUtil.allMember;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.methodCall;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.nameExpr;
+import static io.github.mletkin.numerobis.generator.common.GenerationUtil.returnStmt;
 
 import java.util.stream.Stream;
 
@@ -34,6 +34,9 @@ import com.github.javaparser.ast.type.Type;
 import io.github.mletkin.numerobis.annotation.GenerateAccessors;
 import io.github.mletkin.numerobis.annotation.Ignore;
 import io.github.mletkin.numerobis.common.Util;
+import io.github.mletkin.numerobis.generator.common.ClassUtil;
+import io.github.mletkin.numerobis.generator.common.GenerationUtil;
+import io.github.mletkin.numerobis.generator.common.StringExtractor;
 
 /**
  * Generates access methods for a product class.
@@ -47,7 +50,7 @@ public class AccessorGenerator {
     AccessorGenerator(CompilationUnit unit, String className) {
         this.unit = unit;
         this.clazz = ClassUtil.findClass(unit, className).orElse(null);
-        this.prefix = new PrefixExtractor(GenerateAccessors.class).prefix(clazz).orElse("");
+        this.prefix = new StringExtractor(GenerateAccessors.class, "prefix").value(clazz).orElse("");
 
         ifNotThrow(className != null, GeneratorException::productClassNotFound);
     }

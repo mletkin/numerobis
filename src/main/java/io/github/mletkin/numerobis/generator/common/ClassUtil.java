@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis.generator;
+package io.github.mletkin.numerobis.generator.common;
 
 import static io.github.mletkin.numerobis.common.Util.exists;
 
@@ -28,6 +28,7 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.Type;
@@ -64,7 +65,7 @@ public final class ClassUtil {
      *            class to check
      * @return {@code true} if the class contains a constructor
      */
-    static boolean hasExplicitConstructor(ClassOrInterfaceDeclaration type) {
+    public static boolean hasExplicitConstructor(ClassOrInterfaceDeclaration type) {
         return exists(allMember(type, ConstructorDeclaration.class));
     }
 
@@ -75,7 +76,7 @@ public final class ClassUtil {
      *            class to check
      * @return {@code true} if the class contains a default constructor.
      */
-    static boolean hasDefaultConstructor(ClassOrInterfaceDeclaration type) {
+    public static boolean hasDefaultConstructor(ClassOrInterfaceDeclaration type) {
         return exists(allMember(type, ConstructorDeclaration.class) //
                 .filter(cd -> cd.getParameters().isEmpty()));
     }
@@ -87,7 +88,7 @@ public final class ClassUtil {
      *            class to check
      * @return {@code true} if the class contains a product constructor.
      */
-    static boolean hasProductConstructor(ClassOrInterfaceDeclaration type, String productClassName) {
+    public static boolean hasProductConstructor(ClassOrInterfaceDeclaration type, String productClassName) {
         return allMember(type, ConstructorDeclaration.class) //
                 .filter(cd -> cd.getParameters().size() == 1) //
                 .anyMatch(cd -> cd.getParameter(0).getTypeAsString().equals(productClassName));
@@ -100,7 +101,7 @@ public final class ClassUtil {
      *            constructor declartion to check
      * @return {@code true} if the builder should have a corresponding constructor
      */
-    static boolean process(ConstructorDeclaration cd) {
+    public static boolean process(ConstructorDeclaration cd) {
         return !cd.isPrivate() && !cd.isAnnotationPresent(Ignore.class);
     }
 
@@ -113,8 +114,12 @@ public final class ClassUtil {
      *            Compilation unit with imports
      * @return {@code true}, if the varaibale type implements {@code Collection}
      */
-    static boolean implementsCollection(VariableDeclarator vd, CompilationUnit cu) {
+    public static boolean implementsCollection(VariableDeclarator vd, CompilationUnit cu) {
         return implementsInterface(vd.getType(), Collection.class, cu);
+    }
+
+    public static boolean implementsCollection(FieldDeclaration fd, CompilationUnit cu) {
+        return implementsInterface(fd.getElementType(), Collection.class, cu);
     }
 
     /**
@@ -128,7 +133,7 @@ public final class ClassUtil {
      *            Compilation unit with imports
      * @return {@code true}, if the type implements the interface
      */
-    static boolean implementsInterface(Type type, Class<?> clazz, CompilationUnit cu) {
+    public static boolean implementsInterface(Type type, Class<?> clazz, CompilationUnit cu) {
         String typ = type.findFirst(SimpleName.class).map(SimpleName::asString).orElse("#");
 
         Optional<String> fullType = cu.getImports().stream() //
@@ -157,7 +162,7 @@ public final class ClassUtil {
      *            second declaration to compare
      * @return {@code true} if both type lists are identical
      */
-    static boolean matchesParameter(CallableDeclaration<?> a, CallableDeclaration<?> b) {
+    public static boolean matchesParameter(CallableDeclaration<?> a, CallableDeclaration<?> b) {
         if (a.getParameters().size() != b.getParameters().size()) {
             return false;
         }
@@ -197,7 +202,7 @@ public final class ClassUtil {
      *            the type, the parameter must have
      * @return the predicate
      */
-    static Predicate<CallableDeclaration<?>> hasSingleParameter(Type type) {
+    public static Predicate<CallableDeclaration<?>> hasSingleParameter(Type type) {
         return md -> md.getParameters().size() == 1 && md.getParameter(0).getType().equals(type);
     }
 
@@ -208,7 +213,7 @@ public final class ClassUtil {
      *            the type, the parameter must have
      * @return the predicate
      */
-    static Predicate<CallableDeclaration<?>> hasSingleVarArgParameter(Type type) {
+    public static Predicate<CallableDeclaration<?>> hasSingleVarArgParameter(Type type) {
         return md -> md.getParameters().size() == 1 //
                 && md.getParameter(0).getType().equals(type) //
                 && md.getParameter(0).isVarArgs();
@@ -221,7 +226,7 @@ public final class ClassUtil {
      *            type with parameters
      * @return type of the first type parameter
      */
-    static Type firstTypeArgument(Type type) {
+    public static Type firstTypeArgument(Type type) {
         return type.asClassOrInterfaceType().getTypeArguments().get().get(0);
     }
 }
