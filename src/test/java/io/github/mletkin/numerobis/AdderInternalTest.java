@@ -162,4 +162,21 @@ class AdderInternalTest {
                         + "        return null;" //
                         + "    }");
     }
+
+    @Test
+    void addsItemAndVarargAdder() {
+        ListMutatorVariant[] variants = { ListMutatorVariant.ITEM, ListMutatorVariant.VARARG };
+        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList"))
+                .contains(//
+                        "public Builder addX(String item) {" //
+                                + "        product.x.add(item);" //
+                                + "        return this;" //
+                                + "    }") //
+                .contains(//
+                        "public Builder addX(String... items) {" //
+                                + "        Stream.of(items).forEach(product.x::add);" //
+                                + "        return this;" //
+                                + "    }");
+    }
+
 }
