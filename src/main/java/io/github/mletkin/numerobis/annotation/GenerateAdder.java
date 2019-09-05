@@ -16,13 +16,14 @@
 package io.github.mletkin.numerobis.annotation;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
  * Controls the generation of adder methods.
- * <p>
- * Currently only the enum is used.
  */
+@Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.FIELD)
 public @interface GenerateAdder {
 
@@ -39,7 +40,7 @@ public @interface GenerateAdder {
     }
 
     /**
-     * Adder variants that should be generated
+     * Adder variants that shall be generated
      *
      * @return array of adder variants
      */

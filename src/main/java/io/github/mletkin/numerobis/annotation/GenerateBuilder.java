@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that a Builder Class should be generated.
+ * Indicates that a builder class shall be generated.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(TYPE)

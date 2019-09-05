@@ -22,12 +22,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that access methods should be generated.
+ * Indicates that access methods should be generated for the class.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(TYPE)
 public @interface GenerateAccessors {
 
-    String prefix();
+    /**
+     * The prefix to use for accessor method names.
+     *
+     * @return the prefix
+     */
+    String prefix() default "";
 
 }
