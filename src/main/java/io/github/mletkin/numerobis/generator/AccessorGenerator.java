@@ -31,6 +31,7 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.Type;
 
+import io.github.mletkin.numerobis.annotation.GenerateAccessors;
 import io.github.mletkin.numerobis.annotation.Ignore;
 import io.github.mletkin.numerobis.common.Util;
 
@@ -41,10 +42,12 @@ public class AccessorGenerator {
 
     private CompilationUnit unit;
     private ClassOrInterfaceDeclaration clazz;
+    private String prefix;
 
     AccessorGenerator(CompilationUnit unit, String className) {
         this.unit = unit;
         this.clazz = ClassUtil.findClass(unit, className).orElse(null);
+        this.prefix = new PrefixExtractor(GenerateAccessors.class).prefix(clazz).orElse("");
 
         ifNotThrow(className != null, GeneratorException::productClassNotFound);
     }
@@ -57,7 +60,7 @@ public class AccessorGenerator {
     AccessorGenerator addAccessors() {
         allMember(clazz, FieldDeclaration.class) //
                 .filter(this::process) //
-                .flatMap(fd -> new AccessorMethodDescriptor.Generator(fd, unit).stream()) //
+                .flatMap(fd -> new AccessorMethodDescriptor.Generator(fd, prefix, unit).stream()) //
                 .filter(Util.not(this::hasAccessorMethod)) //
                 .forEach(this::addAccessor);
         return this;

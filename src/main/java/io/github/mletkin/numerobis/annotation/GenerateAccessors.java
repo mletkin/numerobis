@@ -28,4 +28,6 @@ import java.lang.annotation.Target;
 @Target(TYPE)
 public @interface GenerateAccessors {
 
+    String prefix();
+
 }

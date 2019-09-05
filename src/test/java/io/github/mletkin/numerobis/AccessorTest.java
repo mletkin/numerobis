@@ -50,4 +50,16 @@ class AccessorTest {
                         + "}");
     }
 
+    @Test
+    void accessMethodWithPrefixGenerated() {
+        Assertions.assertThat(testFacade.generateAccessors("AccessWithPrefix")).isEqualTo(//
+                "@GenerateAccessors(prefix = \"get\")" //
+                        + "public class AccessWithPrefix {" //
+                        + "    int foo;" //
+                        + "    public int getFoo() {" //
+                        + "        return foo;" //
+                        + "    }" //
+                        + "}");
+    }
+
 }

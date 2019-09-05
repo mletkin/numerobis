@@ -22,6 +22,8 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.Type;
 
+import io.github.mletkin.numerobis.common.Util;
+
 /**
  * Describes an accessor method for a class.
  */
@@ -34,10 +36,12 @@ class AccessorMethodDescriptor {
     static class Generator {
         FieldDeclaration field;
         private CompilationUnit cu;
+        private String prefix;
 
-        Generator(FieldDeclaration field, CompilationUnit cu) {
+        Generator(FieldDeclaration field, String prefix, CompilationUnit cu) {
             this.field = field;
             this.cu = cu;
+            this.prefix = prefix;
         }
 
         /**
@@ -60,7 +64,9 @@ class AccessorMethodDescriptor {
         }
 
         private String methodName(VariableDeclarator vd) {
-            return vd.getNameAsString();
+            return prefix != null && !prefix.equals("") //
+                    ? prefix + Util.firstLetterUppercase(vd.getNameAsString())
+                    : vd.getNameAsString();
         }
     }
 }
