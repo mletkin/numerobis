@@ -28,6 +28,9 @@ The generator produces methods with default implementations. The implementation 
 should never change the implementation after generation. Deleted methods will be generated again.
 3. The generated code performs no null checks. This is important when dealing with collections.
 A collection object should never contain a null value.
+4. correct code leads to correct code. If the parsed product class -- and optionally the buiöde class -- is compiled correctly,
+the generated or modified code is correct too. The reverse must not be true. If the product or builder class has errors,
+the generated code might be correct.
 
 ## Usage
 Add the following to the plugin section of your pom.xml
@@ -141,6 +144,11 @@ Adder variants are defined like this:
 Most of the behavior of the builder generator is controlled through annotations.
 The generator will stick to the annotation concept. The names might change and options may be set via annotation parameters. 
 All annotations are located in the package ```io.github.mletkin.numerobis.annotation```
+
+The generator is -- currently -- unable to evaluate constant expressions. For this reason annotation parameters can only be
+literals of the expected type. String arguments must be quoted string literals, enum arguments must be enum constants an may be
+qualified. Later versions may be smarter.
+
 ### GenerateBuilder
 Used on product classes.
 This is the most important annotation. Only classes annotated with ```@GenerateBuilder``` will be processed.
