@@ -133,4 +133,18 @@ class MutatorInternalBuilderTest {
                         + "}");
     }
 
+    @Test
+    void mutatorForSimpleAndArrayField() {
+        assertThat(internalWithConstructors("IntAndArray")).contains( //
+                "public Builder withA(int a) {" //
+                        + "        product.a = a;" //
+                        + "        return this;" //
+                        + "    }" //
+        ).contains( //
+                "public Builder withB(int[] b) {" //
+                        + "        product.b = b;" //
+                        + "        return this;" //
+                        + "    }" //
+        );
+    }
 }
