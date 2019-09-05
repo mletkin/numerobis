@@ -42,7 +42,7 @@ public class MutatorDescriptorGenerator {
     /**
      * Produces a stream of method descriptors from a field declaration.
      *
-     * @return Stream<MutatorMethodDescriptor>
+     * @return a stream of {@code MutatorMethodDescriptor} objects
      */
     public Stream<MutatorMethodDescriptor> stream() {
         return field.getVariables().stream() //

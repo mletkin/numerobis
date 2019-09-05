@@ -86,6 +86,8 @@ public final class ClassUtil {
      *
      * @param type
      *            class to check
+     * @param productClassName
+     *            name of the product class
      * @return {@code true} if the class contains a product constructor.
      */
     public static boolean hasProductConstructor(ClassOrInterfaceDeclaration type, String productClassName) {

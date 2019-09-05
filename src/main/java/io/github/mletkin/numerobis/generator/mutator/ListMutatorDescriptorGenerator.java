@@ -19,7 +19,7 @@ import io.github.mletkin.numerobis.generator.common.VariantExtractor;
  * NB: One field declaration can contain more than one variable ( e.g.
  * {@code int x,y;})
  *
- * TODO handle List<T>[] correktly
+ * TODO handle List&lt;T&gt;[] correctly
  */
 public class ListMutatorDescriptorGenerator {
     private static ListMutatorVariant[] DEFAULT = { ListMutatorVariant.OBJECT };
@@ -36,9 +36,9 @@ public class ListMutatorDescriptorGenerator {
     }
 
     /**
-     * Produces a stream of method descriptors from a field declaration.
+     * Returns a stream of method descriptors from a field declaration.
      *
-     * @return Stream<MutatorMethodDescriptor>
+     * @return a stream of method descriptors
      */
     public Stream<MutatorMethodDescriptor> stream() {
         return field.getVariables().stream() //
