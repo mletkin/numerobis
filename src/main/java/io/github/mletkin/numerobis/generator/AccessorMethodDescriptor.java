@@ -60,7 +60,7 @@ class AccessorMethodDescriptor {
             result.methodName = methodName(vd);
             result.fieldName = vd.getNameAsString();
             result.fieldType = vd.getType();
-            result.streamAccessor = ClassUtil.implementsCollection(vd, cu);
+            result.streamAccessor = ClassUtil.isCollection(vd, cu);
             return result;
         }
 

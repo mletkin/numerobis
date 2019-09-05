@@ -146,10 +146,10 @@ public class MutatorHelper {
     }
 
     private String collector(MutatorMethodDescriptor mmd) {
-        if (ClassUtil.implementsInterface(mmd.parameterType(), List.class, owner.productUnit)) {
+        if (ClassUtil.extendsInterface(mmd.parameterType(), List.class, owner.productUnit)) {
             return "toList";
         }
-        if (ClassUtil.implementsInterface(mmd.parameterType(), Set.class, owner.productUnit)) {
+        if (ClassUtil.extendsInterface(mmd.parameterType(), Set.class, owner.productUnit)) {
             return "toSet";
         }
         throw new IllegalArgumentException();

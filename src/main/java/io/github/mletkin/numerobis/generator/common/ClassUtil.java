@@ -108,24 +108,33 @@ public final class ClassUtil {
     }
 
     /**
-     * Checks, whether a variable type implements {@code Collection}.
+     * Checks, whether a variable type is a {@code Collection}.
      *
      * @param vd
      *            declaration of the variable to check
      * @param cu
      *            Compilation unit with imports
-     * @return {@code true}, if the varaibale type implements {@code Collection}
+     * @return {@code true}, if the type is a {@code Collection}
      */
-    public static boolean implementsCollection(VariableDeclarator vd, CompilationUnit cu) {
-        return implementsInterface(vd.getType(), Collection.class, cu);
-    }
-
-    public static boolean implementsCollection(FieldDeclaration fd, CompilationUnit cu) {
-        return implementsInterface(fd.getElementType(), Collection.class, cu);
+    public static boolean isCollection(VariableDeclarator vd, CompilationUnit cu) {
+        return extendsInterface(vd.getType(), Collection.class, cu);
     }
 
     /**
-     * Checks, whether a type implements a given interface.
+     * Checks, whether a field declaration type is a {@code Collection}.
+     *
+     * @param fd
+     *            field declaration to check
+     * @param cu
+     *            Compilation unit with imports
+     * @return {@code true}, if the type is a {@code Collection}
+     */
+    public static boolean isCollection(FieldDeclaration fd, CompilationUnit cu) {
+        return extendsInterface(fd.getElementType(), Collection.class, cu);
+    }
+
+    /**
+     * Checks, whether a type extends a given interface.
      *
      * @param type
      *            Type to check
@@ -133,9 +142,9 @@ public final class ClassUtil {
      *            Class object of the interface
      * @param cu
      *            Compilation unit with imports
-     * @return {@code true}, if the type implements the interface
+     * @return {@code true}, if the type extends the interface
      */
-    public static boolean implementsInterface(Type type, Class<?> clazz, CompilationUnit cu) {
+    public static boolean extendsInterface(Type type, Class<?> clazz, CompilationUnit cu) {
         String typ = type.findFirst(SimpleName.class).map(SimpleName::asString).orElse("#");
 
         Optional<String> fullType = cu.getImports().stream() //

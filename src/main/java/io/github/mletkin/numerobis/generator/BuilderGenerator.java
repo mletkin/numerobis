@@ -374,7 +374,7 @@ public class BuilderGenerator {
 
     private Stream<MutatorMethodDescriptor> mutatorDescriptors(ListMutatorVariant[] mutatorVariants,
             FieldDeclaration fd) {
-        return ClassUtil.implementsCollection(fd, productUnit) //
+        return ClassUtil.isCollection(fd, productUnit) //
                 ? new ListMutatorDescriptorGenerator(fd, mutatorVariants).stream()
                 : new MutatorDescriptorGenerator(fd).stream();
     }

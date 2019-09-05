@@ -66,7 +66,7 @@ class AdderMethodDescriptor {
          */
         Stream<AdderMethodDescriptor> stream() {
             return field.getVariables().stream() //
-                    .filter(vd -> ClassUtil.implementsCollection(vd, cu)) //
+                    .filter(vd -> ClassUtil.isCollection(vd, cu)) //
                     .flatMap(this::toVariants);
         }
 
