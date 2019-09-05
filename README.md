@@ -144,6 +144,11 @@ Adder variants are defined like this:
 Most of the behavior of the builder generator is controlled through annotations.
 The generator will stick to the annotation concept. The names might change and options may be set via annotation parameters. 
 All annotations are located in the package ```io.github.mletkin.numerobis.annotation```
+
+The generator is -- currently -- unable to evaluate constant expressions. For this reason annotation parameters can only be
+literals of the expected type. String arguments must be quoted string literals, enum arguments must be enum constants an may be
+qualified. Later versions may be smarter.
+
 ### GenerateBuilder
 Used on product classes.
 This is the most important annotation. Only classes annotated with ```@GenerateBuilder``` will be processed.
