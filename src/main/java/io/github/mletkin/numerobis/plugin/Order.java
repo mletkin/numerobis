@@ -1,103 +1,74 @@
-/**
- * (c) 2019 by Ullrich Rieger
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package io.github.mletkin.numerobis.plugin;
 
-import io.github.mletkin.numerobis.annotation.GenerateAdder;
-import io.github.mletkin.numerobis.annotation.GenerateListMutator;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Optional;
 
-/**
- * Parameter container for the {@code Porcessor} objects.
- */
-public class Order {
+import com.github.javaparser.ast.CompilationUnit;
 
-    String targetDirectory;
-    BuilderMojo.Creation builderCreation;
-    BuilderMojo.Location builderLocation;
-    boolean productsAreMutable;
-    GenerateAdder.Variant[] listAdderVariants;
-    GenerateListMutator.Variant[] listMutatorVariants;
+import io.github.mletkin.numerobis.generator.Facade;
 
-    private Order() {
-        // builder instantiation only
+class Order {
+    private boolean generateBuilder = false;
+    private boolean generateAccessors = false;
+
+    private CompilationUnit builder;
+    private Path builderPath;
+
+    private CompilationUnit product;
+    private Path productPath;
+
+    public Order(File productClassFile) {
+        productPath = productClassFile.toPath();
+        product = PluginUtil.parse(productClassFile);
+
+        generateBuilder = Facade.isBuilderWanted(product);
+        generateAccessors = Facade.areAccessorsWanted(product);
     }
 
-    public String targetDirectory() {
-        return targetDirectory;
+    void setBuilderPath(Path builderPath) {
+        this.builderPath = builderPath;
+        if (builderPath.toFile().exists()) {
+            builder = PluginUtil.parse(builderPath.toFile());
+        } else {
+            builder = new CompilationUnit();
+        }
+        generateBuilder = true;
     }
 
-    public BuilderMojo.Creation builderCreation() {
-        return builderCreation;
+    File productFile() {
+        return productPath.toFile();
     }
 
-    public BuilderMojo.Location builderLocation() {
-        return builderLocation;
+    Path productPath() {
+        return productPath;
     }
 
-    public boolean productsAreMutable() {
-        return productsAreMutable;
+    CompilationUnit builderUnit() {
+        return builder;
     }
 
-    public GenerateAdder.Variant[] listAdderVariants() {
-        return listAdderVariants;
+    CompilationUnit productUnit() {
+        return product;
     }
 
-    public GenerateListMutator.Variant[] listMutatorVariants() {
-        return listMutatorVariants;
+    Optional<String> productTypeName() {
+        return product.getPrimaryTypeName();
     }
 
-    public static class Builder {
+    Path builderPath() {
+        return builderPath;
+    }
 
-        private Order product;
+    boolean generateAccessors() {
+        return generateAccessors;
+    }
 
-        public Builder() {
-            product = new Order();
-        }
+    boolean generateBuilder() {
+        return generateBuilder;
+    }
 
-        public Builder withTargetDirectory(String targetDirectory) {
-            product.targetDirectory = targetDirectory;
-            return this;
-        }
-
-        public Builder withBuilderCreation(BuilderMojo.Creation builderCreation) {
-            product.builderCreation = builderCreation;
-            return this;
-        }
-
-        public Builder withBuilderLocation(BuilderMojo.Location builderLocation) {
-            product.builderLocation = builderLocation;
-            return this;
-        }
-
-        public Builder withProductsAreMutable(boolean productsAreMutable) {
-            product.productsAreMutable = productsAreMutable;
-            return this;
-        }
-
-        public Builder withListAdderVariants(GenerateAdder.Variant[] listAdderVariants) {
-            product.listAdderVariants = listAdderVariants;
-            return this;
-        }
-
-        public Builder withListMutatorVariants(GenerateListMutator.Variant[] listMutatorVariants) {
-            product.listMutatorVariants = listMutatorVariants;
-            return this;
-        }
-
-        public Order build() {
-            return product;
-        }
+    boolean needsProcessing() {
+        return generateAccessors || generateBuilder;
     }
 }

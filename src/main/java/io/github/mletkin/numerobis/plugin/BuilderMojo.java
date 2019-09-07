@@ -36,9 +36,23 @@ import io.github.mletkin.numerobis.annotation.GenerateAdder;
 import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.annotation.GenerateListMutator;
 
+/**
+ * Entry point for the generator plugin.
+ * <p>
+ * <ul>
+ * <li>handles maven plugin specific stuff
+ * <li>gathers configuration sessings from the pom
+ * <li>walks through the source file tree
+ * <li>calls the generator for each java file
+ * <li>dumps configuration to the log
+ * </ul>
+ */
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class BuilderMojo extends AbstractMojo {
 
+    /**
+     * Possible variants for creation of builder instances
+     */
     enum Creation {
         CONSTRUCTOR, FACTORY;
         boolean flag() {
@@ -46,6 +60,9 @@ public class BuilderMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Possible location of the builder class
+     */
     enum Location {
         EMBEDDED, SEPARATE;
         boolean flag() {
@@ -67,18 +84,33 @@ public class BuilderMojo extends AbstractMojo {
     @Parameter(defaultValue = " ", readonly = true, required = true)
     private String targetDirectory;
 
+    /**
+     * How instances of the builder class shall be created
+     */
     @Parameter(defaultValue = "FACTORY")
     private Creation builderCreation;
 
+    /**
+     * Where the builder class shall be created.
+     */
     @Parameter(defaultValue = "EMBEDDED")
     private Location builderLocation;
 
+    /**
+     * Whether product instances may be changes after creation.
+     */
     @Parameter
     private boolean productsAreMutable;
 
+    /**
+     * Variants of adder methods to create in the builder.
+     */
     @Parameter
     private List<GenerateAdder.Variant> listAdderVariants;
 
+    /**
+     * Variants of mutator methods to create in the builder.
+     */
     @Parameter
     private List<GenerateListMutator.Variant> listMutatorVariants;
 
@@ -111,7 +143,8 @@ public class BuilderMojo extends AbstractMojo {
                     .map(Path::toFile) //
                     .filter(File::isFile) //
                     .filter(f -> f.getName().endsWith(".java")) //
-                    .forEach(new Processor(new Order.Builder() //
+                    .peek(f -> getLog().debug(f.toString())) //
+                    .forEach(new Processor(new MojoSettings.Builder() //
                             .withTargetDirectory(targetDirectory) //
                             .withBuilderCreation(builderCreation) //
                             .withBuilderLocation(builderLocation) //

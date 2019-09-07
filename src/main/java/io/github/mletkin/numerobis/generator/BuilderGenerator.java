@@ -61,7 +61,7 @@ public class BuilderGenerator {
 
     private static final String BUILDER_PACKAGE = "io.github.mletkin.numerobis";
     final static String FIELD = "product";
-    private final static String CLASS_POSTFIX = "Builder";
+    public final static String CLASS_POSTFIX = "Builder";
 
     final static String BUILD_METHOD = "build";
     final static String FACTORY_METHOD = "of";

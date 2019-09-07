@@ -18,21 +18,17 @@ package io.github.mletkin.numerobis.plugin;
 import static java.util.Optional.ofNullable;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
 
 import io.github.mletkin.numerobis.common.Util;
+import io.github.mletkin.numerobis.generator.BuilderGenerator;
 import io.github.mletkin.numerobis.generator.Facade;
-import io.github.mletkin.numerobis.generator.Facade.Result;
 import io.github.mletkin.numerobis.generator.GeneratorException;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 import io.github.mletkin.numerobis.generator.Sorter;
@@ -40,10 +36,14 @@ import io.github.mletkin.numerobis.generator.Sorter;
 /**
  * Processes a single java files to generate a builder class.
  * <p>
- * Maps from the mojo interface to the generator interface.
+ * <ul>
+ * <li>called by the mojo
+ * <li>created with a setup for the generator
+ * <li>{@code process} is called for each java file
+ * <li>maps mojo settings to generator settings
+ * </ul>
  */
 public class Processor {
-
     private String destinationPath;
     private boolean useFactoryMethods;
     private boolean embeddedBuilder;
@@ -52,18 +52,17 @@ public class Processor {
     /**
      * Creates a processor for the given configuration.
      *
-     * @param order
-     *            order to process
+     * @param settings
+     *            configuration from the mojo
      */
-    public Processor(Order order) {
-        String destinationPath = order.targetDirectory();
-        this.destinationPath = destinationPath == null ? "" : destinationPath.trim();
-        this.useFactoryMethods = order.builderCreation().flag();
-        this.embeddedBuilder = order.builderLocation().flag();
-        this.facade = new Facade(order.productsAreMutable());
+    public Processor(MojoSettings settings) {
+        this.destinationPath = ofNullable(settings.targetDirectory()).map(String::trim).orElse("");
+        this.useFactoryMethods = settings.builderCreation().flag();
+        this.embeddedBuilder = settings.builderLocation().flag();
+        this.facade = new Facade(settings.productsAreMutable());
 
-        ofNullable(order.listAdderVariants()).map(this::toVariants).ifPresent(facade::withAdderVariants);
-        ofNullable(order.listMutatorVariants()).map(this::toVariants).ifPresent(facade::withMutatorVariants);
+        ofNullable(settings.listAdderVariants()).map(this::toVariants).ifPresent(facade::withAdderVariants);
+        ofNullable(settings.listMutatorVariants()).map(this::toVariants).ifPresent(facade::withMutatorVariants);
     }
 
     private ListMutatorVariant[] toVariants(Enum<?>[] liste) {
@@ -71,102 +70,70 @@ public class Processor {
     }
 
     /**
-     * Parse the java file, generates and stores the builder if desired.
+     * Parse the java file, generates and stores the class files if desired.
      *
      * @param file
      *            location of the Product class definition
      */
     public void process(File file) {
-        try {
-            CompilationUnit productUnit = parse(file);
-            if (Facade.isBuilderWanted(productUnit)) {
-                Destination dest = builder(file, productUnit) //
-                        .withProductUnit(productUnit) //
-                        .withProductPath(file.toPath());
-                write(dest, sort(generate(dest)));
-            }
-        } catch (IOException | RuntimeException e) {
-            e.printStackTrace();
+        Order order = new Order(file);
+        if (order.generateBuilder()) {
+            order.setBuilderPath(builderPath(order));
+        }
+        if (order.needsProcessing()) {
+            generate(order);
+            sort(order);
+            write(order);
         }
     }
 
-    Result generate(Destination dest) {
-        Result result = productTypeName(dest) //
-                .map(generator(dest)) //
-                .orElseThrow(GeneratorException::productClassNotFound);
-        result.productUnit = dest.product;
-        if (Facade.areAccessorsWanted(dest.product)) {
-            productTypeName(dest).ifPresent(type -> facade.withAccessors(result.productUnit, type));
+    private Path builderPath(Order order) {
+        return dest(order.productFile(),
+                order.productUnit().getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null));
+    }
+
+    private void generate(Order order) {
+        String productTypeName = order.productTypeName().orElseThrow(GeneratorException::productClassNotFound);
+
+        if (order.generateBuilder()) {
+            generator(order, productTypeName).execute();
         }
-        return result;
+
+        if (order.generateAccessors()) {
+            facade.withAccessors(order.productUnit(), productTypeName);
+        }
     }
 
-    protected Optional<String> productTypeName(Destination dest) {
-        return dest.product.getPrimaryTypeName();
+    @FunctionalInterface
+    private interface Executor {
+        void execute();
     }
 
-    private Function<String, Result> generator(Destination dest) {
+    private Executor generator(Order order, String type) {
         if (embeddedBuilder) {
             return useFactoryMethods //
-                    ? type -> facade.withFactoryMethods(dest.product, type)
-                    : type -> facade.withConstructors(dest.product, type);
+                    ? () -> facade.withFactoryMethods(order.productUnit(), type)
+                    : () -> facade.withConstructors(order.productUnit(), type);
         }
         return useFactoryMethods //
-                ? type -> facade.withFactoryMethods(dest.product, type, dest.builder)
-                : type -> facade.withConstructors(dest.product, type, dest.builder);
+                ? () -> facade.withFactoryMethods(order.productUnit(), type, order.builderUnit())
+                : () -> facade.withConstructors(order.productUnit(), type, order.builderUnit());
     }
 
-    private Result sort(Result result) {
+    private void sort(Order order) {
         Sorter sorter = new Sorter();
-        ofNullable(result.builderUnit).ifPresent(sorter::sort);
-        ofNullable(result.productUnit).ifPresent(sorter::sort);
-        return result;
+        ofNullable(order.builderUnit()).ifPresent(sorter::sort);
+        ofNullable(order.productUnit()).ifPresent(sorter::sort);
     }
 
-    protected static class Destination {
-        private CompilationUnit builder;
-        private Path builderPath;
-
-        private CompilationUnit product;
-        private Path productPath;
-
-        public Destination(CompilationUnit unit, Path path) {
-            this.builder = unit;
-            this.builderPath = path;
+    private void write(Order order) {
+        if (!embeddedBuilder) {
+            ofNullable(order.builderUnit()).ifPresent(u -> writeUnit(order.builderPath(), u));
         }
-
-        Destination withProductUnit(CompilationUnit product) {
-            this.product = product;
-            return this;
-        }
-
-        Destination withProductPath(Path productPath) {
-            this.productPath = productPath;
-            return this;
-        }
-
-        Path builderPath() {
-            return builderPath;
-        }
-
+        ofNullable(order.productUnit()).ifPresent(u -> writeUnit(order.productPath(), u));
     }
 
-    private Destination builder(File productFile, CompilationUnit productClass) throws FileNotFoundException {
-        Path destinationPath = dest(productFile,
-                productClass.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null));
-
-        if (destinationPath.toFile().exists()) {
-            return new Destination(parse(destinationPath.toFile()), destinationPath);
-        }
-        return new Destination(new CompilationUnit(), destinationPath);
-    }
-
-    private void write(Destination dest, Result result) {
-        ofNullable(result.builderUnit).ifPresent(u -> writeResult(dest.builderPath(), u));
-        ofNullable(result.productUnit).ifPresent(u -> writeResult(dest.productPath, u));
-    }
-
-    private void writeResult(Path path, CompilationUnit unit) {
+    private void writeUnit(Path path, CompilationUnit unit) {
         try {
             Util.createParentPath(path);
             Files.write(path, unit.toString().getBytes());
@@ -179,12 +146,8 @@ public class Processor {
         String path = "".equals(destinationPath) //
                 ? src.getParent()
                 : destinationPath + File.separator + packagePath.replace(".", File.separator);
-        String fileName = src.getName().replace(".java", "Builder.java");
+        String fileName = src.getName().replace(".java", BuilderGenerator.CLASS_POSTFIX + ".java");
         return new File(path, fileName).toPath();
-    }
-
-    private CompilationUnit parse(File file) throws FileNotFoundException {
-        return StaticJavaParser.parse(file);
     }
 
 }
