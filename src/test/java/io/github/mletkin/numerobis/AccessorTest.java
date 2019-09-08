@@ -16,6 +16,7 @@
 package io.github.mletkin.numerobis;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -58,6 +59,43 @@ class AccessorTest {
                         + "    int foo;" //
                         + "    public int getFoo() {" //
                         + "        return foo;" //
+                        + "    }" //
+                        + "}");
+    }
+
+    @Test
+    void retainsArrayAccessor() {
+        Assertions.assertThat(testFacade.generateAccessors("ArrayFieldWithAccessor")).isEqualTo(//
+                "class ArrayFieldWithAccessor {" //
+                        + "    String[] foo;" //
+                        + "    String[] foo() {" //
+                        + "    }" //
+                        + "}");
+    }
+
+    @Test
+    void retainsIntAccessor() {
+        Assertions.assertThat(testFacade.generateAccessors("IntFieldWithAccessor")).isEqualTo(//
+                "class IntFieldWithAccessor {" //
+                        + "    int foo;" //
+                        + "    int foo() {" //
+                        + "    }" //
+                        + "}");
+    }
+
+    /**
+     * Maybe there's a bug in JavaParser.<br>
+     * In this test int[] and int[] are not considered equal
+     */
+    @Disabled
+    @Test
+    void retainsIntAndArrayAccessor() {
+        Assertions.assertThat(testFacade.generateAccessors("IntAndArrayFieldWithAccessor")).isEqualTo(//
+                "class IntAndArrayFieldWithAccessor {" //
+                        + "    int foo, bar[];" //
+                        + "    int foo() {" //
+                        + "    }" //
+                        + "    int[] bar() {" //
                         + "    }" //
                         + "}");
     }

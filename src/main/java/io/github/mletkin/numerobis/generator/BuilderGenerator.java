@@ -442,6 +442,10 @@ public class BuilderGenerator {
         return builderclass.getNameAsString();
     }
 
+    public ClassOrInterfaceDeclaration builderClass() {
+        return builderclass;
+    }
+
     /**
      * Returns the builder class.
      *

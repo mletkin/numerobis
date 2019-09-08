@@ -1,0 +1,3 @@
+class ArrayField {
+    String[] foo;
+}

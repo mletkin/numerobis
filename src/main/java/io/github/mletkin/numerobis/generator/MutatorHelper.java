@@ -118,7 +118,7 @@ public class MutatorHelper {
                 : ClassUtil.hasSingleParameter(mutatorParameterType(mmd));
 
         return exists(//
-                allMember(owner.builderclass, MethodDeclaration.class) //
+                allMember(owner.builderClass(), MethodDeclaration.class) //
                         .filter(md -> md.getNameAsString().equals(mmd.methodName())) //
                         .filter(parameterFilter) //
                         .filter(md -> md.getType().equals(owner.builderClassType())));
@@ -185,7 +185,7 @@ public class MutatorHelper {
 
     private MethodDeclaration createMethod(MutatorMethodDescriptor mmd, String parameterName) {
         MethodDeclaration meth = owner.builderclass.addMethod(mmd.methodName(), Modifier.Keyword.PUBLIC);
-        meth.addAndGetParameter(mutatorParameterType(mmd), parameterName)
+        meth.addAndGetParameter(mutatorParameterType(mmd), parameterName) //
                 .setVarArgs(mmd.variant().isVarArg());
         meth.setType(owner.builderClassType());
         return meth;
