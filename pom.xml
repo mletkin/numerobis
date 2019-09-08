@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.mletkin</groupId>
     <artifactId>builder-generator-maven-plugin</artifactId>
@@ -39,7 +41,7 @@
         <version.maven-source-plugin>3.1.0</version.maven-source-plugin>
         <maven-deploy-plugin>2.8.2</maven-deploy-plugin>
 
-        <version.javaparser-core>3.14.10</version.javaparser-core>
+        <version.javaparser-core>3.14.12</version.javaparser-core>
 
         <version.assertj>3.13.2</version.assertj>
 
