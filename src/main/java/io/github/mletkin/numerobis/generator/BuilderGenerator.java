@@ -61,7 +61,6 @@ import io.github.mletkin.numerobis.plugin.Naming;
 public class BuilderGenerator {
 
     private static final String BUILDER_PACKAGE = "io.github.mletkin.numerobis";
-    final static String FIELD = "product";
 
     private boolean separateClass = true;
     private boolean mutableByDefault = false;
@@ -74,14 +73,10 @@ public class BuilderGenerator {
 
     private AdderHelper adderHelper = new AdderHelper(this);
     private MutatorHelper mutatorHelper = new MutatorHelper(this);
-    private Naming naming = Naming.DEFAULT;
+    Naming naming = Naming.DEFAULT;
 
     /**
-     * Creates a generator for an internal builder class.
-     * <p>
-     * <ul>
-     * <li>creates the builder class definition
-     * </ul>
+     * Creates a generator for an product class.
      *
      * @param productUnit
      *            unit with the product class definition
@@ -91,43 +86,24 @@ public class BuilderGenerator {
     BuilderGenerator(CompilationUnit productUnit, String productClassName) {
         this.productclass = ClassUtil.findClass(productUnit, productClassName).orElse(null);
         this.productUnit = productUnit;
-        this.builderUnit = productUnit;
-        this.separateClass = false;
 
         ifNotThrow(productclass != null, GeneratorException::productClassNotFound);
         ifNotThrow(hasUsableConstructor(productclass), GeneratorException::noConstructorFound);
-
-        createInternalBuilderClass();
     }
 
-    /**
-     * Creates a generator for an external builder class.
-     * <p>
-     * <ul>
-     * <li>adds the package declaration
-     * <li>creates the builder class definition
-     * <li>copies the import declarations from the product class
-     * </ul>
-     * Imports from the plugin package are excluded.
-     *
-     * @param productUnit
-     *            unit with the product class definition
-     * @param productClassName
-     *            name of the product class
-     * @param builderUnit
-     *            unit with the builder class
-     */
-    BuilderGenerator(CompilationUnit productUnit, String productClassName, CompilationUnit builderUnit) {
-        this.productclass = ClassUtil.findClass(productUnit, productClassName).orElse(null);
-        this.productUnit = productUnit;
+    BuilderGenerator withInternalBuilder() {
+        this.builderUnit = productUnit;
+        separateClass = false;
+        createInternalBuilderClass();
+        return this;
+    }
+
+    BuilderGenerator withExternalBuilder(CompilationUnit builderUnit) {
         this.builderUnit = builderUnit;
-
-        ifNotThrow(productclass != null, GeneratorException::productClassNotFound);
-        ifNotThrow(hasUsableConstructor(productclass), GeneratorException::noConstructorFound);
-
         createPackageDeclaration();
         copyImports();
         createExternalBuilderClass();
+        return this;
     }
 
     BuilderGenerator mutableByDefault(boolean mutableByDefault) {
@@ -184,7 +160,7 @@ public class BuilderGenerator {
      */
     BuilderGenerator addProductField() {
         if (!hasProductField()) {
-            builderclass.addField(productClassName(), FIELD, Modifier.Keyword.PRIVATE);
+            builderclass.addField(productClassName(), naming.productField(), Modifier.Keyword.PRIVATE);
         }
         return this;
     }
@@ -201,7 +177,7 @@ public class BuilderGenerator {
         return allMember(builderclass, FieldDeclaration.class) //
                 .map(FieldDeclaration::getVariables) //
                 .flatMap(List::stream) //
-                .filter(vd -> vd.getNameAsString().equals(FIELD)) //
+                .filter(vd -> vd.getNameAsString().equals(naming.productField())) //
                 .findFirst();
     }
 
@@ -232,9 +208,10 @@ public class BuilderGenerator {
 
     private void addManipulationConstructor() {
         builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
-                .addParameter(productClassType(), FIELD) //
+                .addParameter(productClassType(), naming.productField()) //
                 .createBody() //
-                .addStatement(assignExpr(fieldAccess(thisExpr(), FIELD), nameExpr(FIELD)));
+                .addStatement(
+                        assignExpr(fieldAccess(thisExpr(), naming.productField()), nameExpr(naming.productField())));
     }
 
     private boolean process(ConstructorDeclaration cd) {
@@ -250,14 +227,14 @@ public class BuilderGenerator {
     private void addDefaultConstructor() {
         builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
                 .createBody() //
-                .addStatement(assignExpr(FIELD, newExpr(productClassType())));
+                .addStatement(assignExpr(naming.productField(), newExpr(productClassType())));
     }
 
     private void addMatchingConstructor(ConstructorDeclaration productConstructor) {
         ConstructorDeclaration builderconstructor = builderclass.addConstructor(Modifier.Keyword.PUBLIC);
         productConstructor.getParameters().stream().forEach(builderconstructor::addParameter);
         builderconstructor.createBody() //
-                .addStatement(assignExpr(FIELD, newExpr(productClassType(), args(productConstructor))));
+                .addStatement(assignExpr(naming.productField(), newExpr(productClassType(), args(productConstructor))));
     }
 
     private boolean hasMatchingConstructor(ConstructorDeclaration productConstructor) {
@@ -301,9 +278,9 @@ public class BuilderGenerator {
         MethodDeclaration factoryMethod = //
                 builderclass.addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         factoryMethod.setType(builderClassName());
-        factoryMethod.addParameter(productClassName(), FIELD);
+        factoryMethod.addParameter(productClassName(), naming.productField());
         factoryMethod.createBody() //
-                .addStatement(returnStmt(newExpr(builderClassType(), nameExpr(FIELD))));
+                .addStatement(returnStmt(newExpr(builderClassType(), nameExpr(naming.productField()))));
     }
 
     /**
@@ -335,9 +312,10 @@ public class BuilderGenerator {
      */
     void addProductConstructor() {
         ConstructorDeclaration constructor = builderclass.addConstructor(Modifier.Keyword.PRIVATE);
-        constructor.addParameter(productClassName(), FIELD);
+        constructor.addParameter(productClassName(), naming.productField());
         constructor.createBody() //
-                .addStatement(assignExpr(fieldAccess(thisExpr(), FIELD), nameExpr(FIELD)));
+                .addStatement(
+                        assignExpr(fieldAccess(thisExpr(), naming.productField()), nameExpr(naming.productField())));
     }
 
     private void addFactoryMethod(ConstructorDeclaration productConstructor) {
@@ -400,7 +378,7 @@ public class BuilderGenerator {
             builderclass.addMethod(naming.buildMethod(), Modifier.Keyword.PUBLIC) //
                     .setType(productClassType()) //
                     .createBody() //
-                    .addStatement(returnStmt(nameExpr(FIELD)));
+                    .addStatement(returnStmt(nameExpr(naming.productField())));
         }
         return this;
     }

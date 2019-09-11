@@ -125,7 +125,7 @@ public class AdderHelper {
 
     private void addItemAdder(AdderMethodDescriptor amd) {
         createAdder(amd, "item").createBody() // product.x.add(item)
-                .addStatement(methodCall(fieldAccess(nameExpr(BuilderGenerator.FIELD), amd.fieldName), "add",
+                .addStatement(methodCall(fieldAccess(nameExpr(owner.naming.productField()), amd.fieldName), "add",
                         nameExpr("item"))) //
                 .addStatement(returnStmt(thisExpr()));
     }
@@ -135,7 +135,7 @@ public class AdderHelper {
                 .addStatement(methodCall(//
                         nameExpr("items"), //
                         "forEach", //
-                        methodReference(fieldAccess(nameExpr(BuilderGenerator.FIELD), amd.fieldName), "add")))
+                        methodReference(fieldAccess(nameExpr(owner.naming.productField()), amd.fieldName), "add")))
                 .addStatement(returnStmt(thisExpr()));
         owner.builderUnit().addImport(Stream.class);
     }
@@ -143,7 +143,7 @@ public class AdderHelper {
     private void addCollectionAdder(AdderMethodDescriptor amd) {
         createAdder(amd, "items").createBody() // product.x.addAll(collection)
                 .addStatement(methodCall( //
-                        fieldAccess(nameExpr(BuilderGenerator.FIELD), amd.fieldName), //
+                        fieldAccess(nameExpr(owner.naming.productField()), amd.fieldName), //
                         "addAll", //
                         nameExpr("items"))) //
                 .addStatement(returnStmt(thisExpr()));
@@ -156,7 +156,7 @@ public class AdderHelper {
                         methodCall(nameExpr(Stream.class), "of", nameExpr("items")), //
                         "forEach", //
                         methodReference(//
-                                fieldAccess(nameExpr(BuilderGenerator.FIELD), amd.fieldName), //
+                                fieldAccess(nameExpr(owner.naming.productField()), amd.fieldName), //
                                 "add"))) //
                 .addStatement(returnStmt(thisExpr()));
         owner.builderUnit().addImport(Stream.class);

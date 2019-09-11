@@ -61,6 +61,13 @@ class NamingTest {
                         + "    }");
     }
 
+    @Test
+    void productFieldConfiguration() {
+        Naming naming = Naming.Builder.of().withProductField("foo").build();
+        assertThat(internalWithFactories(("Empty"), naming)).contains(//
+                "private Empty foo;");
+    }
+
     static String internalWithFactories(String className, Naming naming) {
         return new TestFacade(false, naming).internalWithFactories(className);
     }

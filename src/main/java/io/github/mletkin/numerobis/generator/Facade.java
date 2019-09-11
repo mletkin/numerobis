@@ -162,16 +162,17 @@ public class Facade {
 
     private BuilderGenerator generator(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
-        return new BuilderGenerator(productUnit, productClassName, builderUnit) //
+        return new BuilderGenerator(productUnit, productClassName) //
                 .mutableByDefault(productsAreMutable) //
-                .withNamingSettings(namingSettings);
+                .withNamingSettings(namingSettings) //
+                .withExternalBuilder(builderUnit);
     }
 
     private BuilderGenerator generator(CompilationUnit productUnit, String productClassName) {
-        return new BuilderGenerator(productUnit, productClassName) // a
+        return new BuilderGenerator(productUnit, productClassName) //
                 .mutableByDefault(productsAreMutable) //
-                .withNamingSettings(namingSettings);
-
+                .withNamingSettings(namingSettings) //
+                .withInternalBuilder();
     }
 
     /**
