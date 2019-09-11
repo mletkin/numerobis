@@ -24,17 +24,25 @@ import io.github.mletkin.numerobis.plugin.Naming;
 class NamingTest {
 
     @Test
-    void productClassWithoutConstructor() {
-        assertThat(internalWithFactories("Empty")).contains(//
+    void buildNameConfiguration() {
+        Naming naming = Naming.Builder.of().withBuildMethod("foo").build();
+        assertThat(internalWithFactories("Empty", naming)).contains(//
+                "    public Empty foo() {" //
+                        + "        return product;" //
+                        + "    }");
+    }
+
+    @Test
+    void factoryNameConfiguration() {
+        Naming naming = Naming.Builder.of().withFactoryMethod("foo").build();
+        assertThat(internalWithFactories("Empty", naming)).contains(//
                 "    public static Builder foo() {" //
                         + "        return new Builder(new Empty());" //
                         + "    }");
     }
 
-    static String internalWithFactories(String className) {
-        return new TestFacade(false, //
-                Naming.Builder.of().withFactoryMethod("foo").build() //
-        ).internalWithFactories(className);
+    static String internalWithFactories(String className, Naming naming) {
+        return new TestFacade(false, naming).internalWithFactories(className);
     }
 
 }

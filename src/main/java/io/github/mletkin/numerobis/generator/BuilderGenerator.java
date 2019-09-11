@@ -64,7 +64,6 @@ public class BuilderGenerator {
     final static String FIELD = "product";
     public final static String CLASS_POSTFIX = "Builder";
 
-    final static String BUILD_METHOD = "build";
     public final static String MUTATOR_PREFIX = "with";
     final static String ADDER_PREFIX = "add";
 
@@ -402,7 +401,7 @@ public class BuilderGenerator {
      */
     BuilderGenerator addBuildMethod() {
         if (!hasBuildMethod()) {
-            builderclass.addMethod(BUILD_METHOD, Modifier.Keyword.PUBLIC) //
+            builderclass.addMethod(naming.buildMethod(), Modifier.Keyword.PUBLIC) //
                     .setType(productClassType()) //
                     .createBody() //
                     .addStatement(returnStmt(nameExpr(FIELD)));
@@ -413,7 +412,7 @@ public class BuilderGenerator {
     private boolean hasBuildMethod() {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
-                        .filter(md -> md.getNameAsString().equals(BUILD_METHOD)) //
+                        .filter(md -> md.getNameAsString().equals(naming.buildMethod())) //
                         .filter(md -> md.getType().equals(productClassType())));
     }
 

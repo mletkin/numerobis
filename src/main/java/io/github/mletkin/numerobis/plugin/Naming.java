@@ -29,6 +29,7 @@ public class Naming {
     public static final Naming DEFAULT = new Naming();
 
     private String factoryMethod = "of";
+    private String buildMethod = "build";
 
     public static class Builder {
         private Naming naming = new Naming();
@@ -50,6 +51,11 @@ public class Naming {
             return this;
         }
 
+        public Builder withBuildMethod(String buildMethod) {
+            naming.buildMethod = buildMethod;
+            return this;
+        }
+
         public Naming build() {
             return naming;
         }
@@ -60,8 +66,12 @@ public class Naming {
         return factoryMethod;
     }
 
+    public String buildMethod() {
+        return buildMethod;
+    }
+
     @Override
     public String toString() {
-        return "factoryMethod: " + factoryMethod;
+        return "factoryMethod: " + factoryMethod + ", buildMethod: " + buildMethod;
     }
 }

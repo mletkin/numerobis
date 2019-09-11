@@ -107,7 +107,7 @@ public class Sorter {
             if (md.getNameAsString().startsWith(BuilderGenerator.MUTATOR_PREFIX)) {
                 return 31;
             }
-            if (md.getNameAsString().equals(BuilderGenerator.BUILD_METHOD)) {
+            if (md.getNameAsString().equals(naming.buildMethod())) {
                 return 32;
             }
             return 33;
