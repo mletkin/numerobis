@@ -64,7 +64,6 @@ public class BuilderGenerator {
     final static String FIELD = "product";
     public final static String CLASS_POSTFIX = "Builder";
 
-    public final static String MUTATOR_PREFIX = "with";
     final static String ADDER_PREFIX = "add";
 
     private boolean separateClass = true;
@@ -380,8 +379,8 @@ public class BuilderGenerator {
     private Stream<MutatorMethodDescriptor> mutatorDescriptors(ListMutatorVariant[] mutatorVariants,
             FieldDeclaration fd) {
         return ClassUtil.isCollection(fd, productUnit) //
-                ? new ListMutatorDescriptorGenerator(fd, mutatorVariants).stream()
-                : new MutatorDescriptorGenerator(fd).stream();
+                ? new ListMutatorDescriptorGenerator(fd, mutatorVariants, naming.mutatorPrefix()).stream()
+                : new MutatorDescriptorGenerator(fd, naming.mutatorPrefix()).stream();
     }
 
     private boolean process(FieldDeclaration fd) {

@@ -41,6 +41,16 @@ class NamingTest {
                         + "    }");
     }
 
+    @Test
+    void mutatorPrefixConfiguration() {
+        Naming naming = Naming.Builder.of().withMutatorPrefix("foo").build();
+        assertThat(internalWithFactories(("IntFieldWithAccessor"), naming)).contains(//
+                "    public Builder fooFoo(int foo) {" //
+                        + "        product.foo = foo;" //
+                        + "        return this;" //
+                        + "    }");
+    }
+
     static String internalWithFactories(String className, Naming naming) {
         return new TestFacade(false, naming).internalWithFactories(className);
     }

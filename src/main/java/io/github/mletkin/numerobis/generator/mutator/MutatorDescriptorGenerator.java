@@ -23,7 +23,6 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 
 import io.github.mletkin.numerobis.annotation.GenerateMutator;
 import io.github.mletkin.numerobis.common.Util;
-import io.github.mletkin.numerobis.generator.BuilderGenerator;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 import io.github.mletkin.numerobis.generator.common.StringExtractor;
 
@@ -34,9 +33,11 @@ import io.github.mletkin.numerobis.generator.common.StringExtractor;
  */
 public class MutatorDescriptorGenerator {
     private FieldDeclaration field;
+    private String mutatorPrefix;
 
-    public MutatorDescriptorGenerator(FieldDeclaration field) {
+    public MutatorDescriptorGenerator(FieldDeclaration field, String mutatorPrefix) {
         this.field = field;
+        this.mutatorPrefix = mutatorPrefix;
     }
 
     /**
@@ -67,7 +68,7 @@ public class MutatorDescriptorGenerator {
     }
 
     private String standardMutatorName(VariableDeclarator vd) {
-        return BuilderGenerator.MUTATOR_PREFIX + Util.firstLetterUppercase(vd.getNameAsString());
+        return mutatorPrefix + Util.firstLetterUppercase(vd.getNameAsString());
     }
 
     private Optional<String> customName() {

@@ -104,7 +104,7 @@ public class Sorter {
             if (md.isStatic() && md.getNameAsString().startsWith(naming.factoryMethod())) {
                 return 30;
             }
-            if (md.getNameAsString().startsWith(BuilderGenerator.MUTATOR_PREFIX)) {
+            if (md.getNameAsString().startsWith(naming.mutatorPrefix())) {
                 return 31;
             }
             if (md.getNameAsString().equals(naming.buildMethod())) {
