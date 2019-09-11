@@ -33,7 +33,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import io.github.mletkin.numerobis.annotation.GenerateAdder;
-import io.github.mletkin.numerobis.annotation.GenerateAdder.Variant;
 import io.github.mletkin.numerobis.annotation.GenerateListMutator;
 
 /**
@@ -128,7 +127,9 @@ public class BuilderMojo extends AbstractMojo {
         getLog().info("builder location: " + builderLocation);
         getLog().info("products are " + (productsAreMutable ? "mutable" : "immutable") + " by default");
         getLog().info("list adder variants: ");
-        stream(listAdderVariants).map(Variant::name).forEach(getLog()::info);
+        stream(listAdderVariants).map(GenerateAdder.Variant::name).forEach(getLog()::info);
+        getLog().info("list mutator variants: ");
+        stream(listMutatorVariants).map(GenerateListMutator.Variant::name).forEach(getLog()::info);
     }
 
     /**
