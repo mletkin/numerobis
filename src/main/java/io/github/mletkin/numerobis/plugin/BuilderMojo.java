@@ -145,19 +145,28 @@ public class BuilderMojo extends AbstractMojo {
                     .filter(File::isFile) //
                     .filter(f -> f.getName().endsWith(".java")) //
                     .peek(f -> getLog().debug(f.toString())) //
-                    .forEach(new Processor(new MojoSettings.Builder() //
-                            .withTargetDirectory(targetDirectory) //
-                            .withBuilderCreation(builderCreation) //
-                            .withBuilderLocation(builderLocation) //
-                            .withProductsAreMutable(productsAreMutable) //
-                            .withListAdderVariants(stream(listAdderVariants)//
-                                    .toArray(GenerateAdder.Variant[]::new)) //
-                            .withListMutatorVariants(stream(listMutatorVariants) //
-                                    .toArray(GenerateListMutator.Variant[]::new)) //
-                            .build())::process);
+                    .forEach(new Processor(processorSettings())::process);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Collect the processor configuration.
+     *
+     * @return Settinngs object
+     */
+    private MojoSettings processorSettings() {
+        return new MojoSettings.Builder() //
+                .withTargetDirectory(targetDirectory) //
+                .withBuilderCreation(builderCreation) //
+                .withBuilderLocation(builderLocation) //
+                .withProductsAreMutable(productsAreMutable) //
+                .withListAdderVariants(stream(listAdderVariants)//
+                        .toArray(GenerateAdder.Variant[]::new)) //
+                .withListMutatorVariants(stream(listMutatorVariants) //
+                        .toArray(GenerateListMutator.Variant[]::new)) //
+                .build();
     }
 
 }
