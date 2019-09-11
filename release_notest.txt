@@ -3,3 +3,4 @@ Version 2.2.0
 - different enums for adder and mutator variants
 - prefix parameter for GenerateAccessor annotation
 - naming options configuration via pom
+- don't cut -e and -en postfix on adder generation

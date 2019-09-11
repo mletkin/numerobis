@@ -51,6 +51,16 @@ class NamingTest {
                         + "    }");
     }
 
+    @Test
+    void adderPrefixConfiguration() {
+        Naming naming = Naming.Builder.of().withAdderPrefix("foo").build();
+        assertThat(internalWithFactories(("WithList"), naming)).contains(//
+                "    public Builder fooX(String item) {" //
+                        + "        product.x.add(item);" //
+                        + "        return this;" //
+                        + "    }");
+    }
+
     static String internalWithFactories(String className, Naming naming) {
         return new TestFacade(false, naming).internalWithFactories(className);
     }

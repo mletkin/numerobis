@@ -49,14 +49,17 @@ class AdderMethodDescriptor {
         private FieldDeclaration field;
         private ListMutatorVariant[] variants;
         private CompilationUnit cu;
+        private String adderPrefix;
 
-        Generator(FieldDeclaration field, ListMutatorVariant[] ListMutatorVariant, CompilationUnit cu) {
+        Generator(FieldDeclaration field, ListMutatorVariant[] ListMutatorVariant, CompilationUnit cu,
+                String adderPrefix) {
             this.field = field;
             this.variants = Util.firstNotEmpty( //
                     new VariantExtractor(GenerateAdder.class).variants(field), //
                     ListMutatorVariant) //
                     .orElse(DEFAULT);
             this.cu = cu;
+            this.adderPrefix = adderPrefix;
         }
 
         /**
@@ -90,8 +93,7 @@ class AdderMethodDescriptor {
         }
 
         private String standardAdderName(VariableDeclarator vd) {
-            return BuilderGenerator.ADDER_PREFIX + //
-                    stripPostfix(Util.firstLetterUppercase(vd.getNameAsString()), "en", "e", "s");
+            return adderPrefix + stripPostfix(Util.firstLetterUppercase(vd.getNameAsString()), "s");
         }
 
         private Optional<String> customName() {

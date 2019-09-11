@@ -18,6 +18,7 @@ package io.github.mletkin.numerobis;
 import static io.github.mletkin.numerobis.Util.externalWithConstructors;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.github.mletkin.numerobis.generator.Facade;
@@ -46,6 +47,7 @@ class AdderExternalTest {
                         + "    }");
     }
 
+    @Disabled
     @Test
     void adderForListFieldWithPostfixEn() {
         assertThat(externalWithConstructors("WithListWithPostfix")).contains(//
@@ -55,6 +57,7 @@ class AdderExternalTest {
                         + "    }");
     }
 
+    @Disabled
     @Test
     void adderForListFieldWithPostfixE() {
         assertThat(externalWithConstructors("WithListWithPostfix")).contains(//

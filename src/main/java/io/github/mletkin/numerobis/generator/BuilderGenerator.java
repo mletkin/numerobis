@@ -64,8 +64,6 @@ public class BuilderGenerator {
     final static String FIELD = "product";
     public final static String CLASS_POSTFIX = "Builder";
 
-    final static String ADDER_PREFIX = "add";
-
     private boolean separateClass = true;
     private boolean mutableByDefault = false;
 
@@ -423,7 +421,8 @@ public class BuilderGenerator {
     BuilderGenerator addAdder(ListMutatorVariant[] adderVariants) {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
-                .flatMap(fd -> new AdderMethodDescriptor.Generator(fd, adderVariants, productUnit).stream()) //
+                .flatMap(fd -> new AdderMethodDescriptor.Generator(fd, adderVariants, productUnit, naming.adderPrefix())
+                        .stream()) //
                 .filter(not(adderHelper::hasAdder)) //
                 .forEach(adderHelper::addAdder);
         return this;

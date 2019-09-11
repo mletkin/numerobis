@@ -31,6 +31,7 @@ public class Naming {
     private String factoryMethod = "of";
     private String buildMethod = "build";
     private String mutatorPrefix = "with";
+    private String adderPrefix = "add";
 
     public static class Builder {
         private Naming naming = new Naming();
@@ -62,6 +63,11 @@ public class Naming {
             return this;
         }
 
+        public Builder withAdderPrefix(String adderPrefix) {
+            naming.adderPrefix = adderPrefix;
+            return this;
+        }
+
         public Naming build() {
             return naming;
         }
@@ -80,10 +86,16 @@ public class Naming {
         return mutatorPrefix;
     }
 
+    public String adderPrefix() {
+        return adderPrefix;
+    }
+
     @Override
     public String toString() {
         return "factoryMethod: " + factoryMethod //
                 + ", buildMethod: " + buildMethod //
-                + ", mutatorPrefix: " + mutatorPrefix;
+                + ", mutatorPrefix: " + mutatorPrefix //
+                + ", adderPrefix: " + adderPrefix;
+
     }
 }
