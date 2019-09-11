@@ -29,6 +29,7 @@ public class MojoSettings {
     private boolean productsAreMutable;
     private GenerateAdder.Variant[] listAdderVariants;
     private GenerateListMutator.Variant[] listMutatorVariants;
+    private Naming naming;
 
     private MojoSettings() {
         // builder instantiation only
@@ -58,6 +59,10 @@ public class MojoSettings {
         return listMutatorVariants;
     }
 
+    public Naming naming() {
+        return naming;
+
+    }
     public static class Builder {
 
         private MojoSettings product;
@@ -96,8 +101,14 @@ public class MojoSettings {
             return this;
         }
 
+        public Builder withNamingSettings(Naming naming) {
+            product.naming = naming;
+            return this;
+        }
+
         public MojoSettings build() {
             return product;
         }
+
     }
 }

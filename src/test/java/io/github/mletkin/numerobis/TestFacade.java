@@ -23,6 +23,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
+import io.github.mletkin.numerobis.plugin.Naming;
 
 /**
  * Utilities for unit tests.
@@ -33,6 +34,10 @@ public class TestFacade {
 
     public TestFacade(boolean mutableByDefault) {
         facade = new Facade(mutableByDefault);
+    }
+
+    public TestFacade(boolean mutableByDefault, Naming naming) {
+        facade = new Facade(mutableByDefault, naming);
     }
 
     public TestFacade(Facade facade) {
@@ -83,8 +88,8 @@ public class TestFacade {
     }
 
     public String generateAccessors(String className) {
-        return uncheckExceptions(() -> asString(
-                facade.withAccessors(StaticJavaParser.parseResource(className + ".java"), className)));
+        return uncheckExceptions(
+                () -> asString(facade.withAccessors(StaticJavaParser.parseResource(className + ".java"), className)));
     }
 
 }

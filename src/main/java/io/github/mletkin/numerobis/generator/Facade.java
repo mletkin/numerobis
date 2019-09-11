@@ -20,6 +20,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
 import io.github.mletkin.numerobis.annotation.GenerateAccessors;
 import io.github.mletkin.numerobis.annotation.GenerateBuilder;
+import io.github.mletkin.numerobis.plugin.Naming;
 
 /**
  * Configuration for the generation of different builder classes.
@@ -29,9 +30,15 @@ public class Facade {
     private boolean productsAreMutable;
     private ListMutatorVariant[] adderVariants;
     private ListMutatorVariant[] mutatorVariants;
+    private Naming namingSettings;
 
     public Facade(boolean productsAreMutable) {
+        this(productsAreMutable, Naming.DEFAULT);
+    }
+
+    public Facade(boolean productsAreMutable, Naming namingSettings) {
         this.productsAreMutable = productsAreMutable;
+        this.namingSettings = namingSettings;
     }
 
     public Facade withAdderVariants(ListMutatorVariant[] adderVariants) {
@@ -75,8 +82,7 @@ public class Facade {
     public Result withConstructors(CompilationUnit productUnit, String productClassName, CompilationUnit builderUnit) {
 
         return Result.builder(//
-                new BuilderGenerator(productUnit, productClassName, builderUnit) //
-                        .mutableByDefault(productsAreMutable) //
+                generator(productUnit, productClassName, builderUnit) //
                         .addProductField() //
                         .addConstructors() //
                         .addMutator(mutatorVariants) //
@@ -101,8 +107,7 @@ public class Facade {
             CompilationUnit builderUnit) {
 
         return Result.builder(//
-                new BuilderGenerator(productUnit, productClassName, builderUnit) //
-                        .mutableByDefault(productsAreMutable) //
+                generator(productUnit, productClassName, builderUnit) //
                         .addProductField() //
                         .addFactoryMethods() //
                         .addMutator(mutatorVariants) //
@@ -123,8 +128,7 @@ public class Facade {
      */
     public Result withConstructors(CompilationUnit productUnit, String productClassName) {
         return Result.product(//
-                new BuilderGenerator(productUnit, productClassName) //
-                        .mutableByDefault(productsAreMutable) //
+                generator(productUnit, productClassName) //
                         .addProductField() //
                         .addConstructors() //
                         .addMutator(mutatorVariants) //
@@ -146,8 +150,7 @@ public class Facade {
      */
     public Result withFactoryMethods(CompilationUnit productUnit, String productClassName) {
         return Result.product(//
-                new BuilderGenerator(productUnit, productClassName) //
-                        .mutableByDefault(productsAreMutable) //
+                generator(productUnit, productClassName) //
                         .addProductField() //
                         .addFactoryMethods() //
                         .addMutator(mutatorVariants) //
@@ -155,6 +158,20 @@ public class Facade {
                         .addBuildMethod() //
                         .builderUnit() //
         );
+    }
+
+    private BuilderGenerator generator(CompilationUnit productUnit, String productClassName,
+            CompilationUnit builderUnit) {
+        return new BuilderGenerator(productUnit, productClassName, builderUnit) //
+                .mutableByDefault(productsAreMutable) //
+                .withNamingSettings(namingSettings);
+    }
+
+    private BuilderGenerator generator(CompilationUnit productUnit, String productClassName) {
+        return new BuilderGenerator(productUnit, productClassName) // a
+                .mutableByDefault(productsAreMutable) //
+                .withNamingSettings(namingSettings);
+
     }
 
     /**

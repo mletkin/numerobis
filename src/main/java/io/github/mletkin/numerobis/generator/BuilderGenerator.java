@@ -53,6 +53,7 @@ import io.github.mletkin.numerobis.generator.common.GenerationUtil;
 import io.github.mletkin.numerobis.generator.mutator.ListMutatorDescriptorGenerator;
 import io.github.mletkin.numerobis.generator.mutator.MutatorDescriptorGenerator;
 import io.github.mletkin.numerobis.generator.mutator.MutatorMethodDescriptor;
+import io.github.mletkin.numerobis.plugin.Naming;
 
 /**
  * Generates builder classes product classes in a seperate compilation unit.
@@ -64,7 +65,6 @@ public class BuilderGenerator {
     public final static String CLASS_POSTFIX = "Builder";
 
     final static String BUILD_METHOD = "build";
-    final static String FACTORY_METHOD = "of";
     public final static String MUTATOR_PREFIX = "with";
     final static String ADDER_PREFIX = "add";
 
@@ -79,6 +79,7 @@ public class BuilderGenerator {
 
     private AdderHelper adderHelper = new AdderHelper(this);
     private MutatorHelper mutatorHelper = new MutatorHelper(this);
+    private Naming naming = Naming.DEFAULT;
 
     /**
      * Creates a generator for an internal builder class.
@@ -136,6 +137,11 @@ public class BuilderGenerator {
 
     BuilderGenerator mutableByDefault(boolean mutableByDefault) {
         this.mutableByDefault = mutableByDefault;
+        return this;
+    }
+
+    BuilderGenerator withNamingSettings(Naming naming) {
+        this.naming = naming;
         return this;
     }
 
@@ -291,14 +297,14 @@ public class BuilderGenerator {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
                         .filter(MethodDeclaration::isStatic) //
-                        .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
+                        .filter(md -> md.getNameAsString().equals(naming.factoryMethod())) //
                         .filter(md -> md.getTypeAsString().equals(builderClassName())) //
                         .filter(ClassUtil.hasSingleParameter(productClassType())));
     }
 
     private void addManipulationFactoryMethod() {
         MethodDeclaration factoryMethod = //
-                builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+                builderclass.addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         factoryMethod.setType(builderClassName());
         factoryMethod.addParameter(productClassName(), FIELD);
         factoryMethod.createBody() //
@@ -312,7 +318,7 @@ public class BuilderGenerator {
      */
     private void addDefaultFactoryMethod() {
         MethodDeclaration factoryMethod = //
-                builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+                builderclass.addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         factoryMethod.setType(builderClassName());
         factoryMethod.createBody() //
                 .addStatement(returnStmt(newExpr(builderClassType(), newExpr(productClassType()))));
@@ -322,7 +328,7 @@ public class BuilderGenerator {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
                         .filter(MethodDeclaration::isStatic) //
-                        .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
+                        .filter(md -> md.getNameAsString().equals(naming.factoryMethod())) //
                         .filter(md -> md.getTypeAsString().equals(builderClassName())) //
                         .filter(md -> md.getParameters().isEmpty()));
     }
@@ -341,7 +347,7 @@ public class BuilderGenerator {
 
     private void addFactoryMethod(ConstructorDeclaration productConstructor) {
         MethodDeclaration factoryMethod = //
-                builderclass.addMethod(FACTORY_METHOD, Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+                builderclass.addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         productConstructor.getParameters().stream().forEach(factoryMethod::addParameter);
         factoryMethod.setType(builderClassName());
         factoryMethod.createBody() //
@@ -353,7 +359,7 @@ public class BuilderGenerator {
         return exists(//
                 allMember(builderclass, MethodDeclaration.class) //
                         .filter(MethodDeclaration::isStatic) //
-                        .filter(md -> md.getNameAsString().equals(FACTORY_METHOD)) //
+                        .filter(md -> md.getNameAsString().equals(naming.factoryMethod())) //
                         .filter(md -> md.getTypeAsString().equals(builderClassName())) //
                         .filter(md -> ClassUtil.matchesParameter(md, productConstructor)));
     }
@@ -378,7 +384,6 @@ public class BuilderGenerator {
                 ? new ListMutatorDescriptorGenerator(fd, mutatorVariants).stream()
                 : new MutatorDescriptorGenerator(fd).stream();
     }
-
 
     private boolean process(FieldDeclaration fd) {
         if (fd.isAnnotationPresent(Ignore.class)) {

@@ -16,6 +16,7 @@
 package io.github.mletkin.numerobis.plugin;
 
 import static io.github.mletkin.numerobis.common.Util.stream;
+import static java.util.Optional.ofNullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +38,6 @@ import io.github.mletkin.numerobis.annotation.GenerateListMutator;
 
 /**
  * Entry point for the generator plugin.
- * <p>
  * <ul>
  * <li>handles maven plugin specific stuff
  * <li>gathers configuration sessings from the pom
@@ -101,6 +101,9 @@ public class BuilderMojo extends AbstractMojo {
     @Parameter
     private boolean productsAreMutable;
 
+    @Parameter
+    private Naming naming = Naming.DEFAULT;
+
     /**
      * Variants of adder methods to create in the builder.
      */
@@ -130,6 +133,8 @@ public class BuilderMojo extends AbstractMojo {
         stream(listAdderVariants).map(GenerateAdder.Variant::name).forEach(getLog()::info);
         getLog().info("list mutator variants: ");
         stream(listMutatorVariants).map(GenerateListMutator.Variant::name).forEach(getLog()::info);
+        getLog().info("naming settings");
+        ofNullable(naming).map(Object::toString).ifPresent(getLog()::info);
     }
 
     /**
@@ -166,6 +171,7 @@ public class BuilderMojo extends AbstractMojo {
                         .toArray(GenerateAdder.Variant[]::new)) //
                 .withListMutatorVariants(stream(listMutatorVariants) //
                         .toArray(GenerateListMutator.Variant[]::new)) //
+                .withNamingSettings(naming) //
                 .build();
     }
 

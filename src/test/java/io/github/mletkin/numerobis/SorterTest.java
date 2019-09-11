@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import com.github.javaparser.StaticJavaParser;
 
 import io.github.mletkin.numerobis.generator.Sorter;
+import io.github.mletkin.numerobis.plugin.Naming;
 
 /**
  * Tests rearranging of class members.
@@ -35,50 +36,51 @@ class SorterTest {
     @Test
     void test() throws IOException {
         assertThat(//
-                asString(uncheckExceptions(() -> new Sorter().sort(StaticJavaParser.parseResource("SortTest.java"))))) //
-                        .isEqualTo( //
-                                "/**" //
-                                        + " * File comment." //
-                                        + " */" //
-                                        + "package foo.bar.baz;" //
-                                        + "import di.da.dum;" //
-                                        + "/**" //
-                                        + " * class" //
-                                        + " */" //
-                                        + "public class SortTest {" //
-                                        + "    static int bla = 10;" //
-                                        + "    private TestClass product = new TestClass();" //
-                                        + "    /* Foo bekommt */" //
-                                        + "    /* Wert 10 */" //
-                                        + "    int foo = 10;" //
-                                        + "    /**" //
-                                        + "     * constructor comment." //
-                                        + "     */" //
-                                        + "    SortTest() {" //
-                                        + "    // nothing to do" //
-                                        + "    }" //
-                                        + "    public static String of() {" //
-                                        + "    }" //
-                                        + "    public TestClassBuilder withX(int x) {" //
-                                        + "        // sue me" //
-                                        + "        product.x = x;" //
-                                        + "        return this;" //
-                                        + "    }" //
-                                        + "    public TestClass build() {" //
-                                        + "        return product;" //
-                                        + "    }" //
-                                        + "    /**" //
-                                        + "     * Method comment" //
-                                        + "     *" //
-                                        + "     * @param x" //
-                                        + "     * @return" //
-                                        + "     */" //
-                                        + "    public Object foo(int x) {" //
-                                        + "        return null;" //
-                                        + "    }" //
-                                        + "    public static class Foo {" //
-                                        + "    }" //
-                                        + "}");
+                asString(uncheckExceptions(
+                        () -> new Sorter(Naming.DEFAULT).sort(StaticJavaParser.parseResource("SortTest.java"))))) //
+                                .isEqualTo( //
+                                        "/**" //
+                                                + " * File comment." //
+                                                + " */" //
+                                                + "package foo.bar.baz;" //
+                                                + "import di.da.dum;" //
+                                                + "/**" //
+                                                + " * class" //
+                                                + " */" //
+                                                + "public class SortTest {" //
+                                                + "    static int bla = 10;" //
+                                                + "    private TestClass product = new TestClass();" //
+                                                + "    /* Foo bekommt */" //
+                                                + "    /* Wert 10 */" //
+                                                + "    int foo = 10;" //
+                                                + "    /**" //
+                                                + "     * constructor comment." //
+                                                + "     */" //
+                                                + "    SortTest() {" //
+                                                + "    // nothing to do" //
+                                                + "    }" //
+                                                + "    public static String of() {" //
+                                                + "    }" //
+                                                + "    public TestClassBuilder withX(int x) {" //
+                                                + "        // sue me" //
+                                                + "        product.x = x;" //
+                                                + "        return this;" //
+                                                + "    }" //
+                                                + "    public TestClass build() {" //
+                                                + "        return product;" //
+                                                + "    }" //
+                                                + "    /**" //
+                                                + "     * Method comment" //
+                                                + "     *" //
+                                                + "     * @param x" //
+                                                + "     * @return" //
+                                                + "     */" //
+                                                + "    public Object foo(int x) {" //
+                                                + "        return null;" //
+                                                + "    }" //
+                                                + "    public static class Foo {" //
+                                                + "    }" //
+                                                + "}");
 
     }
 

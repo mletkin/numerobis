@@ -25,6 +25,8 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 
+import io.github.mletkin.numerobis.plugin.Naming;
+
 /**
  * Sort the members of each class in a compilation unit.
  * <p>
@@ -45,6 +47,12 @@ import com.github.javaparser.ast.body.TypeDeclaration;
  * </ul>
  */
 public class Sorter {
+
+    private Naming naming;
+
+    public Sorter(Naming naming) {
+        this.naming = naming;
+    }
 
     /**
      * Sort the members in each class in a compilation unit.
@@ -69,10 +77,10 @@ public class Sorter {
      *            {@code NodeList} object to sort
      */
     private void sort(NodeList<BodyDeclaration<?>> member) {
-        Collections.sort(member, Sorter::compare);
+        Collections.sort(member, this::compare);
     }
 
-    private static int compare(BodyDeclaration<?> bd1, BodyDeclaration<?> bd2) {
+    private int compare(BodyDeclaration<?> bd1, BodyDeclaration<?> bd2) {
         return Integer.compare(value(bd1), value(bd2));
     }
 
@@ -83,7 +91,7 @@ public class Sorter {
      *            object to assess
      * @return index value
      */
-    private static int value(BodyDeclaration<?> declaration) {
+    private int value(BodyDeclaration<?> declaration) {
         if (declaration instanceof FieldDeclaration) {
             FieldDeclaration fd = (FieldDeclaration) declaration;
             return fd.isStatic() ? 10 : 11;
@@ -93,7 +101,7 @@ public class Sorter {
 
         if (declaration instanceof MethodDeclaration) {
             MethodDeclaration md = (MethodDeclaration) declaration;
-            if (md.isStatic() && md.getNameAsString().startsWith(BuilderGenerator.FACTORY_METHOD)) {
+            if (md.isStatic() && md.getNameAsString().startsWith(naming.factoryMethod())) {
                 return 30;
             }
             if (md.getNameAsString().startsWith(BuilderGenerator.MUTATOR_PREFIX)) {

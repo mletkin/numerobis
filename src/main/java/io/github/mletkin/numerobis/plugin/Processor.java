@@ -35,7 +35,6 @@ import io.github.mletkin.numerobis.generator.Sorter;
 
 /**
  * Processes a single java files to generate a builder class.
- * <p>
  * <ul>
  * <li>called by the mojo
  * <li>created with a setup for the generator
@@ -48,6 +47,7 @@ public class Processor {
     private boolean useFactoryMethods;
     private boolean embeddedBuilder;
     private Facade facade;
+    private Naming naming;
 
     /**
      * Creates a processor for the given configuration.
@@ -59,7 +59,8 @@ public class Processor {
         this.destinationPath = ofNullable(settings.targetDirectory()).map(String::trim).orElse("");
         this.useFactoryMethods = settings.builderCreation().flag();
         this.embeddedBuilder = settings.builderLocation().flag();
-        this.facade = new Facade(settings.productsAreMutable());
+        this.naming = settings.naming();
+        this.facade = new Facade(settings.productsAreMutable(), settings.naming());
 
         ofNullable(settings.listAdderVariants()).map(this::toVariants).ifPresent(facade::withAdderVariants);
         ofNullable(settings.listMutatorVariants()).map(this::toVariants).ifPresent(facade::withMutatorVariants);
@@ -121,7 +122,7 @@ public class Processor {
     }
 
     private void sort(Order order) {
-        Sorter sorter = new Sorter();
+        Sorter sorter = new Sorter(naming);
         ofNullable(order.builderUnit()).ifPresent(sorter::sort);
         ofNullable(order.productUnit()).ifPresent(sorter::sort);
     }
