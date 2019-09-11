@@ -175,7 +175,7 @@ class ListMutatorExternalTest {
     @Test
     void retainsVarArgMutator() {
         ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
-        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList", //
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).externalWithConstructors("WithList", //
                 "public class WithListBuilder {" //
                         + "    public WithListBuilder withX(String... foo) {" //
                         + "        return null;" //

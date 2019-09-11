@@ -178,23 +178,12 @@ class ListMutatorInternalTest {
                                 + "    }");
     }
 
-    // @Disabled
-    // @Test
-    // void retainsVarArgMutator() {
-    // ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
-    // assertThat(new TestFacade(new
-    // Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList",
-    // //
-    // "public class Builder {" //
-    // + " public Builder withX(String... foo) {" //
-    // + " return null;" //
-    // + " }" //
-    // + "}") //
-    // ).contains(//
-    // "public Builder withX(String... foo) {" //
-    // + " return null;" //
-    // + " }" //
-    // ).doesNotContain("public Builder withX(String... items)");
-    // }
+    @Test
+    void retainsVarArgMutator() {
+        ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants))
+                .internalWithConstructors("WithListWithVarargMutator")).contains(//
+                        "Builder withX(String... foo) {    }");
+    }
 
 }

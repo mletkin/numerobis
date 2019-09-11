@@ -18,6 +18,7 @@ package io.github.mletkin.numerobis;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
@@ -93,6 +94,14 @@ public class Util {
 
     static String internalWithFactories(String className) {
         return new TestFacade(false).internalWithFactories(className);
+    }
+
+    public static CompilationUnit parse(String resource) {
+        try {
+            return StaticJavaParser.parseResource(resource);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
