@@ -117,7 +117,7 @@ public class AdderHelper {
                 : ClassUtil.hasSingleParameter(adderParameterType(amd));
 
         return exists(//
-                allMember(owner.builderclass, MethodDeclaration.class) //
+                allMember(owner.builderclass(), MethodDeclaration.class) //
                         .filter(md -> md.getNameAsString().equals(amd.methodName)) //
                         .filter(parameterFilter) //
                         .filter(md -> md.getType().equals(owner.builderClassType())));
@@ -125,7 +125,7 @@ public class AdderHelper {
 
     private void addItemAdder(AdderMethodDescriptor amd) {
         createAdder(amd, "item").createBody() // product.x.add(item)
-                .addStatement(methodCall(fieldAccess(nameExpr(owner.naming.productField()), amd.fieldName), "add",
+                .addStatement(methodCall(fieldAccess(nameExpr(owner.naming().productField()), amd.fieldName), "add",
                         nameExpr("item"))) //
                 .addStatement(returnStmt(thisExpr()));
     }
@@ -135,7 +135,7 @@ public class AdderHelper {
                 .addStatement(methodCall(//
                         nameExpr("items"), //
                         "forEach", //
-                        methodReference(fieldAccess(nameExpr(owner.naming.productField()), amd.fieldName), "add")))
+                        methodReference(fieldAccess(nameExpr(owner.naming().productField()), amd.fieldName), "add")))
                 .addStatement(returnStmt(thisExpr()));
         owner.builderUnit().addImport(Stream.class);
     }
@@ -143,7 +143,7 @@ public class AdderHelper {
     private void addCollectionAdder(AdderMethodDescriptor amd) {
         createAdder(amd, "items").createBody() // product.x.addAll(collection)
                 .addStatement(methodCall( //
-                        fieldAccess(nameExpr(owner.naming.productField()), amd.fieldName), //
+                        fieldAccess(nameExpr(owner.naming().productField()), amd.fieldName), //
                         "addAll", //
                         nameExpr("items"))) //
                 .addStatement(returnStmt(thisExpr()));
@@ -156,14 +156,14 @@ public class AdderHelper {
                         methodCall(nameExpr(Stream.class), "of", nameExpr("items")), //
                         "forEach", //
                         methodReference(//
-                                fieldAccess(nameExpr(owner.naming.productField()), amd.fieldName), //
+                                fieldAccess(nameExpr(owner.naming().productField()), amd.fieldName), //
                                 "add"))) //
                 .addStatement(returnStmt(thisExpr()));
         owner.builderUnit().addImport(Stream.class);
     }
 
     private MethodDeclaration createAdder(AdderMethodDescriptor amd, String parameterName) {
-        MethodDeclaration meth = owner.builderclass.addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
+        MethodDeclaration meth = owner.builderclass().addMethod(amd.methodName, Modifier.Keyword.PUBLIC);
         meth.addAndGetParameter(adderParameterType(amd), parameterName).setVarArgs(amd.variant.isVarArg());
         meth.setType(owner.builderClassType());
         return meth;

@@ -126,7 +126,7 @@ public class MutatorHelper {
 
     private void addObjectMutator(MutatorMethodDescriptor mmd) {
         createMethod(mmd, mmd.parameterName()).createBody() // product.x = x
-                .addStatement(assignExpr(fieldAccess(nameExpr(owner.naming.productField()), mmd.parameterName()),
+                .addStatement(assignExpr(fieldAccess(nameExpr(owner.naming().productField()), mmd.parameterName()),
                         nameExpr(mmd.parameterName()))) //
                 .addStatement(returnStmt(thisExpr()));
     }
@@ -134,7 +134,7 @@ public class MutatorHelper {
     private void addStreamMutator(MutatorMethodDescriptor mmd) {
         createMethod(mmd, "items").createBody() // product.x = items.collect(Collectors.toList())
                 .addStatement(assignExpr(//
-                        fieldAccess(nameExpr(owner.naming.productField()), mmd.parameterName()), //
+                        fieldAccess(nameExpr(owner.naming().productField()), mmd.parameterName()), //
                         methodCall(//
                                 nameExpr("items"), //
                                 "collect", //
@@ -146,10 +146,10 @@ public class MutatorHelper {
     }
 
     private String collector(MutatorMethodDescriptor mmd) {
-        if (ClassUtil.extendsInterface(mmd.parameterType(), List.class, owner.productUnit)) {
+        if (ClassUtil.extendsInterface(mmd.parameterType(), List.class, owner.productUnit())) {
             return "toList";
         }
-        if (ClassUtil.extendsInterface(mmd.parameterType(), Set.class, owner.productUnit)) {
+        if (ClassUtil.extendsInterface(mmd.parameterType(), Set.class, owner.productUnit())) {
             return "toSet";
         }
         throw new IllegalArgumentException();
@@ -158,7 +158,7 @@ public class MutatorHelper {
     private void addCollectionMutator(MutatorMethodDescriptor mmd) {
         createMethod(mmd, "items").createBody() // product.x = items.stream().collect(Collectors.toList())
                 .addStatement(assignExpr(//
-                        fieldAccess(nameExpr(owner.naming.productField()), mmd.parameterName()), //
+                        fieldAccess(nameExpr(owner.naming().productField()), mmd.parameterName()), //
                         methodCall(//
                                 methodCall(nameExpr("items"), "stream"), //
                                 "collect", //
@@ -172,7 +172,7 @@ public class MutatorHelper {
     private void addVarArgMutator(MutatorMethodDescriptor mmd) {
         createMethod(mmd, "items").createBody() // product.x = Stream.of(items).collect(Collectors.toList())
                 .addStatement(assignExpr(//
-                        fieldAccess(nameExpr(owner.naming.productField()), mmd.parameterName()), //
+                        fieldAccess(nameExpr(owner.naming().productField()), mmd.parameterName()), //
                         methodCall(//
                                 methodCall(nameExpr(Stream.class), "of", nameExpr("items")), //
                                 "collect", //
@@ -184,7 +184,7 @@ public class MutatorHelper {
     }
 
     private MethodDeclaration createMethod(MutatorMethodDescriptor mmd, String parameterName) {
-        MethodDeclaration meth = owner.builderclass.addMethod(mmd.methodName(), Modifier.Keyword.PUBLIC);
+        MethodDeclaration meth = owner.builderclass().addMethod(mmd.methodName(), Modifier.Keyword.PUBLIC);
         meth.addAndGetParameter(mutatorParameterType(mmd), parameterName) //
                 .setVarArgs(mmd.variant().isVarArg());
         meth.setType(owner.builderClassType());

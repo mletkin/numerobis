@@ -65,15 +65,15 @@ public class BuilderGenerator {
     private boolean separateClass = true;
     private boolean mutableByDefault = false;
 
-    CompilationUnit productUnit;
+    private CompilationUnit productUnit;
     private CompilationUnit builderUnit;
 
-    ClassOrInterfaceDeclaration builderclass;
+    private ClassOrInterfaceDeclaration builderclass;
     private ClassOrInterfaceDeclaration productclass;
 
     private AdderHelper adderHelper = new AdderHelper(this);
     private MutatorHelper mutatorHelper = new MutatorHelper(this);
-    Naming naming = Naming.DEFAULT;
+    private Naming naming = Naming.DEFAULT;
 
     /**
      * Creates a generator for an product class.
@@ -460,4 +460,15 @@ public class BuilderGenerator {
                 || (mutableByDefault && !productclass.isAnnotationPresent(Immutable.class));
     }
 
+    CompilationUnit productUnit() {
+        return productUnit;
+    }
+
+    ClassOrInterfaceDeclaration builderclass() {
+        return builderclass;
+    }
+
+    Naming naming() {
+        return naming;
+    }
 }
