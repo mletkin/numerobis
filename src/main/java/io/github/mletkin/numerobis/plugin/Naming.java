@@ -32,6 +32,7 @@ public class Naming {
     private String buildMethod = "build";
     private String mutatorPrefix = "with";
     private String adderPrefix = "add";
+    private String builderClassPostfix = "Builder";
 
     public static class Builder {
         private Naming naming = new Naming();
@@ -68,6 +69,11 @@ public class Naming {
             return this;
         }
 
+        public Builder withBuilderClassPostfi(String builderClassPostfix) {
+            naming.builderClassPostfix = builderClassPostfix;
+            return this;
+        }
+
         public Naming build() {
             return naming;
         }
@@ -90,12 +96,16 @@ public class Naming {
         return adderPrefix;
     }
 
+    public String builderClassPostfix() {
+        return builderClassPostfix;
+    }
+
     @Override
     public String toString() {
         return "factoryMethod: " + factoryMethod //
                 + ", buildMethod: " + buildMethod //
                 + ", mutatorPrefix: " + mutatorPrefix //
-                + ", adderPrefix: " + adderPrefix;
-
+                + ", adderPrefix: " + adderPrefix //
+                + ", builderClassPostfix: " + builderClassPostfix;
     }
 }

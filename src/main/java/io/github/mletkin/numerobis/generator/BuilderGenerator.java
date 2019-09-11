@@ -62,7 +62,6 @@ public class BuilderGenerator {
 
     private static final String BUILDER_PACKAGE = "io.github.mletkin.numerobis";
     final static String FIELD = "product";
-    public final static String CLASS_POSTFIX = "Builder";
 
     private boolean separateClass = true;
     private boolean mutableByDefault = false;
@@ -159,21 +158,21 @@ public class BuilderGenerator {
 
     private void createExternalBuilderClass() {
         this.builderclass = builderUnit.findAll(ClassOrInterfaceDeclaration.class).stream() //
-                .filter(c -> c.getNameAsString().equals(productClassName() + CLASS_POSTFIX)) //
+                .filter(c -> c.getNameAsString().equals(productClassName() + naming.builderClassPostfix())) //
                 .filter(not(ClassOrInterfaceDeclaration::isInterface)) //
                 .findFirst() //
-                .orElseGet(() -> builderUnit.addClass(productClassName() + CLASS_POSTFIX));
+                .orElseGet(() -> builderUnit.addClass(productClassName() + naming.builderClassPostfix()));
     }
 
     private void createInternalBuilderClass() {
         this.builderclass = allMember(productclass, ClassOrInterfaceDeclaration.class) //
-                .filter(c -> c.getNameAsString().equals(CLASS_POSTFIX)) //
+                .filter(c -> c.getNameAsString().equals(naming.builderClassPostfix())) //
                 .findFirst() //
                 .orElseGet(this::newInternalBuilderClass);
     }
 
     private ClassOrInterfaceDeclaration newInternalBuilderClass() {
-        ClassOrInterfaceDeclaration memberClass = GenerationUtil.newMemberClass(CLASS_POSTFIX);
+        ClassOrInterfaceDeclaration memberClass = GenerationUtil.newMemberClass(naming.builderClassPostfix());
         productclass.getMembers().add(memberClass);
         return memberClass;
     }

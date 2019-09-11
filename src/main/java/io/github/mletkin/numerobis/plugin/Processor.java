@@ -27,7 +27,6 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
 
 import io.github.mletkin.numerobis.common.Util;
-import io.github.mletkin.numerobis.generator.BuilderGenerator;
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.GeneratorException;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
@@ -147,7 +146,7 @@ public class Processor {
         String path = "".equals(destinationPath) //
                 ? src.getParent()
                 : destinationPath + File.separator + packagePath.replace(".", File.separator);
-        String fileName = src.getName().replace(".java", BuilderGenerator.CLASS_POSTFIX + ".java");
+        String fileName = src.getName().replace(".java", naming.builderClassPostfix() + ".java");
         return new File(path, fileName).toPath();
     }
 
