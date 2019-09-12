@@ -1,4 +1,4 @@
-# Maven Builder Generator Plugin (Version 2.1)
+# Maven Builder Generator Plugin (Version 2.3)
 This is a simple maven plugin that generates builder classes for classes that have the appropriate annotation. The builders are generated during the generate-sources phase of the maven build. The current version is restricted to the use of default settings. Customization is currently in a proof of concept state.
 
 The generator creates the builders as a fully functional skeleton. It can be used "as is" without manual changes. On the other hand is it possible to change and extend the generated builder. Methods can be added and implementation can be changed. When the generator runs a second time, missing methods will be created existing methods will not be changeed. When the builder class was deleted or renamed a new one will be created.
