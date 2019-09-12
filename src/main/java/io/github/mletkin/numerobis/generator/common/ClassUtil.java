@@ -33,8 +33,6 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.Type;
 
-import io.github.mletkin.numerobis.annotation.Ignore;
-
 /**
  * Convenience Methods for class declarations.
  */
@@ -94,17 +92,6 @@ public final class ClassUtil {
         return allMember(type, ConstructorDeclaration.class) //
                 .filter(cd -> cd.getParameters().size() == 1) //
                 .anyMatch(cd -> cd.getParameter(0).getTypeAsString().equals(productClassName));
-    }
-
-    /**
-     * Checks a constructor declaration for builder usage.
-     *
-     * @param cd
-     *            constructor declartion to check
-     * @return {@code true} if the builder should have a corresponding constructor
-     */
-    public static boolean process(ConstructorDeclaration cd) {
-        return !cd.isPrivate() && !cd.isAnnotationPresent(Ignore.class);
     }
 
     /**

@@ -18,13 +18,15 @@ package io.github.mletkin.numerobis.plugin;
 /**
  * Naming settings for the generator.
  * <p>
- * This clss is used by the mojo as well. This breaks the layering and might be
- * refactored in a future version.
+ * This class is used by the mojo as well.<br>
+ * This breaks the layering and might be refactored in a future version.<br>
+ * Default settings are defined by the values that are assigned to the fields in
+ * intantiation.
  */
 public class Naming {
 
     /**
-     * Default naming settings.
+     * An instance with all naming sttings set to the default value.
      */
     public static final Naming DEFAULT = new Naming();
 
@@ -35,52 +37,53 @@ public class Naming {
     private String builderClassPostfix = "Builder";
     private String productField = "product";
 
-    public static class Builder {
+    /**
+     * Object instances are usually generated through maven calling the mojo.
+     * <p>
+     * The builder is for unit test use only and hence package visible.
+     */
+    static class Builder {
         private Naming naming = new Naming();
 
-        private Builder(Naming naming) {
-            this.naming = naming;
+        private Builder() {
+            // instantiation through factory method only
         }
 
-        public static Builder of() {
-            return new Builder(new Naming());
+        static Builder of() {
+            return new Builder();
         }
 
-        public static Builder of(Naming naming) {
-            return new Builder(naming);
-        }
-
-        public Builder withFactoryMethod(String factoryMethod) {
+        Builder withFactoryMethod(String factoryMethod) {
             naming.factoryMethod = factoryMethod;
             return this;
         }
 
-        public Builder withBuildMethod(String buildMethod) {
+        Builder withBuildMethod(String buildMethod) {
             naming.buildMethod = buildMethod;
             return this;
         }
 
-        public Builder withMutatorPrefix(String mutatorPrefix) {
+        Builder withMutatorPrefix(String mutatorPrefix) {
             naming.mutatorPrefix = mutatorPrefix;
             return this;
         }
 
-        public Builder withAdderPrefix(String adderPrefix) {
+        Builder withAdderPrefix(String adderPrefix) {
             naming.adderPrefix = adderPrefix;
             return this;
         }
 
-        public Builder withBuilderClassPostfix(String builderClassPostfix) {
+        Builder withBuilderClassPostfix(String builderClassPostfix) {
             naming.builderClassPostfix = builderClassPostfix;
             return this;
         }
 
-        public Builder withProductField(String productField) {
+        Builder withProductField(String productField) {
             naming.productField = productField;
             return this;
         }
 
-        public Naming build() {
+        Naming build() {
             return naming;
         }
 

@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.PackageDeclaration;
 
 import io.github.mletkin.numerobis.generator.Facade;
 
@@ -30,29 +31,44 @@ import io.github.mletkin.numerobis.generator.Facade;
  */
 class Order {
 
-    private boolean generateBuilder = false;
-    private boolean generateAccessors = false;
+    private boolean generateBuilder;
+    private boolean generateAccessors;
 
-    private CompilationUnit builder;
+    private CompilationUnit builderUnit;
     private Path builderPath;
 
-    private CompilationUnit product;
+    private CompilationUnit productUnit;
     private Path productPath;
 
+    /**
+     * Creates an order object for a given product class file.
+     *
+     * @param productClassFile
+     *            descriptor of the file with the product class
+     */
     public Order(File productClassFile) {
         productPath = productClassFile.toPath();
-        product = parse(productClassFile);
+        productUnit = parse(productClassFile);
 
-        generateBuilder = Facade.isBuilderWanted(product);
-        generateAccessors = Facade.areAccessorsWanted(product);
+        generateBuilder = Facade.isBuilderWanted(productUnit);
+        generateAccessors = Facade.areAccessorsWanted(productUnit);
     }
 
+    /**
+     * Sets the path descriptor of the builder file.
+     * <p>
+     * This indicates, that the builder class is generated as a separate file.<br>
+     * Parses the builder class or generates a new compilation unit.
+     *
+     * @param builderPath
+     *            object describing the builder file
+     */
     void setBuilderPath(Path builderPath) {
         this.builderPath = builderPath;
         if (builderPath.toFile().exists()) {
-            builder = parse(builderPath.toFile());
+            builderUnit = parse(builderPath.toFile());
         } else {
-            builder = new CompilationUnit();
+            builderUnit = new CompilationUnit();
         }
     }
 
@@ -65,15 +81,15 @@ class Order {
     }
 
     CompilationUnit builderUnit() {
-        return builder;
+        return builderUnit;
     }
 
     CompilationUnit productUnit() {
-        return product;
+        return productUnit;
     }
 
     Optional<String> productTypeName() {
-        return product.getPrimaryTypeName();
+        return productUnit.getPrimaryTypeName();
     }
 
     Path builderPath() {
@@ -92,7 +108,11 @@ class Order {
         return generateAccessors || generateBuilder;
     }
 
-    static CompilationUnit parse(File file) {
+    public String unitPackageName() {
+        return productUnit.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
+    }
+
+    private CompilationUnit parse(File file) {
         try {
             return StaticJavaParser.parse(file);
         } catch (FileNotFoundException e) {

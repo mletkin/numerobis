@@ -23,13 +23,13 @@ import org.junit.jupiter.params.provider.EnumSource;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 
 /*
- * Verify, that every enum constant from the annotation is mapped to th ecommon annotation.
+ * Verify, that every enum constant from the annotation is mapped to the common enum.
  */
 class GenerateListMutatorTest {
 
     @ParameterizedTest
     @EnumSource(value = GenerateListMutator.Variant.class)
-    void enumInstancesAreMapped(GenerateListMutator.Variant variant) {
+    void enumConstantIsMapped(GenerateListMutator.Variant variant) {
         assertThat(ListMutatorVariant.valueOf(variant.name()).name()).isEqualTo(variant.name());
     }
 

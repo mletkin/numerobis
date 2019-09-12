@@ -101,6 +101,9 @@ public class BuilderMojo extends AbstractMojo {
     @Parameter
     private boolean productsAreMutable;
 
+    /**
+     * Naming of builder components.
+     */
     @Parameter
     private Naming naming = Naming.DEFAULT;
 
@@ -111,7 +114,7 @@ public class BuilderMojo extends AbstractMojo {
     private List<GenerateAdder.Variant> listAdderVariants;
 
     /**
-     * Variants of mutator methods to create in the builder.
+     * Variants of list mutator methods to create in the builder.
      */
     @Parameter
     private List<GenerateListMutator.Variant> listMutatorVariants;
@@ -145,8 +148,7 @@ public class BuilderMojo extends AbstractMojo {
      */
     private void walk(String directory) {
         try (Stream<Path> paths = Files.walk(Paths.get(directory))) {
-            paths //
-                    .map(Path::toFile) //
+            paths.map(Path::toFile) //
                     .filter(File::isFile) //
                     .filter(f -> f.getName().endsWith(".java")) //
                     .peek(f -> getLog().debug(f.toString())) //
@@ -167,10 +169,8 @@ public class BuilderMojo extends AbstractMojo {
                 .withBuilderCreation(builderCreation) //
                 .withBuilderLocation(builderLocation) //
                 .withProductsAreMutable(productsAreMutable) //
-                .withListAdderVariants(stream(listAdderVariants)//
-                        .toArray(GenerateAdder.Variant[]::new)) //
-                .withListMutatorVariants(stream(listMutatorVariants) //
-                        .toArray(GenerateListMutator.Variant[]::new)) //
+                .withListAdderVariants(stream(listAdderVariants).toArray(GenerateAdder.Variant[]::new)) //
+                .withListMutatorVariants(stream(listMutatorVariants).toArray(GenerateListMutator.Variant[]::new)) //
                 .withNamingSettings(naming) //
                 .build();
     }

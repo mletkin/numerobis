@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis;
+package io.github.mletkin.numerobis.plugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.mletkin.numerobis.TestFacade;
 import io.github.mletkin.numerobis.plugin.Naming;
 
 class NamingTest {

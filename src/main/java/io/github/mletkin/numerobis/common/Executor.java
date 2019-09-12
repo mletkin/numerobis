@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mletkin.numerobis.plugin;
+package io.github.mletkin.numerobis.common;
 
-import java.io.FileNotFoundException;
-
-/**
- * unchecked replacement for the checked {@code FileNotFoundException}.
+/*
+ * Describes an executable function.
+ * <p>
+ * Describes a function that accepts no argument and has n o return value.
  */
-public class MojoFileNotFoundException extends RuntimeException {
-
-    public MojoFileNotFoundException(FileNotFoundException e) {
-        super(e);
-    }
+@FunctionalInterface
+public interface Executor {
+    void execute();
 }

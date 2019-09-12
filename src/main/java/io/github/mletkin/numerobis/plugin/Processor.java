@@ -24,8 +24,8 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.PackageDeclaration;
 
+import io.github.mletkin.numerobis.common.Executor;
 import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.GeneratorException;
@@ -65,15 +65,25 @@ public class Processor {
         ofNullable(settings.listMutatorVariants()).map(this::toVariants).ifPresent(facade::withMutatorVariants);
     }
 
-    private ListMutatorVariant[] toVariants(Enum<?>[] liste) {
-        return Stream.of(liste).map(v -> ListMutatorVariant.valueOf(v.name())).toArray(ListMutatorVariant[]::new);
+    /**
+     * Maps variant lists for generator use.
+     * <p>
+     * The generator uses one enum for adder and list mutator methods.<br>
+     * Constants are identified by name.
+     *
+     * @param list
+     *            List of enum constants
+     * @return array of {@code ListMutatorVariant} constants
+     */
+    private ListMutatorVariant[] toVariants(Enum<?>[] list) {
+        return Stream.of(list).map(v -> ListMutatorVariant.valueOf(v.name())).toArray(ListMutatorVariant[]::new);
     }
 
     /**
-     * Parse the java file, generates and stores the class files if desired.
+     * Parses the java file, generates and stores the class files if desired.
      *
      * @param file
-     *            location of the Product class definition
+     *            location of the product class definition
      */
     public void process(File file) {
         Order order = new Order(file);
@@ -88,15 +98,22 @@ public class Processor {
     }
 
     private Path builderPath(Order order) {
-        return dest(order.productFile(),
-                order.productUnit().getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null));
+        return builderPath(order.productFile(), order.unitPackageName());
+    }
+
+    private Path builderPath(File src, String packagePath) {
+        String path = "".equals(destinationPath) //
+                ? src.getParent()
+                : destinationPath + File.separator + packagePath.replace(".", File.separator);
+        String fileName = src.getName().replace(".java", naming.builderClassPostfix() + ".java");
+        return new File(path, fileName).toPath();
     }
 
     private void generate(Order order) {
         String productTypeName = order.productTypeName().orElseThrow(GeneratorException::productClassNotFound);
 
         if (order.generateBuilder()) {
-            generator(order, productTypeName).execute();
+            generator(order).execute();
         }
 
         if (order.generateAccessors()) {
@@ -104,12 +121,8 @@ public class Processor {
         }
     }
 
-    @FunctionalInterface
-    private interface Executor {
-        void execute();
-    }
-
-    private Executor generator(Order order, String type) {
+    private Executor generator(Order order) {
+        String type = order.productTypeName().get();
         if (embeddedBuilder) {
             return useFactoryMethods //
                     ? () -> facade.withFactoryMethods(order.productUnit(), type)
@@ -140,14 +153,6 @@ public class Processor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Path dest(File src, String packagePath) {
-        String path = "".equals(destinationPath) //
-                ? src.getParent()
-                : destinationPath + File.separator + packagePath.replace(".", File.separator);
-        String fileName = src.getName().replace(".java", naming.builderClassPostfix() + ".java");
-        return new File(path, fileName).toPath();
     }
 
 }
