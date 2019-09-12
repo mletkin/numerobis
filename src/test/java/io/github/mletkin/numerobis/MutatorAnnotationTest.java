@@ -107,18 +107,17 @@ class MutatorAnnotationTest {
     @Test
     void mutatorAnnotationOverridesPomInInternalBuilder() {
         ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-        assertThat(
-                new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("AdderAnnoNone"))
-                        .doesNotContain(//
-                                "addProduct");
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants))
+                .internalWithConstructors("AdderAnnoNone")).doesNotContain(//
+                        "addProduct");
     }
 
     @Test
     void mutatorAnnotationOverridesPomInExternalBuilder() {
         ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-        assertThat(
-                new TestFacade(new Facade(false).withMutatorVariants(variants)).externalWithConstructors("AdderAnnoNone"))
-                        .doesNotContain(//
-                                "addProduct");
+        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants))
+                .externalWithConstructors("AdderAnnoNone")).doesNotContain(//
+                        "addProduct");
     }
+
 }

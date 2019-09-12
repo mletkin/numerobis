@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import io.github.mletkin.numerobis.TestFacade;
-import io.github.mletkin.numerobis.plugin.Naming;
 
 class NamingTest {
 
@@ -69,8 +68,26 @@ class NamingTest {
                 "private Empty foo;");
     }
 
+    @Test
+    void internalBuilderClassNameConfiguration() {
+        Naming naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
+        assertThat(internalWithFactories(("WithList"), naming)).contains(//
+                "public static class Foo {");
+    }
+
+    @Test
+    void externalBuilderClassNameConfiguration() {
+        Naming naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
+        assertThat(externalWithFactories(("WithList"), naming)).contains(//
+                "public class WithListFoo {");
+    }
+
     static String internalWithFactories(String className, Naming naming) {
         return new TestFacade(false, naming).internalWithFactories(className);
+    }
+
+    static String externalWithFactories(String className, Naming naming) {
+        return new TestFacade(false, naming).externalWithFactories(className);
     }
 
 }

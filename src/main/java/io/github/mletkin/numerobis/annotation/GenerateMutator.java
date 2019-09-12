@@ -30,5 +30,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(FIELD)
 public @interface GenerateMutator {
+
+    /**
+     * Sets the name of the mutator method (is not a prefix).
+     */
     String name() default "";
 }

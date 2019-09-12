@@ -22,6 +22,8 @@ package io.github.mletkin.numerobis.plugin;
  * This breaks the layering and might be refactored in a future version.<br>
  * Default settings are defined by the values that are assigned to the fields in
  * intantiation.
+ * <p>
+ * The builder class postfix is also the internal builder class name.
  */
 public class Naming {
 
