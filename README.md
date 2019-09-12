@@ -139,6 +139,23 @@ Adder variants are defined like this:
     <listAdderVariant>VARARG</listAdderVariant>
 </listAdderVariants>
 ```
+## naming
+There are various names that may be set here. The base idea is to define project wide settings to establish
+a standard. Annotations may be used to override the default settings but this should be the exception.
+If a prefix is used, the following letter is cated to upper case. If a prefix is not set the name is used
+without alteration. 
+
+- **factoryMethod** name of the factory methods
+- **buildMethod** name of the build method
+- **mutatorPrefix** prefix of mutator methods
+- **adderPrefix** prefix for list adder methods
+- **builderClassPostfix** postfix for external builder classes, also used as the name of internal builder class.
+   The first letter should be upper case. 
+- **productField** name of the product field in the builder
+- **accessorPrefix** prefix for all non-adder accessor methods. 
+- **boolAccessorPrefix**  prefix for accessors that access boolean fields
+
+Future versions may have the possibility to define pattern like `prefix{0}`. This may result in name changes. 
 
 ## Annotations
 Most of the behavior of the builder generator is controlled through annotations.
