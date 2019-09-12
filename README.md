@@ -168,17 +168,20 @@ qualified. Later versions may be smarter.
 
 ### GenerateBuilder
 Used on product classes.
-This is the most important annotation. Only classes annotated with ```@GenerateBuilder``` will be processed.
+This is the most important annotation. Only for classes annotated with `@GenerateBuilder` builder classes
+will be generated.
 ### GenerateAccessors
 Used on product classes.
 For every field in the product class an accessor will be generated. Accessors have the same name as the field.
 ### GenerateMutator
 Mutator generation is the default. This annotation is a means to specify a custom name for the mutator.
+### GenrateListMutator and GenerateAdder
+Used on list fields. Ignored on fields that do not extend `List` 
+Mutator methods (and adder mutators respectively) are generated for the field. The variants may be configured through
+annotation parameters.
 ### Ignore
 Used on product fields.
-Field annotated with ```@Ignore``` are ignored by the generator, no mutators are generated.
+Fields annotated with `@Ignore` are ignored by the generator, no mutators and no accessors are generated.
 ### Mutable and Immutable
 Used on product classes.
-Overrides the default setting for "product classes are immutable/mutable by default".
-
-
+Overrides the builder setting for "product classes are immutable/mutable by default" in the pom.
