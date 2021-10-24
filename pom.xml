@@ -53,7 +53,7 @@
 		<version.junit-jupiter>5.5.1</version.junit-jupiter>
 
 		<version.mockito>2.23.4</version.mockito>
-
+        <ruleset>${PMD_RULES}</ruleset>
 	</properties>
 	<profiles>
 
@@ -218,11 +218,7 @@
 					<!-- printFailingErrors is pretty useful -->
 					<printFailingErrors>true</printFailingErrors>
 					<rulesets>
-						<ruleset>http://brix.eule/pmdrules.xml</ruleset>
-
-						<!-- <ruleset>rulez.xml</ruleset> -->
-						<!-- <rule ref="category/java/bestpractices.xml" /> <ruleset>/category/java/bestpractices.xml</ruleset> 
-							<ruleset>d:\rulesets\strings.xml</ruleset> <ruleset>http://localhost/design.xml</ruleset> -->
+						<ruleset>${PMD_RULES}</ruleset>
 					</rulesets>
 				</configuration>
 				<executions>
