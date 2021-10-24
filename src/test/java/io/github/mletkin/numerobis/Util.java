@@ -33,9 +33,9 @@ public class Util {
      * Extractes the internal builder class from the product class.
      *
      * @param cu
-     *            compilation unit with the product class
+     *                      compilation unit with the product class
      * @param className
-     *            Name of the product class
+     *                      Name of the product class
      * @return the builder class declaration
      */
     static ClassOrInterfaceDeclaration extractBuilder(CompilationUnit cu, String className) {
@@ -49,15 +49,15 @@ public class Util {
      * The compilation unt comtent for comparison.
      *
      * @param cu
-     *            the compilation unit
+     *               the compilation unit
      * @return the content as String
      */
     static String asString(CompilationUnit cu) {
-        return cu.toString().replace("\r\n", "");
+        return cu.toString().replace("\r", "").replace("\n", "");
     }
 
     static String asString(ClassOrInterfaceDeclaration clazz) {
-        return clazz.toString().replace("\r\n", "");
+        return clazz.toString().replace("\r", "").replace("\n", "");
     }
 
     public interface Thrower<T> {
