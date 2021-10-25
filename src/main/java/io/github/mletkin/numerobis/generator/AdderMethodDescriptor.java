@@ -51,12 +51,12 @@ class AdderMethodDescriptor {
         private CompilationUnit cu;
         private String adderPrefix;
 
-        Generator(FieldDeclaration field, ListMutatorVariant[] ListMutatorVariant, CompilationUnit cu,
+        Generator(FieldDeclaration field, ListMutatorVariant[] listMutatorVariant, CompilationUnit cu,
                 String adderPrefix) {
             this.field = field;
             this.variants = Util.firstNotEmpty( //
                     new VariantExtractor(GenerateAdder.class).variants(field), //
-                    ListMutatorVariant) //
+                    listMutatorVariant) //
                     .orElse(DEFAULT);
             this.cu = cu;
             this.adderPrefix = adderPrefix;
