@@ -33,6 +33,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import com.github.javaparser.ParserConfiguration.LanguageLevel;
+
 import io.github.mletkin.numerobis.annotation.GenerateAdder;
 import io.github.mletkin.numerobis.annotation.GenerateListMutator;
 
@@ -40,7 +42,7 @@ import io.github.mletkin.numerobis.annotation.GenerateListMutator;
  * Entry point for the generator plugin.
  * <ul>
  * <li>handles maven plugin specific stuff
- * <li>gathers configuration sessings from the pom
+ * <li>gathers configuration settings from the pom.xml
  * <li>walks through the source file tree
  * <li>calls the generator for each java file
  * <li>dumps configuration to the log
@@ -54,6 +56,7 @@ public class BuilderMojo extends AbstractMojo {
      */
     enum Creation {
         CONSTRUCTOR, FACTORY;
+
         boolean flag() {
             return this == FACTORY;
         }
@@ -64,6 +67,7 @@ public class BuilderMojo extends AbstractMojo {
      */
     enum Location {
         EMBEDDED, SEPARATE;
+
         boolean flag() {
             return this == EMBEDDED;
         }
@@ -100,6 +104,9 @@ public class BuilderMojo extends AbstractMojo {
      */
     @Parameter
     private boolean productsAreMutable;
+
+    @Parameter(defaultValue = "JAVA_17")
+    private LanguageLevel javaVersion;
 
     /**
      * Naming of builder components.
@@ -144,7 +151,7 @@ public class BuilderMojo extends AbstractMojo {
      * Recursivly walks through the directory and processes all java files.
      *
      * @param directory
-     *            directory to traverse
+     *                      directory to traverse
      */
     private void walk(String directory) {
         try (Stream<Path> paths = Files.walk(Paths.get(directory))) {
@@ -169,6 +176,7 @@ public class BuilderMojo extends AbstractMojo {
                 .withBuilderCreation(builderCreation) //
                 .withBuilderLocation(builderLocation) //
                 .withProductsAreMutable(productsAreMutable) //
+                .withJavaVersion(javaVersion) //
                 .withListAdderVariants(stream(listAdderVariants).toArray(GenerateAdder.Variant[]::new)) //
                 .withListMutatorVariants(stream(listMutatorVariants).toArray(GenerateListMutator.Variant[]::new)) //
                 .withNamingSettings(naming) //

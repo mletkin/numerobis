@@ -115,7 +115,6 @@ class Order {
 
     private CompilationUnit parse(File file) {
         try {
-            StaticJavaParser.getParserConfiguration().setLanguageLevel(LanguageLevel.JAVA_17);
             return StaticJavaParser.parse(file);
         } catch (FileNotFoundException e) {
             throw new MojoFileNotFoundException(e);

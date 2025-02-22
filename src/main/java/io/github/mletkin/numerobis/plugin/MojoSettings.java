@@ -15,6 +15,8 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
+import com.github.javaparser.ParserConfiguration.LanguageLevel;
+
 import io.github.mletkin.numerobis.annotation.GenerateAdder;
 import io.github.mletkin.numerobis.annotation.GenerateListMutator;
 
@@ -27,6 +29,7 @@ public class MojoSettings {
     private BuilderMojo.Creation builderCreation;
     private BuilderMojo.Location builderLocation;
     private boolean productsAreMutable;
+    private LanguageLevel javaVersion;
     private GenerateAdder.Variant[] listAdderVariants;
     private GenerateListMutator.Variant[] listMutatorVariants;
     private Naming naming;
@@ -61,8 +64,12 @@ public class MojoSettings {
 
     public Naming naming() {
         return naming;
-
     }
+
+    public LanguageLevel javaVersion() {
+        return javaVersion;
+    }
+
     public static class Builder {
 
         private MojoSettings product;
@@ -88,6 +95,11 @@ public class MojoSettings {
 
         public Builder withProductsAreMutable(boolean productsAreMutable) {
             product.productsAreMutable = productsAreMutable;
+            return this;
+        }
+
+        public Builder withJavaVersion(LanguageLevel javaVersion) {
+            product.javaVersion = javaVersion;
             return this;
         }
 

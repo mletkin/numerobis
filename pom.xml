@@ -34,7 +34,6 @@
         <tag>HEAD</tag>
     </scm>
 
-
     <properties>
         <version.java>17</version.java>
         <version.maven-javadoc-plugin>3.11.2</version.maven-javadoc-plugin>

@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.common.Executor;
@@ -52,7 +53,7 @@ public class Processor {
      * Creates a processor for the given configuration.
      *
      * @param settings
-     *            configuration from the mojo
+     *                     configuration from the mojo
      */
     public Processor(MojoSettings settings) {
         this.destinationPath = ofNullable(settings.targetDirectory()).map(String::trim).orElse("");
@@ -63,6 +64,8 @@ public class Processor {
 
         ofNullable(settings.listAdderVariants()).map(this::toVariants).ifPresent(facade::withAdderVariants);
         ofNullable(settings.listMutatorVariants()).map(this::toVariants).ifPresent(facade::withMutatorVariants);
+
+        StaticJavaParser.getParserConfiguration().setLanguageLevel(settings.javaVersion());
     }
 
     /**
@@ -72,7 +75,7 @@ public class Processor {
      * Constants are identified by name.
      *
      * @param list
-     *            List of enum constants
+     *                 List of enum constants
      * @return array of {@code ListMutatorVariant} constants
      */
     private ListMutatorVariant[] toVariants(Enum<?>[] list) {
@@ -83,7 +86,7 @@ public class Processor {
      * Parses the java file, generates and stores the class files if desired.
      *
      * @param file
-     *            location of the product class definition
+     *                 location of the product class definition
      */
     public void process(File file) {
         Order order = new Order(file);
