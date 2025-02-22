@@ -30,7 +30,7 @@ public @interface GenerateAdder {
     /**
      * Available adder variants.
      */
-    public enum Variant {
+    enum Variant {
         NONE, // no adder for the list field
         VARARG, // adder with vararg parameter list
         ITEM, // adder with a single item as parameter
@@ -45,4 +45,5 @@ public @interface GenerateAdder {
      * @return array of adder variants
      */
     Variant[] variants();
+
 }

@@ -70,7 +70,7 @@ public class AccessorGenerator {
     }
 
     private boolean process(FieldDeclaration fd) {
-        return (!fd.isAnnotationPresent(Ignore.class));
+        return !fd.isAnnotationPresent(Ignore.class);
     }
 
     private void addAccessor(AccessorMethodDescriptor amd) {

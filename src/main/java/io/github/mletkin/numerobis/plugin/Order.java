@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
@@ -44,7 +45,7 @@ class Order {
      * Creates an order object for a given product class file.
      *
      * @param productClassFile
-     *            descriptor of the file with the product class
+     *                             descriptor of the file with the product class
      */
     public Order(File productClassFile) {
         productPath = productClassFile.toPath();
@@ -61,7 +62,7 @@ class Order {
      * Parses the builder class or generates a new compilation unit.
      *
      * @param builderPath
-     *            object describing the builder file
+     *                        object describing the builder file
      */
     void setBuilderPath(Path builderPath) {
         this.builderPath = builderPath;
@@ -114,6 +115,7 @@ class Order {
 
     private CompilationUnit parse(File file) {
         try {
+            StaticJavaParser.getParserConfiguration().setLanguageLevel(LanguageLevel.JAVA_17);
             return StaticJavaParser.parse(file);
         } catch (FileNotFoundException e) {
             throw new MojoFileNotFoundException(e);

@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 @Target(FIELD)
 public @interface GenerateListMutator {
 
-    public enum Variant {
+    enum Variant {
         NONE, // no mutator for the list field
         OBJECT, // mutator with a List object as parameter that is used
         VARARG, // mutator with vararg parameter list
@@ -48,4 +48,5 @@ public @interface GenerateListMutator {
     Variant[] variants();
 
     String name() default "";
+
 }

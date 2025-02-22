@@ -57,7 +57,7 @@ class SorterTest {
                                                 + "     * constructor comment." //
                                                 + "     */" //
                                                 + "    SortTest() {" //
-                                                + "    // nothing to do" //
+                                                + "        // nothing to do" //
                                                 + "    }" //
                                                 + "    public static String of() {" //
                                                 + "    }" //
