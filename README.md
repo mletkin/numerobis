@@ -34,7 +34,7 @@ the generated or modified code is correct too. The reverse must not be true. If 
 the generated code might be correct.
 
 ## Usage
-Add the following to the plugin section of your pom.xml.
+Add the following to the plugin section for the maven plugin of your pom.xml.
 This should work using default values only.
 ```
 <plugin>
@@ -51,10 +51,20 @@ This should work using default values only.
 </plugin>
 ```
 Add the annotation `@GenerateBuilder`to each class for which you want to create a builder.
-Builder code is generated in the `generate-sources` phase of the maven build. 
+Builder code is generated in the `generate-sources` phase of the maven build.
 
+The annotations are not separated from the plugin.
+To use the annotations the plugin must also be added in the dependency section:
+```
+<dependency>
+    <groupId>io.github.mletkin</groupId>
+    <artifactId>builder-generator-maven-plugin</artifactId>
+    <version>3.0.0</version>
+    <scope>compile</scope>
+</dependency>
+```
 ## Configuration
-Tjin the following options the settings can be customized through maven configuration.
+With the following options the settings can be customized through maven configuration.
 
 ### Java-Version
 To set the Java-Version of the code to be processed, default ist Java 17.
