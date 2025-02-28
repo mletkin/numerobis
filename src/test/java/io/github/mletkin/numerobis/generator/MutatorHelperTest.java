@@ -33,7 +33,7 @@ class MutatorHelperTest {
 
     BuilderGenerator generator() {
         BuilderGenerator mock = Mockito.mock(BuilderGenerator.class);
-        Mockito.when(mock.builderClass()).thenReturn(//
+        Mockito.when(mock.builderclass()).thenReturn(//
                 ClassUtil.findClass(StaticJavaParser.parse(//
                         "class Foo{" //
                                 + "Foo test(int[] x) {}" //

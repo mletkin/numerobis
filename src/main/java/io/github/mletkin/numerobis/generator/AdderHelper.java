@@ -50,7 +50,7 @@ import io.github.mletkin.numerobis.generator.common.GenerationUtil;
  */
 public class AdderHelper {
 
-    BuilderGenerator owner;
+    private BuilderGenerator owner;
 
     /**
      * Creates a helper instance for adder creation.

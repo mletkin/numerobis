@@ -118,7 +118,7 @@ public class MutatorHelper {
                 : ClassUtil.hasSingleParameter(mutatorParameterType(mmd));
 
         return exists(//
-                allMember(owner.builderClass(), MethodDeclaration.class) //
+                allMember(owner.builderclass(), MethodDeclaration.class) //
                         .filter(md -> md.getNameAsString().equals(mmd.methodName())) //
                         .filter(parameterFilter) //
                         .filter(md -> md.getType().equals(owner.builderClassType())));

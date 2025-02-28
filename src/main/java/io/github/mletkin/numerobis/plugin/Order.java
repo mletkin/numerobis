@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;

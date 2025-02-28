@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -49,7 +48,6 @@ import io.github.mletkin.numerobis.annotation.Ignore;
 import io.github.mletkin.numerobis.annotation.Immutable;
 import io.github.mletkin.numerobis.annotation.Mutable;
 import io.github.mletkin.numerobis.generator.common.ClassUtil;
-import io.github.mletkin.numerobis.generator.common.GenerationUtil;
 import io.github.mletkin.numerobis.generator.mutator.ListMutatorDescriptorGenerator;
 import io.github.mletkin.numerobis.generator.mutator.MutatorDescriptorGenerator;
 import io.github.mletkin.numerobis.generator.mutator.MutatorMethodDescriptor;
@@ -60,97 +58,65 @@ import io.github.mletkin.numerobis.plugin.Naming;
  */
 public class BuilderGenerator {
 
-    private static final String BUILDER_PACKAGE = "io.github.mletkin.numerobis";
-
     private boolean separateClass = true;
     private boolean mutableByDefault = false;
 
     private CompilationUnit productUnit;
-    private CompilationUnit builderUnit;
-
-    private ClassOrInterfaceDeclaration builderclass;
     private ClassOrInterfaceDeclaration productclass;
+
+    private Forge forge;
 
     private AdderHelper adderHelper = new AdderHelper(this);
     private MutatorHelper mutatorHelper = new MutatorHelper(this);
     private Naming naming = Naming.DEFAULT;
 
     /**
-     * Creates a generator for an product class.
+     * Creates a generator for the builder class.
      *
      * @param productUnit
-     *            unit with the product class definition
+     *                             unit with the product class definition
      * @param productClassName
-     *            name of the product class
+     *                             name of the product class
      */
-    BuilderGenerator(CompilationUnit productUnit, String productClassName) {
-        this.productclass = ClassUtil.findClass(productUnit, productClassName).orElse(null);
+    public BuilderGenerator(CompilationUnit productUnit, String productClassName) {
         this.productUnit = productUnit;
+        this.productclass = ClassUtil.findClass(productUnit, productClassName).orElse(null);
 
         ifNotThrow(productclass != null, GeneratorException::productClassNotFound);
         ifNotThrow(hasUsableConstructor(productclass), GeneratorException::noConstructorFound);
     }
 
-    BuilderGenerator withInternalBuilder() {
-        this.builderUnit = productUnit;
-        separateClass = false;
-        createInternalBuilderClass();
-        return this;
-    }
-
-    BuilderGenerator withExternalBuilder(CompilationUnit builderUnit) {
-        this.builderUnit = builderUnit;
-        createPackageDeclaration();
-        copyImports();
-        createExternalBuilderClass();
-        return this;
-    }
-
-    BuilderGenerator mutableByDefault(boolean mutableByDefault) {
+    public BuilderGenerator mutableByDefault(boolean mutableByDefault) {
         this.mutableByDefault = mutableByDefault;
         return this;
     }
 
-    BuilderGenerator withNamingSettings(Naming naming) {
+    public BuilderGenerator withNamingSettings(Naming naming) {
         this.naming = naming;
         return this;
     }
 
-    private void createPackageDeclaration() {
-        if (!builderUnit.getPackageDeclaration().isPresent()) {
-            productUnit.getPackageDeclaration().ifPresent(builderUnit::setPackageDeclaration);
-        }
+    /**
+     * Create a generator for an embedded builder class.
+     *
+     * @return The {@code BuilderGenerator}
+     */
+    public BuilderGenerator withInternalBuilder() {
+        this.forge = Forge.internal(productUnit, productclass, naming.builderClassPostfix());
+        separateClass = false;
+        return this;
     }
 
-    private void copyImports() {
-        productUnit.getImports().stream() //
-                .filter(not(this::isBuilderImport)) //
-                .forEach(builderUnit::addImport);
-    }
-
-    private boolean isBuilderImport(ImportDeclaration impDec) {
-        return impDec.getNameAsString().startsWith(BUILDER_PACKAGE);
-    }
-
-    private void createExternalBuilderClass() {
-        this.builderclass = builderUnit.findAll(ClassOrInterfaceDeclaration.class).stream() //
-                .filter(c -> c.getNameAsString().equals(productClassName() + naming.builderClassPostfix())) //
-                .filter(not(ClassOrInterfaceDeclaration::isInterface)) //
-                .findFirst() //
-                .orElseGet(() -> builderUnit.addClass(productClassName() + naming.builderClassPostfix()));
-    }
-
-    private void createInternalBuilderClass() {
-        this.builderclass = allMember(productclass, ClassOrInterfaceDeclaration.class) //
-                .filter(c -> c.getNameAsString().equals(naming.builderClassPostfix())) //
-                .findFirst() //
-                .orElseGet(this::newInternalBuilderClass);
-    }
-
-    private ClassOrInterfaceDeclaration newInternalBuilderClass() {
-        ClassOrInterfaceDeclaration memberClass = GenerationUtil.newMemberClass(naming.builderClassPostfix());
-        productclass.getMembers().add(memberClass);
-        return memberClass;
+    /**
+     * Create a generator for a separate builder class.
+     *
+     * @return The {@code BuilderGenerator}
+     */
+    public BuilderGenerator withExternalBuilder(CompilationUnit builderUnit) {
+        this.forge = Forge.external(builderUnit, productClassName(), naming.builderClassPostfix());
+        productUnit.getPackageDeclaration().ifPresent(forge::setPackageDeclaration);
+        forge.copyImports(productUnit);
+        return this;
     }
 
     /**
@@ -158,23 +124,23 @@ public class BuilderGenerator {
      *
      * @return the generator instance
      */
-    BuilderGenerator addProductField() {
+    public BuilderGenerator addProductField() {
         if (!hasProductField()) {
-            builderclass.addField(productClassName(), naming.productField(), Modifier.Keyword.PRIVATE);
+            builderclass().addField(productClassName(), naming.productField(), Modifier.Keyword.PRIVATE);
         }
         return this;
     }
 
     private boolean hasProductField() {
-        Optional<VariableDeclarator> productField = findProductField();
+        var productField = findProductField();
         productField.filter(vd -> !vd.getType().equals(productClassType())).ifPresent(type -> {
             throw GeneratorException.productFieldHasWrongType(type);
         });
         return productField.isPresent();
     }
 
-    Optional<VariableDeclarator> findProductField() {
-        return allMember(builderclass, FieldDeclaration.class) //
+    private Optional<VariableDeclarator> findProductField() {
+        return allMember(builderclass(), FieldDeclaration.class) //
                 .map(FieldDeclaration::getVariables) //
                 .flatMap(List::stream) //
                 .filter(vd -> vd.getNameAsString().equals(naming.productField())) //
@@ -186,13 +152,13 @@ public class BuilderGenerator {
      *
      * @return the generator instance
      */
-    BuilderGenerator addConstructors() {
-        if (!hasExplicitConstructor(productclass) && !hasDefaultConstructor(builderclass)) {
+    public BuilderGenerator addConstructors() {
+        if (!hasExplicitConstructor(productclass) && !hasDefaultConstructor(builderclass())) {
             addDefaultConstructor();
         }
         allMember(productclass, ConstructorDeclaration.class) //
                 .filter(this::process) //
-                .filter(not(this::hasMatchingConstructor)) //
+                .filter(not(forge::hasMatchingConstructor)) //
                 .forEach(this::addMatchingConstructor);
         if (isProductMutable() && !hasManipulationConstructor()) {
             addManipulationConstructor();
@@ -202,12 +168,12 @@ public class BuilderGenerator {
 
     private boolean hasManipulationConstructor() {
         return exists(//
-                allMember(builderclass, ConstructorDeclaration.class) //
+                allMember(builderclass(), ConstructorDeclaration.class) //
                         .filter(ClassUtil.hasSingleParameter(productClassType())));
     }
 
     private void addManipulationConstructor() {
-        builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
+        builderclass().addConstructor(Modifier.Keyword.PUBLIC) //
                 .addParameter(productClassType(), naming.productField()) //
                 .createBody() //
                 .addStatement(
@@ -225,21 +191,16 @@ public class BuilderGenerator {
     }
 
     private void addDefaultConstructor() {
-        builderclass.addConstructor(Modifier.Keyword.PUBLIC) //
+        builderclass().addConstructor(Modifier.Keyword.PUBLIC) //
                 .createBody() //
                 .addStatement(assignExpr(naming.productField(), newExpr(productClassType())));
     }
 
     private void addMatchingConstructor(ConstructorDeclaration productConstructor) {
-        ConstructorDeclaration builderconstructor = builderclass.addConstructor(Modifier.Keyword.PUBLIC);
+        ConstructorDeclaration builderconstructor = builderclass().addConstructor(Modifier.Keyword.PUBLIC);
         productConstructor.getParameters().stream().forEach(builderconstructor::addParameter);
         builderconstructor.createBody() //
                 .addStatement(assignExpr(naming.productField(), newExpr(productClassType(), args(productConstructor))));
-    }
-
-    private boolean hasMatchingConstructor(ConstructorDeclaration productConstructor) {
-        return allMember(builderclass, ConstructorDeclaration.class) //
-                .anyMatch(cd -> ClassUtil.matchesParameter(cd, productConstructor));
     }
 
     /**
@@ -247,8 +208,8 @@ public class BuilderGenerator {
      *
      * @return the generator instance
      */
-    BuilderGenerator addFactoryMethods() {
-        if (!hasProductConstructor(builderclass, productClassName())) {
+    public BuilderGenerator addFactoryMethods() {
+        if (!hasProductConstructor(builderclass(), productClassName())) {
             addProductConstructor();
         }
         if (!hasExplicitConstructor(productclass) && !hasDefaultFactoryMethod()) {
@@ -267,7 +228,7 @@ public class BuilderGenerator {
 
     private boolean hasManipulationFactoryMethod() {
         return exists(//
-                allMember(builderclass, MethodDeclaration.class) //
+                allMember(builderclass(), MethodDeclaration.class) //
                         .filter(MethodDeclaration::isStatic) //
                         .filter(md -> md.getNameAsString().equals(naming.factoryMethod())) //
                         .filter(md -> md.getTypeAsString().equals(builderClassName())) //
@@ -276,7 +237,7 @@ public class BuilderGenerator {
 
     private void addManipulationFactoryMethod() {
         MethodDeclaration factoryMethod = //
-                builderclass.addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+                builderclass().addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         factoryMethod.setType(builderClassName());
         factoryMethod.addParameter(productClassName(), naming.productField());
         factoryMethod.createBody() //
@@ -290,7 +251,7 @@ public class BuilderGenerator {
      */
     private void addDefaultFactoryMethod() {
         MethodDeclaration factoryMethod = //
-                builderclass.addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+                builderclass().addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         factoryMethod.setType(builderClassName());
         factoryMethod.createBody() //
                 .addStatement(returnStmt(newExpr(builderClassType(), newExpr(productClassType()))));
@@ -298,7 +259,7 @@ public class BuilderGenerator {
 
     private boolean hasDefaultFactoryMethod() {
         return exists(//
-                allMember(builderclass, MethodDeclaration.class) //
+                allMember(builderclass(), MethodDeclaration.class) //
                         .filter(MethodDeclaration::isStatic) //
                         .filter(md -> md.getNameAsString().equals(naming.factoryMethod())) //
                         .filter(md -> md.getTypeAsString().equals(builderClassName())) //
@@ -310,8 +271,8 @@ public class BuilderGenerator {
      * <p>
      * signature {@code private Builder(Product product)}
      */
-    void addProductConstructor() {
-        ConstructorDeclaration constructor = builderclass.addConstructor(Modifier.Keyword.PRIVATE);
+    private void addProductConstructor() {
+        ConstructorDeclaration constructor = builderclass().addConstructor(Modifier.Keyword.PRIVATE);
         constructor.addParameter(productClassName(), naming.productField());
         constructor.createBody() //
                 .addStatement(
@@ -320,7 +281,7 @@ public class BuilderGenerator {
 
     private void addFactoryMethod(ConstructorDeclaration productConstructor) {
         MethodDeclaration factoryMethod = //
-                builderclass.addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+                builderclass().addMethod(naming.factoryMethod(), Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         productConstructor.getParameters().stream().forEach(factoryMethod::addParameter);
         factoryMethod.setType(builderClassName());
         factoryMethod.createBody() //
@@ -329,8 +290,8 @@ public class BuilderGenerator {
     }
 
     private boolean hasMatchingFactoryMethod(ConstructorDeclaration productConstructor) {
-        return exists(//
-                allMember(builderclass, MethodDeclaration.class) //
+        return exists( //
+                allMember(builderclass(), MethodDeclaration.class) //
                         .filter(MethodDeclaration::isStatic) //
                         .filter(md -> md.getNameAsString().equals(naming.factoryMethod())) //
                         .filter(md -> md.getTypeAsString().equals(builderClassName())) //
@@ -338,11 +299,11 @@ public class BuilderGenerator {
     }
 
     /**
-     * Adds a mutator for each field in the product.
+     * Adds a mutator for each field of the product.
      *
      * @return the generator instance
      */
-    BuilderGenerator addMutator(ListMutatorVariant[] mutatorVariants) {
+    public BuilderGenerator addMutator(ListMutatorVariant[] mutatorVariants) {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> mutatorDescriptors(mutatorVariants, fd)) //
@@ -373,9 +334,9 @@ public class BuilderGenerator {
      *
      * @return the generator instance
      */
-    BuilderGenerator addBuildMethod() {
+    public BuilderGenerator addBuildMethod() {
         if (!hasBuildMethod()) {
-            builderclass.addMethod(naming.buildMethod(), Modifier.Keyword.PUBLIC) //
+            builderclass().addMethod(naming.buildMethod(), Modifier.Keyword.PUBLIC) //
                     .setType(productClassType()) //
                     .createBody() //
                     .addStatement(returnStmt(nameExpr(naming.productField())));
@@ -384,8 +345,8 @@ public class BuilderGenerator {
     }
 
     private boolean hasBuildMethod() {
-        return exists(//
-                allMember(builderclass, MethodDeclaration.class) //
+        return exists( //
+                allMember(builderclass(), MethodDeclaration.class) //
                         .filter(md -> md.getNameAsString().equals(naming.buildMethod())) //
                         .filter(md -> md.getType().equals(productClassType())));
     }
@@ -395,7 +356,7 @@ public class BuilderGenerator {
      *
      * @param adderVariants
      */
-    BuilderGenerator addAdder(ListMutatorVariant[] adderVariants) {
+    public BuilderGenerator addAdder(ListMutatorVariant[] adderVariants) {
         allMember(productclass, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> new AdderMethodDescriptor.Generator(fd, adderVariants, productUnit, naming.adderPrefix())
@@ -418,20 +379,15 @@ public class BuilderGenerator {
     }
 
     private String builderClassName() {
-        return builderclass.getNameAsString();
+        return builderclass().getNameAsString();
     }
 
-    public ClassOrInterfaceDeclaration builderClass() {
-        return builderclass;
+    public ClassOrInterfaceDeclaration builderclass() {
+        return forge.builderClass();
     }
 
-    /**
-     * Returns the builder class.
-     *
-     * @return compilation unit with the builder class
-     */
-    CompilationUnit builderUnit() {
-        return separateClass ? builderUnit : productUnit;
+    public CompilationUnit builderUnit() {
+        return forge.builderUnit();
     }
 
     /**
@@ -440,7 +396,7 @@ public class BuilderGenerator {
      * The constructor must be callable by the builder
      *
      * @param type
-     *            class to check
+     *                 class to check
      * @return {@code true} if the class contains fitting constructor.
      */
     private boolean hasUsableConstructor(ClassOrInterfaceDeclaration type) {
@@ -464,11 +420,8 @@ public class BuilderGenerator {
         return productUnit;
     }
 
-    ClassOrInterfaceDeclaration builderclass() {
-        return builderclass;
-    }
-
     Naming naming() {
         return naming;
     }
+
 }
