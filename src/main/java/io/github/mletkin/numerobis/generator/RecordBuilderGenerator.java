@@ -24,11 +24,15 @@ import static io.github.mletkin.numerobis.generator.common.GenerationUtil.nameEx
 import static io.github.mletkin.numerobis.generator.common.GenerationUtil.newExpr;
 import static io.github.mletkin.numerobis.generator.common.GenerationUtil.returnStmt;
 import static io.github.mletkin.numerobis.generator.common.GenerationUtil.thisExpr;
+import static java.util.function.Predicate.not;
+
+import java.util.List;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
@@ -57,10 +61,8 @@ public class RecordBuilderGenerator {
     /**
      * Creates a generator for the builder class.
      *
-     * @param productUnit
-     *                              unit with the product class definition
-     * @param productRecordName
-     *                              name of the product record
+     * @param productUnit       unit with the product class definition
+     * @param productRecordName name of the product record
      */
     public RecordBuilderGenerator(CompilationUnit productUnit, String productRecordName) {
         this.productUnit = productUnit;
@@ -89,10 +91,8 @@ public class RecordBuilderGenerator {
      * <p>
      * The builder class might already exist
      *
-     * @param builderUnit
-     *                        the unit to contain the builder
-     *
-     * @return The {@code BuilderGenerator}
+     * @param  builderUnit the unit to contain the builder
+     * @return             The {@code BuilderGenerator}
      */
     public RecordBuilderGenerator withExternalBuilder(CompilationUnit builderUnit) {
         this.forge = Forge.external(builderUnit, productClassName(), naming.builderClassPostfix());
@@ -105,8 +105,17 @@ public class RecordBuilderGenerator {
      * Add a builder field for every record parameter.
      */
     public RecordBuilderGenerator addFields() {
-        productclass.getParameters().stream().forEach(this::addField);
+        productclass.getParameters().stream() //
+                .filter(not(this::hasField)) //
+                .forEach(this::addField);
         return this;
+    }
+
+    private boolean hasField(Parameter para) {
+        return allMember(builderclass(), FieldDeclaration.class) //
+                .map(FieldDeclaration::getVariables) //
+                .flatMap(List::stream) //
+                .anyMatch(vd -> vd.getNameAsString().equals(para.getNameAsString()));
     }
 
     private void addField(Parameter para) {
@@ -117,8 +126,18 @@ public class RecordBuilderGenerator {
      * Add a mutator for every builder field / record parameter.
      */
     public RecordBuilderGenerator addMutators() {
-        productclass.getParameters().stream().forEach(this::addMutator);
+        productclass.getParameters().stream() //
+                .filter(not(this::hasMutator)) //
+                .forEach(this::addMutator);
         return this;
+    }
+
+    private boolean hasMutator(Parameter para) {
+        return exists(//
+                allMember(builderclass(), MethodDeclaration.class) //
+                        .filter(md -> md.getNameAsString().equals(mutatorName(para.getNameAsString()))) //
+                        .filter(ClassUtil.hasSingleParameter(para.getType())) //
+                        .filter(md -> md.getType().equals(builderClassType())));
     }
 
     private void addMutator(Parameter para) {

@@ -73,10 +73,8 @@ public class BuilderGenerator {
     /**
      * Creates a generator for the builder class.
      *
-     * @param productUnit
-     *                             unit with the product class definition
-     * @param productClassName
-     *                             name of the product class
+     * @param productUnit      unit with the product class definition
+     * @param productClassName name of the product class
      */
     public BuilderGenerator(CompilationUnit productUnit, String productClassName) {
         this.productUnit = productUnit;
@@ -110,7 +108,8 @@ public class BuilderGenerator {
     /**
      * Create a generator for a separate builder class.
      *
-     * @return The {@code BuilderGenerator}
+     * @param  builderUnit Unit that takes the builder
+     * @return             The {@code BuilderGenerator}
      */
     public BuilderGenerator withExternalBuilder(CompilationUnit builderUnit) {
         this.forge = Forge.external(builderUnit, productClassName(), naming.builderClassPostfix());
@@ -395,9 +394,8 @@ public class BuilderGenerator {
      * <p>
      * The constructor must be callable by the builder
      *
-     * @param type
-     *                 class to check
-     * @return {@code true} if the class contains fitting constructor.
+     * @param  type class to check
+     * @return      {@code true} if the class contains fitting constructor.
      */
     private boolean hasUsableConstructor(ClassOrInterfaceDeclaration type) {
         List<ConstructorDeclaration> constructorList = //
