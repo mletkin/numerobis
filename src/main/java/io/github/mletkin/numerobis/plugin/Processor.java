@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
-import io.github.mletkin.numerobis.common.Executor;
+import io.github.mletkin.numerobis.common.Generator;
 import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.GeneratorException;
@@ -124,22 +124,22 @@ public class Processor {
         }
     }
 
-    private Executor generator(Order order) {
+    private Generator generator(Order order) {
         var type = order.productTypeName().get();
 
         if (order.isRecord()) {
             return embeddedBuilder //
-                    ? () -> facade.forRecordEmbedded(order.productUnit(), type)
-                    : () -> facade.forRecordSeparate(order.productUnit(), type, order.builderUnit());
+                    ? facade.forRecordEmbedded(order.productUnit(), type)
+                    : facade.forRecordSeparate(order.productUnit(), type, order.builderUnit());
         }
         if (embeddedBuilder) {
             return useFactoryMethods //
-                    ? () -> facade.withFactoryMethods(order.productUnit(), type)
-                    : () -> facade.withConstructors(order.productUnit(), type);
+                    ? facade.withFactoryMethods(order.productUnit(), type)
+                    : facade.withConstructors(order.productUnit(), type);
         }
         return useFactoryMethods //
-                ? () -> facade.withFactoryMethods(order.productUnit(), type, order.builderUnit())
-                : () -> facade.withConstructors(order.productUnit(), type, order.builderUnit());
+                ? facade.withFactoryMethods(order.productUnit(), type, order.builderUnit())
+                : facade.withConstructors(order.productUnit(), type, order.builderUnit());
     }
 
     private void sort(Order order) {

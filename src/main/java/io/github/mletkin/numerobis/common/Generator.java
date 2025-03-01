@@ -15,12 +15,18 @@
  */
 package io.github.mletkin.numerobis.common;
 
+import com.github.javaparser.ast.CompilationUnit;
+
 /*
- * Describes an executable function.
- * <p>
- * Describes a function that accepts no argument and has n o return value.
+ * Describes the execution of a generation.
  */
 @FunctionalInterface
-public interface Executor {
-    void execute();
+public interface Generator {
+
+    /**
+     * Execute a builder generator function.
+     *
+     * @return the {@link CompilationUnit} containing the builder
+     */
+    CompilationUnit execute();
 }

@@ -19,6 +19,8 @@ import static io.github.mletkin.numerobis.Util.externalWithConstructors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.Test;
 
 import com.github.javaparser.StaticJavaParser;
@@ -83,18 +85,22 @@ class ExternalBuilderGeneratorTest {
     }
 
     @Test
-    void notContainedClassProducesNothing() {
-        assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> new Facade(false).withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo",
-                        new CompilationUnit()))
+    void notContainedClassProducesNothing() throws IOException {
+        var generator = new Facade(false) //
+                .withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo", new CompilationUnit());
+
+        assertThatExceptionOfType(GeneratorException.class) //
+                .isThrownBy(generator::execute) //
                 .withMessage("Product class Foo not found in compilation unit.");
     }
 
     @Test
-    void nullClassProducesNothing() {
-        assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
-                () -> new Facade(false).withConstructors(StaticJavaParser.parseResource("TestClass.java"), "",
-                        new CompilationUnit()))
+    void nullClassProducesNothing() throws IOException {
+        var generator = new Facade(false) //
+                .withConstructors(StaticJavaParser.parseResource("TestClass.java"), "", new CompilationUnit());
+
+        assertThatExceptionOfType(GeneratorException.class) //
+                .isThrownBy(generator::execute) //
                 .withMessage("Product class not found in compilation unit.");
     }
 
