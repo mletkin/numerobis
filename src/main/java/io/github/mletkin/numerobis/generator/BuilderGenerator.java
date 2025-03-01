@@ -82,7 +82,7 @@ public class BuilderGenerator {
         this.productUnit = productUnit;
         this.productclass = ClassUtil.findClass(productUnit, productClassName).orElse(null);
 
-        ifNotThrow(productclass != null, GeneratorException::productClassNotFound);
+        ifNotThrow(productclass != null, () -> GeneratorException.productClassNotFound(productClassName));
         ifNotThrow(hasUsableConstructor(productclass), GeneratorException::noConstructorFound);
     }
 

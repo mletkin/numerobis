@@ -56,7 +56,7 @@ class InternalBuilderGeneratorTest {
         assertThatExceptionOfType(GeneratorException.class).isThrownBy( //
                 () -> new Facade(false).withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo",
                         new CompilationUnit()))
-                .withMessage("Product class not found in compilation unit.");
+                .withMessage("Product class Foo not found in compilation unit.");
     }
 
     @Test

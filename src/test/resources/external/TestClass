@@ -1,0 +1,17 @@
+public class TestClassBuilder {
+
+    private TestClass product;
+
+    public TestClassBuilder() {
+        product = new TestClass();
+    }
+
+    public TestClassBuilder withX(int x) {
+        product.x = x;
+        return this;
+    }
+
+    public TestClass build() {
+        return product;
+    }
+}

@@ -25,12 +25,14 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 
 import io.github.mletkin.numerobis.generator.common.ClassUtil;
 import io.github.mletkin.numerobis.generator.common.GenerationUtil;
 
 /**
- * Do modifications inthe Builder Class.
+ * Produces the builder class.
  */
 public class Forge {
 
@@ -39,25 +41,70 @@ public class Forge {
     private CompilationUnit builderUnit;
     private ClassOrInterfaceDeclaration builderClass;
 
+    /**
+     * Only to be called by factory methods.
+     *
+     * @param builderUnit
+     *                         Unit to take the builder
+     * @param builderclass
+     *                         Declaration of the builder class
+     */
     private Forge(CompilationUnit builderUnit, ClassOrInterfaceDeclaration builderclass) {
         this.builderUnit = builderUnit;
         this.builderClass = builderclass;
     }
 
+    /**
+     * Create a forge for an embedded builder for a product class.
+     *
+     * @param builderUnit
+     *                         Unit to take the builder
+     * @param productClass
+     *                         Name of the product class
+     * @param postfix
+     *                         Postfix of the builder class name
+     * @return the {@code Forge}-Object
+     */
     public static Forge internal(CompilationUnit builderUnit, ClassOrInterfaceDeclaration productClass,
             String postfix) {
         return new Forge(builderUnit, createInternalBuilderClass(productClass, postfix));
     }
 
+    /**
+     * Create a forge for an embedded builder for a product record.
+     *
+     * @param builderUnit
+     *                         Unit to take the builder
+     * @param productClass
+     *                         Name of the product class
+     * @param postfix
+     *                         Postfix of the builder class name
+     * @return the {@code Forge}-Object
+     */
+    public static Forge internal(CompilationUnit builderUnit, RecordDeclaration productRecord, String postfix) {
+        return new Forge(builderUnit, createInternalBuilderClass(productRecord, postfix));
+    }
+
+    /**
+     * Create a forge for a separate builder for a product class or record.
+     *
+     * @param builderUnit
+     *                         Unit to take the builder
+     * @param productClass
+     *                         Name of the product class or record
+     * @param postfix
+     *                         Postfix of the builder class name
+     * @return the {@code Forge}-Object
+     */
     public static Forge external(CompilationUnit builderUnit, String productClassName, String postfix) {
         return new Forge(builderUnit, createExternalBuilderClass(builderUnit, productClassName, postfix));
     }
 
-    CompilationUnit builderUnit() {
+    public CompilationUnit builderUnit() {
         return builderUnit;
     }
 
-    ClassOrInterfaceDeclaration builderClass() {
+    public ClassOrInterfaceDeclaration builderClass() {
         return builderClass;
     }
 
@@ -79,7 +126,16 @@ public class Forge {
                 .orElseGet(() -> newInternalBuilderClass(productclass, builderClassPostfix));
     }
 
-    private static ClassOrInterfaceDeclaration newInternalBuilderClass(ClassOrInterfaceDeclaration productclass,
+    private static ClassOrInterfaceDeclaration createInternalBuilderClass( //
+            RecordDeclaration productclass, String builderClassPostfix) {
+
+        return allMember(productclass, ClassOrInterfaceDeclaration.class) //
+                .filter(c -> c.getNameAsString().equals(builderClassPostfix)) //
+                .findFirst() //
+                .orElseGet(() -> newInternalBuilderClass(productclass, builderClassPostfix));
+    }
+
+    private static ClassOrInterfaceDeclaration newInternalBuilderClass(TypeDeclaration productclass,
             String builderClassPostfix) {
         var memberClass = GenerationUtil.newMemberClass(builderClassPostfix);
         productclass.getMembers().add(memberClass);

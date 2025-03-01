@@ -29,6 +29,8 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.Type;
@@ -46,10 +48,10 @@ public final class ClassUtil {
      * Checks a compilation unit for a given class.
      *
      * @param unit
-     *            compilation unit to check
+     *                      compilation unit to check
      * @param className
-     *            name of the searched class
-     * @return the found class declaration wrapped in an optional
+     *                      name of the searched class
+     * @return the found class declaration wrapped in an {@link Optional}
      */
     public static Optional<ClassOrInterfaceDeclaration> findClass(CompilationUnit unit, String className) {
         return unit.findFirst(ClassOrInterfaceDeclaration.class, //
@@ -57,10 +59,24 @@ public final class ClassUtil {
     }
 
     /**
+     * Checks a compilation unit for a given record.
+     *
+     * @param unit
+     *                       compilation unit to check
+     * @param recordName
+     *                       name of the searched record
+     * @return the found record declaration wrapped in an {@link Optional}
+     */
+    public static Optional<RecordDeclaration> findRecord(CompilationUnit unit, String recordName) {
+        return unit.findFirst(RecordDeclaration.class, //
+                cl -> cl.getNameAsString().equals(recordName));
+    }
+
+    /**
      * Checks a class declaration for a constructor.
      *
      * @param type
-     *            class to check
+     *                 class to check
      * @return {@code true} if the class contains a constructor
      */
     public static boolean hasExplicitConstructor(ClassOrInterfaceDeclaration type) {
@@ -71,7 +87,7 @@ public final class ClassUtil {
      * Checks a class declaration for a default constructor.
      *
      * @param type
-     *            class to check
+     *                 class to check
      * @return {@code true} if the class contains a default constructor.
      */
     public static boolean hasDefaultConstructor(ClassOrInterfaceDeclaration type) {
@@ -83,9 +99,9 @@ public final class ClassUtil {
      * Checks a class declaration for a product constructor.
      *
      * @param type
-     *            class to check
+     *                             class to check
      * @param productClassName
-     *            name of the product class
+     *                             name of the product class
      * @return {@code true} if the class contains a product constructor.
      */
     public static boolean hasProductConstructor(ClassOrInterfaceDeclaration type, String productClassName) {
@@ -98,9 +114,9 @@ public final class ClassUtil {
      * Checks, whether a variable type is a {@code Collection}.
      *
      * @param vd
-     *            declaration of the variable to check
+     *               declaration of the variable to check
      * @param cu
-     *            Compilation unit with imports
+     *               Compilation unit with imports
      * @return {@code true}, if the type is a {@code Collection}
      */
     public static boolean isCollection(VariableDeclarator vd, CompilationUnit cu) {
@@ -111,9 +127,9 @@ public final class ClassUtil {
      * Checks, whether a field declaration type is a {@code Collection}.
      *
      * @param fd
-     *            field declaration to check
+     *               field declaration to check
      * @param cu
-     *            Compilation unit with imports
+     *               Compilation unit with imports
      * @return {@code true}, if the type is a {@code Collection}
      */
     public static boolean isCollection(FieldDeclaration fd, CompilationUnit cu) {
@@ -124,11 +140,11 @@ public final class ClassUtil {
      * Checks, whether a type extends a given interface.
      *
      * @param type
-     *            Type to check
+     *                  Type to check
      * @param clazz
-     *            Class object of the interface
+     *                  Class object of the interface
      * @param cu
-     *            Compilation unit with imports
+     *                  Compilation unit with imports
      * @return {@code true}, if the type extends the interface
      */
     public static boolean extendsInterface(Type type, Class<?> clazz, CompilationUnit cu) {
@@ -155,9 +171,9 @@ public final class ClassUtil {
      * Compares the parameter types of two method or constructor declarations.
      *
      * @param a
-     *            first declaration to compare
+     *              first declaration to compare
      * @param b
-     *            second declaration to compare
+     *              second declaration to compare
      * @return {@code true} if both type lists are identical
      */
     public static boolean matchesParameter(CallableDeclaration<?> a, CallableDeclaration<?> b) {
@@ -173,17 +189,17 @@ public final class ClassUtil {
     }
 
     /**
-     * Returns all members of a given type for a class declaration.
+     * Returns all members of a given type for a type declaration.
      *
      * @param <T>
-     *            member Type
+     *                       member Type
      * @param decl
-     *            class declaration
+     *                       type declaration
      * @param memberType
-     *            class object of the member type
+     *                       class object of the member type
      * @return stream of members
      */
-    public static <T extends Node> Stream<T> allMember(ClassOrInterfaceDeclaration decl, Class<T> memberType) {
+    public static <T extends Node> Stream<T> allMember(TypeDeclaration decl, Class<T> memberType) {
         return decl.findAll(memberType) //
                 .stream() //
                 .filter(isMember(decl));
@@ -197,7 +213,7 @@ public final class ClassUtil {
      * Produces a predicate to check that a method has exactly one parameter.
      *
      * @param type
-     *            the type, the parameter must have
+     *                 the type, the parameter must have
      * @return the predicate
      */
     public static Predicate<CallableDeclaration<?>> hasSingleParameter(Type type) {
@@ -208,7 +224,7 @@ public final class ClassUtil {
      * Produces a predicate to check that a method has exactly one vararg parameter.
      *
      * @param type
-     *            the type, the parameter must have
+     *                 the type, the parameter must have
      * @return the predicate
      */
     public static Predicate<CallableDeclaration<?>> hasSingleVarArgParameter(Type type) {
@@ -221,7 +237,7 @@ public final class ClassUtil {
      * Returns the type of the first type parameter.
      *
      * @param type
-     *            type with parameters
+     *                 type with parameters
      * @return type of the first type parameter
      */
     public static Type firstTypeArgument(Type type) {

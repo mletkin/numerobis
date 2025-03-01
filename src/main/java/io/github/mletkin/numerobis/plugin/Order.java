@@ -23,11 +23,13 @@ import java.util.Optional;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
 
+import io.github.mletkin.numerobis.annotation.GenerateBuilder;
 import io.github.mletkin.numerobis.generator.Facade;
 
 /**
- * Class describing the processing of a single java file.
+ * Represents the order to process a single java file.
  */
 class Order {
 
@@ -52,6 +54,16 @@ class Order {
 
         generateBuilder = Facade.isBuilderWanted(productUnit);
         generateAccessors = Facade.areAccessorsWanted(productUnit);
+    }
+
+    /**
+     * Checks, wether the product is a record.
+     *
+     * @return {@code true} if the product is a record
+     */
+    public boolean isRecord() {
+        return productUnit.findAll(RecordDeclaration.class).stream() //
+                .anyMatch(c -> c.isAnnotationPresent(GenerateBuilder.class));
     }
 
     /**

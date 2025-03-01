@@ -125,7 +125,13 @@ public class Processor {
     }
 
     private Executor generator(Order order) {
-        String type = order.productTypeName().get();
+        var type = order.productTypeName().get();
+
+        if (order.isRecord()) {
+            return embeddedBuilder //
+                    ? () -> facade.forRecordEmbedded(order.productUnit(), type)
+                    : () -> facade.forRecordSeparate(order.productUnit(), type, order.builderUnit());
+        }
         if (embeddedBuilder) {
             return useFactoryMethods //
                     ? () -> facade.withFactoryMethods(order.productUnit(), type)

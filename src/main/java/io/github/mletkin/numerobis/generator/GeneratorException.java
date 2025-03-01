@@ -20,8 +20,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 /**
  * Exception thrown by the builder generator.
  * <p>
- * Only one exception class is defined. Different error cases have different
- * messages.
+ * Only one exception class is defined. Different error cases have different messages.
  */
 public class GeneratorException extends RuntimeException {
 
@@ -35,6 +34,11 @@ public class GeneratorException extends RuntimeException {
 
     public static GeneratorException productClassNotFound() {
         return new GeneratorException("Product class not found in compilation unit.");
+    }
+
+    public static GeneratorException productClassNotFound(String clazz) {
+        var myClazz = (clazz == null || clazz.isBlank()) ? "" : clazz.trim() + " ";
+        return new GeneratorException("Product class " + myClazz + "not found in compilation unit.");
     }
 
     public static GeneratorException productFieldHasWrongType(VariableDeclarator vd) {

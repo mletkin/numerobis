@@ -1,0 +1,23 @@
+public record TestRecord(int x, String y) {
+
+    public static class Builder {
+
+        private int x;
+
+        private String y;
+
+        public Builder withX(int x) {
+            this.x = x;
+            return this;
+        }
+
+        public Builder withY(String y) {
+            this.y = y;
+            return this;
+        }
+
+        public TestRecord build() {
+            return new TestRecord(x, y);
+        }
+    }
+}

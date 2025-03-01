@@ -17,6 +17,8 @@ package io.github.mletkin.numerobis.generator;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 
 import io.github.mletkin.numerobis.annotation.GenerateAccessors;
 import io.github.mletkin.numerobis.annotation.GenerateBuilder;
@@ -69,20 +71,63 @@ public class Facade {
     }
 
     /**
-     * Generate a builder for a product class using constructor methods.
+     * Generate an embedded builder for a record.
      *
      * @param productUnit
-     *            compilation unit containing the product class
-     * @param productClassName
-     *            name of the product class
+     *                              compilation unit containing the product record
+     * @param productTypeName
+     *                              name of the product record
+     * @return result object with generated source
+     */
+    public Result forRecordEmbedded(CompilationUnit productUnit, String productTypeName) {
+        return Result.builder( //
+                new RecordBuilderGenerator(productUnit, productTypeName) //
+                        .withNamingSettings(namingSettings) //
+                        .withInternalBuilder() //
+                        .addFields() //
+                        .addMutators() //
+                        .addBuildMethod() //
+                        .builderUnit() //
+        );
+    }
+
+    /**
+     * Generate a separate builder for a record.
+     *
+     * @param productUnit
+     *                              compilation unit containing the product record
+     * @param productTypeName
+     *                              name of the product record
      * @param builderUnit
-     *            compilation unit for/with the builder class
+     *                              compilation unit taking the builder
+     * @return result object with generated source
+     */
+    public Result forRecordSeparate(CompilationUnit productUnit, String productTypeName, CompilationUnit builderUnit) {
+        return Result.builder( //
+                new RecordBuilderGenerator(productUnit, productTypeName) //
+                        .withNamingSettings(namingSettings) //
+                        .withExternalBuilder(builderUnit) //
+                        .addFields() //
+                        .addMutators() //
+                        .addBuildMethod() //
+                        .builderUnit() //
+        );
+    }
+
+    /**
+     * Generate a separate builder using constructor methods.
+     *
+     * @param productUnit
+     *                             compilation unit containing the product class
+     * @param productClassName
+     *                             name of the product class
+     * @param builderUnit
+     *                             compilation unit for/with the builder class
      * @return result object with generated source
      */
     public Result withConstructors(CompilationUnit productUnit, String productClassName, CompilationUnit builderUnit) {
-
         return Result.builder(//
-                generator(productUnit, productClassName, builderUnit) //
+                generatorSeparate(productUnit, productClassName, builderUnit) //
                         .addProductField() //
                         .addConstructors() //
                         .addMutator(mutatorVariants) //
@@ -93,21 +138,21 @@ public class Facade {
     }
 
     /**
-     * Generate a builder for a product class using static factory methods.
+     * Generate a separate builder using static factory methods.
      *
      * @param productUnit
-     *            compilation unit containing the product class
+     *                             compilation unit containing the product class
      * @param productClassName
-     *            name of the product class
+     *                             name of the product class
      * @param builderUnit
-     *            compilation unit for/with the builder class
+     *                             compilation unit for/with the builder class
      * @return result object with generated source
      */
     public Result withFactoryMethods(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
 
         return Result.builder(//
-                generator(productUnit, productClassName, builderUnit) //
+                generatorSeparate(productUnit, productClassName, builderUnit) //
                         .addProductField() //
                         .addFactoryMethods() //
                         .addMutator(mutatorVariants) //
@@ -117,50 +162,7 @@ public class Facade {
         );
     }
 
-    /**
-     * Generate a builder for a product class using constructor methods.
-     *
-     * @param productUnit
-     *            compilation unit containing the product class
-     * @param productClassName
-     *            name of the product class
-     * @return result object with generated source
-     */
-    public Result withConstructors(CompilationUnit productUnit, String productClassName) {
-        return Result.product(//
-                generator(productUnit, productClassName) //
-                        .addProductField() //
-                        .addConstructors() //
-                        .addMutator(mutatorVariants) //
-                        .addAdder(adderVariants) //
-                        .addBuildMethod() //
-                        .builderUnit() //
-        );
-    }
-
-    /**
-     * Generate an internal builder for a product class using static factory
-     * methods.
-     *
-     * @param productUnit
-     *            compilation unit containing the product class
-     * @param productClassName
-     *            name of the product class
-     * @return result object with generated source
-     */
-    public Result withFactoryMethods(CompilationUnit productUnit, String productClassName) {
-        return Result.product(//
-                generator(productUnit, productClassName) //
-                        .addProductField() //
-                        .addFactoryMethods() //
-                        .addMutator(mutatorVariants) //
-                        .addAdder(adderVariants) //
-                        .addBuildMethod() //
-                        .builderUnit() //
-        );
-    }
-
-    private BuilderGenerator generator(CompilationUnit productUnit, String productClassName,
+    private BuilderGenerator generatorSeparate(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
         return new BuilderGenerator(productUnit, productClassName) //
                 .mutableByDefault(productsAreMutable) //
@@ -168,7 +170,49 @@ public class Facade {
                 .withExternalBuilder(builderUnit);
     }
 
-    private BuilderGenerator generator(CompilationUnit productUnit, String productClassName) {
+    /**
+     * Generate an embedded builder using constructor methods.
+     *
+     * @param productUnit
+     *                             compilation unit containing the product class
+     * @param productClassName
+     *                             name of the product class
+     * @return result object with generated source
+     */
+    public Result withConstructors(CompilationUnit productUnit, String productClassName) {
+        return Result.product(//
+                generatorEmbedded(productUnit, productClassName) //
+                        .addProductField() //
+                        .addConstructors() //
+                        .addMutator(mutatorVariants) //
+                        .addAdder(adderVariants) //
+                        .addBuildMethod() //
+                        .builderUnit() //
+        );
+    }
+
+    /**
+     * Generate an embedded builder using static factory methods.
+     *
+     * @param productUnit
+     *                             compilation unit containing the product class
+     * @param productClassName
+     *                             name of the product class
+     * @return result object with generated source
+     */
+    public Result withFactoryMethods(CompilationUnit productUnit, String productClassName) {
+        return Result.product(//
+                generatorEmbedded(productUnit, productClassName) //
+                        .addProductField() //
+                        .addFactoryMethods() //
+                        .addMutator(mutatorVariants) //
+                        .addAdder(adderVariants) //
+                        .addBuildMethod() //
+                        .builderUnit() //
+        );
+    }
+
+    private BuilderGenerator generatorEmbedded(CompilationUnit productUnit, String productClassName) {
         return new BuilderGenerator(productUnit, productClassName) //
                 .mutableByDefault(productsAreMutable) //
                 .withNamingSettings(namingSettings) //
@@ -176,12 +220,12 @@ public class Facade {
     }
 
     /**
-     * generate accessors for the field in a class.
+     * generate accessors for the fields in a class.
      *
      * @param productUnit
-     *            compilation unit with product class
+     *                        compilation unit with product class
      * @param className
-     *            name of the product class
+     *                        name of the product class
      * @return compilation unit with the processed product class
      */
     public CompilationUnit withAccessors(CompilationUnit productUnit, String className) {
@@ -191,19 +235,27 @@ public class Facade {
     }
 
     /**
-     * Tests whether a class needs a builder.
+     * Tests whether a class wants a builder.
      *
-     * @param sourceClass
-     *            compilation unit with the potential product class
+     * @param sourceUnit
+     *                       compilation unit with the potential product class
      * @return {@code true} when a builder class shall be built
      */
-    public static boolean isBuilderWanted(CompilationUnit sourceClass) {
-        return sourceClass.findAll(ClassOrInterfaceDeclaration.class).stream()
+    public static boolean isBuilderWanted(CompilationUnit sourceUnit) {
+        return sourceUnit.findAll(TypeDeclaration.class).stream() //
+                .filter(t -> t instanceof ClassOrInterfaceDeclaration || t instanceof RecordDeclaration) //
                 .anyMatch(c -> c.isAnnotationPresent(GenerateBuilder.class));
     }
 
-    public static boolean areAccessorsWanted(CompilationUnit sourceClass) {
-        return sourceClass.findAll(ClassOrInterfaceDeclaration.class).stream()
+    /**
+     * Test whether a class wants accessors
+     *
+     * @param sourceUnit
+     *                       compilation unit with the potential product class
+     * @return {@code true} when accessurs should be generated
+     */
+    public static boolean areAccessorsWanted(CompilationUnit sourceUnit) {
+        return sourceUnit.findAll(ClassOrInterfaceDeclaration.class).stream() //
                 .anyMatch(c -> c.isAnnotationPresent(GenerateAccessors.class));
     }
 
