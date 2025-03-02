@@ -15,6 +15,8 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
+import java.nio.file.Path;
+
 import com.github.javaparser.ParserConfiguration.LanguageLevel;
 
 import io.github.mletkin.numerobis.annotation.GenerateAdder;
@@ -25,7 +27,7 @@ import io.github.mletkin.numerobis.annotation.GenerateListMutator;
  */
 public class MojoSettings {
 
-    private String targetDirectory;
+    private Path targetDirectory;
     private BuilderMojo.Creation builderCreation;
     private BuilderMojo.Location builderLocation;
     private boolean productsAreMutable;
@@ -38,7 +40,7 @@ public class MojoSettings {
         // builder instantiation only
     }
 
-    public String targetDirectory() {
+    public Path targetDirectory() {
         return targetDirectory;
     }
 
@@ -79,7 +81,9 @@ public class MojoSettings {
         }
 
         public Builder withTargetDirectory(String targetDirectory) {
-            product.targetDirectory = targetDirectory;
+            if (targetDirectory != null && !targetDirectory.isBlank()) {
+                product.targetDirectory = Path.of(targetDirectory);
+            }
             return this;
         }
 

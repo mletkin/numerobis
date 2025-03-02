@@ -18,13 +18,10 @@ package io.github.mletkin.numerobis.plugin;
 import static io.github.mletkin.numerobis.common.Util.stream;
 import static java.util.Optional.ofNullable;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -84,7 +81,7 @@ public class BuilderMojo extends AbstractMojo {
      * <p>
      * The packages are converted to file paths.
      */
-    @Parameter(defaultValue = " ", readonly = true, required = true)
+    @Parameter(defaultValue = " ")
     private String targetDirectory;
 
     /**
@@ -102,9 +99,12 @@ public class BuilderMojo extends AbstractMojo {
     /**
      * Whether product instances may be changes after creation.
      */
-    @Parameter
+    @Parameter(defaultValue = "false")
     private boolean productsAreMutable;
 
+    /**
+     * Java version to be recognized by the parser.
+     */
     @Parameter(defaultValue = "JAVA_17")
     private LanguageLevel javaVersion;
 
@@ -150,25 +150,23 @@ public class BuilderMojo extends AbstractMojo {
     /**
      * Recursivly walks through the directory and processes all java files.
      *
-     * @param directory
-     *                      directory to traverse
+     * @param directory directory to traverse
      */
     private void walk(String directory) {
-        try (Stream<Path> paths = Files.walk(Paths.get(directory))) {
-            paths.map(Path::toFile) //
-                    .filter(File::isFile) //
-                    .filter(f -> f.getName().endsWith(".java")) //
+        try (var paths = Files.walk(Paths.get(directory))) {
+            paths.filter(Files::exists) //
+                    .filter(f -> f.getFileName().endsWith(".java")) //
                     .peek(f -> getLog().debug(f.toString())) //
                     .forEach(new Processor(processorSettings())::process);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new MojoFileIOException(e);
         }
     }
 
     /**
      * Collect the processor configuration.
      *
-     * @return Settinngs object
+     * @return Settings object
      */
     private MojoSettings processorSettings() {
         return new MojoSettings.Builder() //

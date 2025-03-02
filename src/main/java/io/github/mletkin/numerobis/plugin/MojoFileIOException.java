@@ -15,14 +15,14 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
- * unchecked replacement for the checked {@code FileNotFoundException}.
+ * Unchecked replacement for the checked {@code IOException}.
  */
-public class MojoFileNotFoundException extends RuntimeException {
+public class MojoFileIOException extends RuntimeException {
 
-    public MojoFileNotFoundException(FileNotFoundException e) {
+    public MojoFileIOException(IOException e) {
         super(e);
     }
 }

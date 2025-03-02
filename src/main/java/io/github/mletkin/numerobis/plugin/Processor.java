@@ -15,9 +15,9 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,22 +28,24 @@ import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.common.Generator;
 import io.github.mletkin.numerobis.common.Util;
+import io.github.mletkin.numerobis.common.VisibleForTesting;
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.GeneratorException;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 import io.github.mletkin.numerobis.generator.Sorter;
 
 /**
- * Processes a single java files to generate a builder class.
+ * Processor for single java files to generate builder classes.
  * <ul>
  * <li>called by the mojo
  * <li>created with a setup for the generator
- * <li>{@code process} is called for each java file
+ * <li>{@link #process(Path)} is called for each java file
  * <li>maps mojo settings to generator settings
  * </ul>
  */
 public class Processor {
-    private String destinationPath;
+
+    private Path destinationPath;
     private boolean useFactoryMethods;
     private boolean embeddedBuilder;
     private Facade facade;
@@ -52,11 +54,10 @@ public class Processor {
     /**
      * Creates a processor for the given configuration.
      *
-     * @param settings
-     *                     configuration from the mojo
+     * @param settings configuration from the mojo
      */
     public Processor(MojoSettings settings) {
-        this.destinationPath = ofNullable(settings.targetDirectory()).map(String::trim).orElse("");
+        this.destinationPath = settings.targetDirectory();
         this.useFactoryMethods = settings.builderCreation().flag();
         this.embeddedBuilder = settings.builderLocation().flag();
         this.naming = settings.naming();
@@ -74,22 +75,23 @@ public class Processor {
      * The generator uses one enum for adder and list mutator methods.<br>
      * Constants are identified by name.
      *
-     * @param list
-     *                 List of enum constants
-     * @return array of {@code ListMutatorVariant} constants
+     * @param  list List of enum constants
+     * @return      array of {@code ListMutatorVariant} constants
      */
     private ListMutatorVariant[] toVariants(Enum<?>[] list) {
-        return Stream.of(list).map(v -> ListMutatorVariant.valueOf(v.name())).toArray(ListMutatorVariant[]::new);
+        return Stream.of(list) //
+                .map(Enum::name) //
+                .map(ListMutatorVariant::valueOf) //
+                .toArray(ListMutatorVariant[]::new);
     }
 
     /**
      * Parses the java file, generates and stores the class files if desired.
      *
-     * @param file
-     *                 location of the product class definition
+     * @param file location of the product class definition
      */
-    public void process(File file) {
-        Order order = new Order(file);
+    public void process(Path file) {
+        var order = new Order(file);
         if (order.generateBuilder()) {
             order.setBuilderPath(builderPath(order));
         }
@@ -101,19 +103,28 @@ public class Processor {
     }
 
     private Path builderPath(Order order) {
-        return builderPath(order.productFile(), order.unitPackageName());
+        return builderPath(order.productPath(), order.unitPackageName());
     }
 
-    private Path builderPath(File src, String packagePath) {
-        String path = "".equals(destinationPath) //
-                ? src.getParent()
-                : destinationPath + File.separator + packagePath.replace(".", File.separator);
-        String fileName = src.getName().replace(".java", naming.builderClassPostfix() + ".java");
-        return new File(path, fileName).toPath();
+    @VisibleForTesting
+    Path builderPath(Path productPath, String packagePath) {
+        var path = destinationPath != null //
+                ? destinationPath.resolve(packageToPath(packagePath))
+                : productPath.getParent();
+
+        return path.resolve(builderFileName(productPath));
+    }
+
+    private Path packageToPath(String packagePath) {
+        return Path.of("", packagePath.split("\\."));
+    }
+
+    private String builderFileName(Path productPath) {
+        return productPath.getFileName().toString().replace(".java", naming.builderClassPostfix() + ".java");
     }
 
     private void generate(Order order) {
-        String productTypeName = order.productTypeName().orElseThrow(GeneratorException::productClassNotFound);
+        var productTypeName = order.productTypeName().orElseThrow(GeneratorException::productClassNotFound);
 
         if (order.generateBuilder()) {
             generator(order).execute();
@@ -143,16 +154,16 @@ public class Processor {
     }
 
     private void sort(Order order) {
-        Sorter sorter = new Sorter(naming);
-        ofNullable(order.builderUnit()).ifPresent(sorter::sort);
-        ofNullable(order.productUnit()).ifPresent(sorter::sort);
+        var sorter = new Sorter(naming);
+        of(order).map(Order::builderUnit).ifPresent(sorter::sort);
+        of(order).map(Order::productUnit).ifPresent(sorter::sort);
     }
 
     private void write(Order order) {
         if (!embeddedBuilder) {
-            ofNullable(order.builderUnit()).ifPresent(u -> writeUnit(order.builderPath(), u));
+            of(order).map(Order::builderUnit).ifPresent(u -> writeUnit(order.builderPath(), u));
         }
-        ofNullable(order.productUnit()).ifPresent(u -> writeUnit(order.productPath(), u));
+        of(order).map(Order::productUnit).ifPresent(u -> writeUnit(order.productPath(), u));
     }
 
     private void writeUnit(Path path, CompilationUnit unit) {

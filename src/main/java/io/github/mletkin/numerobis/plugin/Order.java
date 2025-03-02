@@ -15,8 +15,8 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -49,9 +49,9 @@ class Order {
      *
      * @param productClassFile descriptor of the file with the product class
      */
-    public Order(File productClassFile) {
-        productPath = productClassFile.toPath();
-        productUnit = parse(productClassFile);
+    public Order(Path productClassFile) {
+        productPath = productClassFile;
+        productUnit = parse(productPath);
 
         generateBuilder = isBuilderWanted(productUnit);
         generateAccessors = areAccessorsWanted(productUnit);
@@ -63,7 +63,7 @@ class Order {
      * @param  sourceUnit compilation unit with the potential product class
      * @return            {@code true} when a builder class shall be built
      */
-    public static boolean isBuilderWanted(CompilationUnit sourceUnit) {
+    private static boolean isBuilderWanted(CompilationUnit sourceUnit) {
         return sourceUnit.findAll(TypeDeclaration.class).stream() //
                 .filter(t -> t instanceof ClassOrInterfaceDeclaration || t instanceof RecordDeclaration) //
                 .anyMatch(c -> c.isAnnotationPresent(GenerateBuilder.class));
@@ -75,13 +75,13 @@ class Order {
      * @param  sourceUnit compilation unit with the potential product class
      * @return            {@code true} when accessurs should be generated
      */
-    public static boolean areAccessorsWanted(CompilationUnit sourceUnit) {
+    private static boolean areAccessorsWanted(CompilationUnit sourceUnit) {
         return sourceUnit.findAll(ClassOrInterfaceDeclaration.class).stream() //
                 .anyMatch(c -> c.isAnnotationPresent(GenerateAccessors.class));
     }
 
     /**
-     * Checks, wether the product is a record.
+     * Checks whether the product is a record.
      *
      * @return {@code true} if the product is a record
      */
@@ -98,48 +98,47 @@ class Order {
      *
      * @param builderPath object describing the builder file
      */
-    void setBuilderPath(Path builderPath) {
+    public void setBuilderPath(Path builderPath) {
         this.builderPath = builderPath;
-        if (builderPath.toFile().exists()) {
-            builderUnit = parse(builderPath.toFile());
-        } else {
-            builderUnit = new CompilationUnit();
-        }
+        this.builderUnit = Files.exists(builderPath) //
+                ? parse(builderPath)
+                : new CompilationUnit();
     }
 
-    File productFile() {
-        return productPath.toFile();
-    }
-
-    Path productPath() {
+    /**
+     * Returns the locator of the product class file.
+     *
+     * @return a {@lonk Path}-Object
+     */
+    public Path productPath() {
         return productPath;
     }
 
-    CompilationUnit builderUnit() {
+    public CompilationUnit builderUnit() {
         return builderUnit;
     }
 
-    CompilationUnit productUnit() {
+    public CompilationUnit productUnit() {
         return productUnit;
     }
 
-    Optional<String> productTypeName() {
+    public Optional<String> productTypeName() {
         return productUnit.getPrimaryTypeName();
     }
 
-    Path builderPath() {
+    public Path builderPath() {
         return builderPath;
     }
 
-    boolean generateAccessors() {
+    public boolean generateAccessors() {
         return generateAccessors;
     }
 
-    boolean generateBuilder() {
+    public boolean generateBuilder() {
         return generateBuilder;
     }
 
-    boolean needsProcessing() {
+    public boolean needsProcessing() {
         return generateAccessors || generateBuilder;
     }
 
@@ -147,11 +146,11 @@ class Order {
         return productUnit.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
     }
 
-    private CompilationUnit parse(File file) {
+    private CompilationUnit parse(Path file) {
         try {
             return StaticJavaParser.parse(file);
-        } catch (FileNotFoundException e) {
-            throw new MojoFileNotFoundException(e);
+        } catch (IOException e) {
+            throw new MojoFileIOException(e);
         }
     }
 }
