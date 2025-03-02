@@ -21,6 +21,7 @@ import static io.github.mletkin.numerobis.generator.common.ClassUtil.allMember;
 import static io.github.mletkin.numerobis.generator.common.GenerationUtil.methodCall;
 import static io.github.mletkin.numerobis.generator.common.GenerationUtil.nameExpr;
 import static io.github.mletkin.numerobis.generator.common.GenerationUtil.returnStmt;
+import static java.util.function.Predicate.not;
 
 import java.util.stream.Stream;
 
@@ -33,13 +34,14 @@ import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.GenerateAccessors;
 import io.github.mletkin.numerobis.annotation.Ignore;
-import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.common.ClassUtil;
 import io.github.mletkin.numerobis.generator.common.GenerationUtil;
 import io.github.mletkin.numerobis.generator.common.StringExtractor;
 
 /**
  * Generates access methods for a product class.
+ * <p>
+ * Might use a prefix from the {@link GenerateAccessors} annotation.
  */
 public class AccessorGenerator {
 
@@ -47,6 +49,12 @@ public class AccessorGenerator {
     private ClassOrInterfaceDeclaration clazz;
     private String prefix;
 
+    /**
+     * Creates a {@code AccessorGenerator} instance.
+     *
+     * @param unit      thr compilation unit with the class to modify
+     * @param className Name of the class to modify
+     */
     AccessorGenerator(CompilationUnit unit, String className) {
         this.unit = unit;
         this.clazz = ClassUtil.findClass(unit, className).orElse(null);
@@ -56,15 +64,15 @@ public class AccessorGenerator {
     }
 
     /**
-     * Add an accessor for every variable in every field declaration.
+     * Adds an accessor for every variable in every field declaration.
      *
      * @return the generator instance
      */
-    AccessorGenerator addAccessors() {
+    public AccessorGenerator addAccessors() {
         allMember(clazz, FieldDeclaration.class) //
                 .filter(this::process) //
                 .flatMap(fd -> new AccessorMethodDescriptor.Generator(fd, prefix, unit).stream()) //
-                .filter(Util.not(this::hasAccessorMethod)) //
+                .filter(not(this::hasAccessorMethod)) //
                 .forEach(this::addAccessor);
         return this;
     }
@@ -105,7 +113,7 @@ public class AccessorGenerator {
      *
      * @return the compilation unit with the modified class.
      */
-    CompilationUnit resultUnit() {
+    public CompilationUnit resultUnit() {
         return unit;
     }
 }

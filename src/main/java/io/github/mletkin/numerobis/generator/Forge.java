@@ -15,8 +15,8 @@
  */
 package io.github.mletkin.numerobis.generator;
 
-import static io.github.mletkin.numerobis.common.Util.not;
 import static io.github.mletkin.numerobis.generator.common.ClassUtil.allMember;
+import static java.util.function.Predicate.not;
 
 import java.util.function.Predicate;
 
@@ -44,10 +44,8 @@ public class Forge {
     /**
      * Only to be called by factory methods.
      *
-     * @param builderUnit
-     *                         Unit to take the builder
-     * @param builderclass
-     *                         Declaration of the builder class
+     * @param builderUnit  Unit to take the builder
+     * @param builderclass Declaration of the builder class
      */
     private Forge(CompilationUnit builderUnit, ClassOrInterfaceDeclaration builderclass) {
         this.builderUnit = builderUnit;
@@ -55,15 +53,12 @@ public class Forge {
     }
 
     /**
-     * Create a forge for an embedded builder for a product class.
+     * Creates a forge for an embedded builder for a product class.
      *
-     * @param builderUnit
-     *                         Unit to take the builder
-     * @param productClass
-     *                         Name of the product class
-     * @param postfix
-     *                         Postfix of the builder class name
-     * @return the {@code Forge}-Object
+     * @param  builderUnit  unit to take the builder
+     * @param  productClass name of the product class
+     * @param  postfix      postfix of the builder class name
+     * @return              the {@code Forge}-Object
      */
     public static Forge internal(CompilationUnit builderUnit, ClassOrInterfaceDeclaration productClass,
             String postfix) {
@@ -71,30 +66,24 @@ public class Forge {
     }
 
     /**
-     * Create a forge for an embedded builder for a product record.
+     * Creates a forge for an embedded builder for a product record.
      *
-     * @param builderUnit
-     *                         Unit to take the builder
-     * @param productClass
-     *                         Name of the product class
-     * @param postfix
-     *                         Postfix of the builder class name
-     * @return the {@code Forge}-Object
+     * @param  builderUnit  unit to take the builder
+     * @param  productClass name of the product class
+     * @param  postfix      postfix of the builder class name
+     * @return              the {@code Forge}-Object
      */
     public static Forge internal(CompilationUnit builderUnit, RecordDeclaration productRecord, String postfix) {
         return new Forge(builderUnit, createInternalBuilderClass(productRecord, postfix));
     }
 
     /**
-     * Create a forge for a separate builder for a product class or record.
+     * Creates a forge for a separate builder for a product class or record.
      *
-     * @param builderUnit
-     *                         Unit to take the builder
-     * @param productClass
-     *                         Name of the product class or record
-     * @param postfix
-     *                         Postfix of the builder class name
-     * @return the {@code Forge}-Object
+     * @param  builderUnit  unit to take the builder
+     * @param  productClass name of the product class or record
+     * @param  postfix      postfix of the builder class name
+     * @return              the {@code Forge}-Object
      */
     public static Forge external(CompilationUnit builderUnit, String productClassName, String postfix) {
         return new Forge(builderUnit, createExternalBuilderClass(builderUnit, productClassName, postfix));
@@ -109,13 +98,11 @@ public class Forge {
     }
 
     /**
-     * Create the builder as member class.
+     * Creates the builder as member class.
      *
-     * @param productclass
-     *                                product class ot the builder
-     * @param builderClassPostfix
-     *                                the postfix for the Builder class name
-     * @return the builder class description
+     * @param  productclass        product class ot the builder
+     * @param  builderClassPostfix the postfix for the Builder class name
+     * @return                     the builder class description
      */
     private static ClassOrInterfaceDeclaration createInternalBuilderClass( //
             ClassOrInterfaceDeclaration productclass, String builderClassPostfix) {
@@ -143,15 +130,12 @@ public class Forge {
     }
 
     /**
-     * Create the builder as separate class.
+     * Creates the builder as separate class.
      *
-     * @param builderUnit
-     *                             compilation unit for the builder class
-     * @param productClassName
-     *                             name of the production class
-     * @param postfix
-     *                             the postfix for the Builder class name
-     * @return the builder class description
+     * @param  builderUnit      unit for the builder class
+     * @param  productClassName name of the production class
+     * @param  postfix          the postfix for the Builder class name
+     * @return                  the builder class description
      */
     private static ClassOrInterfaceDeclaration createExternalBuilderClass(CompilationUnit builderUnit,
             String productClassName, String postfix) {
@@ -163,10 +147,9 @@ public class Forge {
     }
 
     /**
-     * Set the package declaration of the builder classes unit.
+     * Sets the package declaration of the builder classes unit.
      *
-     * @param packageDeclaration
-     *                               package declaration to use
+     * @param packageDeclaration package declaration to use
      */
     public void setPackageDeclaration(PackageDeclaration packageDeclaration) {
         if (!builderUnit.getPackageDeclaration().isPresent()) {
@@ -175,10 +158,9 @@ public class Forge {
     }
 
     /**
-     * Use the import section of the product classes unit.
+     * Uses the import section of the product classes unit.
      *
-     * @param productUnit
-     *                        unit that keeps the product class
+     * @param productUnit unit that keeps the product class
      */
     public void copyImports(CompilationUnit productUnit) {
         productUnit.getImports().stream() //

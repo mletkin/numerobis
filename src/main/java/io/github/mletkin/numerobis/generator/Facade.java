@@ -16,12 +16,7 @@
 package io.github.mletkin.numerobis.generator;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.RecordDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
 
-import io.github.mletkin.numerobis.annotation.GenerateAccessors;
-import io.github.mletkin.numerobis.annotation.GenerateBuilder;
 import io.github.mletkin.numerobis.common.Generator;
 import io.github.mletkin.numerobis.plugin.Naming;
 
@@ -35,31 +30,54 @@ public class Facade {
     private ListMutatorVariant[] mutatorVariants;
     private Naming namingSettings;
 
+    /**
+     * Creates a {@code Facade}-Instance with default mutablity.
+     *
+     * @param productsAreMutable value for the mutability default flag
+     */
     public Facade(boolean productsAreMutable) {
         this(productsAreMutable, Naming.DEFAULT);
     }
 
+    /**
+     * Creates a {@code Facade}-Instance with default mutablity and namings.
+     *
+     * @param productsAreMutable value for the mutability default flag
+     * @param namingSettings     Values for various names
+     */
     public Facade(boolean productsAreMutable, Naming namingSettings) {
         this.productsAreMutable = productsAreMutable;
         this.namingSettings = namingSettings;
     }
 
+    /**
+     * Sets the variants to generate for list adder methods.
+     *
+     * @param  adderVariants a list of variants to use
+     * @return               the the {@code Facade} instance
+     */
     public Facade withAdderVariants(ListMutatorVariant[] adderVariants) {
         this.adderVariants = adderVariants;
         return this;
     }
 
+    /**
+     * Sets the variants to generate for list mutator methods.
+     *
+     * @param  mutatorVariants a list of variants to use
+     * @return                 the the {@code Facade} instance
+     */
     public Facade withMutatorVariants(ListMutatorVariant[] mutatorVariants) {
         this.mutatorVariants = mutatorVariants;
         return this;
     }
 
     /**
-     * Generate an embedded builder for a record.
+     * Creates a generator for an embedded builder for a record.
      *
      * @param  productUnit     compilation unit containing the product record
      * @param  productTypeName name of the product record
-     * @return                 result object with generated source
+     * @return                 generator
      */
     public Generator forRecordEmbedded(CompilationUnit productUnit, String productTypeName) {
         return () -> new RecordBuilderGenerator(productUnit, productTypeName) //
@@ -72,12 +90,12 @@ public class Facade {
     }
 
     /**
-     * Generate a separate builder for a record.
+     * Creates a generator for a separate builder for a record.
      *
      * @param  productUnit     compilation unit containing the product record
      * @param  productTypeName name of the product record
      * @param  builderUnit     compilation unit taking the builder
-     * @return                 result object with generated source
+     * @return                 generator
      */
     public Generator forRecordSeparate(CompilationUnit productUnit, String productTypeName,
             CompilationUnit builderUnit) {
@@ -91,12 +109,12 @@ public class Facade {
     }
 
     /**
-     * Generate a separate builder using constructor methods.
+     * Creates a generator for a separate builder using constructor methods.
      *
      * @param  productUnit      compilation unit containing the product class
      * @param  productClassName name of the product class
      * @param  builderUnit      compilation unit for/with the builder class
-     * @return                  result object with generated source
+     * @return                  generator
      */
     public Generator withConstructors(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
@@ -110,12 +128,12 @@ public class Facade {
     }
 
     /**
-     * Generate a separate builder using static factory methods.
+     * Creates a generator for a separate builder using static factory methods.
      *
      * @param  productUnit      compilation unit containing the product class
      * @param  productClassName name of the product class
      * @param  builderUnit      compilation unit for/with the builder class
-     * @return                  result object with generated source
+     * @return                  generator
      */
     public Generator withFactoryMethods(CompilationUnit productUnit, String productClassName,
             CompilationUnit builderUnit) {
@@ -138,11 +156,11 @@ public class Facade {
     }
 
     /**
-     * Generate an embedded builder using constructor methods.
+     * Creates a generator for an embedded builder using constructor methods.
      *
      * @param  productUnit      compilation unit containing the product class
      * @param  productClassName name of the product class
-     * @return                  result object with generated source
+     * @return                  generator
      */
     public Generator withConstructors(CompilationUnit productUnit, String productClassName) {
         return () -> generatorEmbedded(productUnit, productClassName) //
@@ -155,11 +173,11 @@ public class Facade {
     }
 
     /**
-     * Generate an embedded builder using static factory methods.
+     * Creates a generator for an embedded builder using static factory methods.
      *
      * @param  productUnit      compilation unit containing the product class
      * @param  productClassName name of the product class
-     * @return                  result object with generated source
+     * @return                  generator
      */
     public Generator withFactoryMethods(CompilationUnit productUnit, String productClassName) {
         return () -> generatorEmbedded(productUnit, productClassName) //
@@ -179,7 +197,7 @@ public class Facade {
     }
 
     /**
-     * generate accessors for the fields in a class.
+     * Generates accessors for the fields in a class.
      *
      * @param  productUnit compilation unit with product class
      * @param  className   name of the product class
@@ -189,29 +207,6 @@ public class Facade {
         return new AccessorGenerator(productUnit, className) //
                 .addAccessors() //
                 .resultUnit();
-    }
-
-    /**
-     * Tests whether a class wants a builder.
-     *
-     * @param  sourceUnit compilation unit with the potential product class
-     * @return            {@code true} when a builder class shall be built
-     */
-    public static boolean isBuilderWanted(CompilationUnit sourceUnit) {
-        return sourceUnit.findAll(TypeDeclaration.class).stream() //
-                .filter(t -> t instanceof ClassOrInterfaceDeclaration || t instanceof RecordDeclaration) //
-                .anyMatch(c -> c.isAnnotationPresent(GenerateBuilder.class));
-    }
-
-    /**
-     * Test whether a class wants accessors
-     *
-     * @param  sourceUnit compilation unit with the potential product class
-     * @return            {@code true} when accessurs should be generated
-     */
-    public static boolean areAccessorsWanted(CompilationUnit sourceUnit) {
-        return sourceUnit.findAll(ClassOrInterfaceDeclaration.class).stream() //
-                .anyMatch(c -> c.isAnnotationPresent(GenerateAccessors.class));
     }
 
 }

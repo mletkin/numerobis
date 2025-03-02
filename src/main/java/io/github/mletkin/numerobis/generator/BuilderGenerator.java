@@ -17,7 +17,6 @@ package io.github.mletkin.numerobis.generator;
 
 import static io.github.mletkin.numerobis.common.Util.exists;
 import static io.github.mletkin.numerobis.common.Util.ifNotThrow;
-import static io.github.mletkin.numerobis.common.Util.not;
 import static io.github.mletkin.numerobis.generator.common.ClassUtil.allMember;
 import static io.github.mletkin.numerobis.generator.common.ClassUtil.hasDefaultConstructor;
 import static io.github.mletkin.numerobis.generator.common.ClassUtil.hasExplicitConstructor;
@@ -29,6 +28,7 @@ import static io.github.mletkin.numerobis.generator.common.GenerationUtil.nameEx
 import static io.github.mletkin.numerobis.generator.common.GenerationUtil.newExpr;
 import static io.github.mletkin.numerobis.generator.common.GenerationUtil.returnStmt;
 import static io.github.mletkin.numerobis.generator.common.GenerationUtil.thisExpr;
+import static java.util.function.Predicate.not;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +54,7 @@ import io.github.mletkin.numerobis.generator.mutator.MutatorMethodDescriptor;
 import io.github.mletkin.numerobis.plugin.Naming;
 
 /**
- * Generates builder classes product classes in a seperate compilation unit.
+ * Generates builder classes for product classes.
  */
 public class BuilderGenerator {
 
@@ -73,8 +73,8 @@ public class BuilderGenerator {
     /**
      * Creates a generator for the builder class.
      *
-     * @param productUnit      unit with the product class definition
-     * @param productClassName name of the product class
+     * @param productUnit      the unit with the product class definition
+     * @param productClassName the name of the product class
      */
     public BuilderGenerator(CompilationUnit productUnit, String productClassName) {
         this.productUnit = productUnit;
@@ -84,20 +84,34 @@ public class BuilderGenerator {
         ifNotThrow(hasUsableConstructor(productclass), GeneratorException::noConstructorFound);
     }
 
+    /**
+     * Sets the default mutability flag.
+     * <p>
+     * The value might be overriden by an annotation
+     *
+     * @param  mutableByDefault the default value to set
+     * @return                  the {@code BuilderGenerator} instance
+     */
     public BuilderGenerator mutableByDefault(boolean mutableByDefault) {
         this.mutableByDefault = mutableByDefault;
         return this;
     }
 
+    /**
+     * Sets the naming settings to use.
+     *
+     * @param  naming object with naming settings
+     * @return        the {@code BuilderGenerator} instance
+     */
     public BuilderGenerator withNamingSettings(Naming naming) {
         this.naming = naming;
         return this;
     }
 
     /**
-     * Create a generator for an embedded builder class.
+     * Creates a generator for an embedded builder class.
      *
-     * @return The {@code BuilderGenerator}
+     * @return the {@code BuilderGenerator} instance
      */
     public BuilderGenerator withInternalBuilder() {
         this.forge = Forge.internal(productUnit, productclass, naming.builderClassPostfix());
@@ -108,8 +122,8 @@ public class BuilderGenerator {
     /**
      * Create a generator for a separate builder class.
      *
-     * @param  builderUnit Unit that takes the builder
-     * @return             The {@code BuilderGenerator}
+     * @param  builderUnit the unit that takes the builder
+     * @return             the {@code BuilderGenerator} instance
      */
     public BuilderGenerator withExternalBuilder(CompilationUnit builderUnit) {
         this.forge = Forge.external(builderUnit, productClassName(), naming.builderClassPostfix());
@@ -121,7 +135,7 @@ public class BuilderGenerator {
     /**
      * Adds a field for the product to the builder.
      *
-     * @return the generator instance
+     * @return the {@code BuilderGenerator} instance
      */
     public BuilderGenerator addProductField() {
         if (!hasProductField()) {
@@ -149,7 +163,7 @@ public class BuilderGenerator {
     /**
      * Adds a builder constructor for each constructor in the product class.
      *
-     * @return the generator instance
+     * @return the {@code BuilderGenerator} instance
      */
     public BuilderGenerator addConstructors() {
         if (!hasExplicitConstructor(productclass) && !hasDefaultConstructor(builderclass())) {
@@ -205,7 +219,7 @@ public class BuilderGenerator {
     /**
      * Adds a builder factory method for each product constructor.
      *
-     * @return the generator instance
+     * @return the {@code BuilderGenerator} instance
      */
     public BuilderGenerator addFactoryMethods() {
         if (!hasProductConstructor(builderclass(), productClassName())) {
@@ -300,7 +314,7 @@ public class BuilderGenerator {
     /**
      * Adds a mutator for each field of the product.
      *
-     * @return the generator instance
+     * @return the {@code BuilderGenerator} instance
      */
     public BuilderGenerator addMutator(ListMutatorVariant[] mutatorVariants) {
         allMember(productclass, FieldDeclaration.class) //
@@ -331,7 +345,7 @@ public class BuilderGenerator {
     /**
      * Adds the build method to the builder class.
      *
-     * @return the generator instance
+     * @return the {@code BuilderGenerator} instance
      */
     public BuilderGenerator addBuildMethod() {
         if (!hasBuildMethod()) {
@@ -353,7 +367,8 @@ public class BuilderGenerator {
     /**
      * Adds an adder method for each list implementing field in the product.
      *
-     * @param adderVariants
+     * @param  adderVariants list of variants to generate
+     * @return               the {@code BuilderGenerator} instance
      */
     public BuilderGenerator addAdder(ListMutatorVariant[] adderVariants) {
         allMember(productclass, FieldDeclaration.class) //
