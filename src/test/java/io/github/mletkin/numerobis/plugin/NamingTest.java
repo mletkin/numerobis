@@ -31,7 +31,7 @@ class NamingTest {
     @Test
     void buildNameConfiguration() {
         var naming = Naming.Builder.of().withBuildMethod("foo").build();
-        var facade = new Facade(false, naming);
+        var facade = new Facade(false).withNaming(naming);
         var product = "Empty";
 
         var result = facade.withFactoryMethods(parse(product), product).execute();
@@ -45,7 +45,7 @@ class NamingTest {
     @Test
     void factoryNameConfiguration() {
         var naming = Naming.Builder.of().withFactoryMethod("foo").build();
-        var facade = new Facade(false, naming);
+        var facade = new Facade(false).withNaming(naming);
         var product = "Empty";
 
         var result = facade.withFactoryMethods(parse(product), product).execute();
@@ -59,7 +59,7 @@ class NamingTest {
     @Test
     void mutatorPrefixConfiguration() {
         var naming = Naming.Builder.of().withMutatorPrefix("foo").build();
-        var facade = new Facade(false, naming);
+        var facade = new Facade(false).withNaming(naming);
         var product = "IntFieldWithAccessor";
 
         var result = facade.withFactoryMethods(parse(product), product).execute();
@@ -74,7 +74,7 @@ class NamingTest {
     @Test
     void adderPrefixConfiguration() {
         var naming = Naming.Builder.of().withAdderPrefix("foo").build();
-        var facade = new Facade(false, naming);
+        var facade = new Facade(false).withNaming(naming);
         var product = "WithList";
 
         var result = facade.withFactoryMethods(parse(product), product).execute();
@@ -89,7 +89,7 @@ class NamingTest {
     @Test
     void productFieldConfiguration() {
         var naming = Naming.Builder.of().withProductField("foo").build();
-        var facade = new Facade(false, naming);
+        var facade = new Facade(false).withNaming(naming);
         var product = "Empty";
 
         var result = facade.withFactoryMethods(parse(product), product).execute();
@@ -101,7 +101,7 @@ class NamingTest {
     @Test
     void internalBuilderClassNameConfiguration() {
         var naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
-        var facade = new Facade(false, naming);
+        var facade = new Facade(false).withNaming(naming);
         var product = "WithList";
 
         var result = facade.withFactoryMethods(parse(product), product).execute();
@@ -113,7 +113,7 @@ class NamingTest {
     @Test
     void externalBuilderClassNameConfiguration() {
         var naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
-        var facade = new Facade(false, naming);
+        var facade = new Facade(false).withNaming(naming);
         var product = "WithList";
 
         var result = facade.withFactoryMethods(parse(product), product, new CompilationUnit()).execute();

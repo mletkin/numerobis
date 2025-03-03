@@ -61,7 +61,7 @@ public class Processor {
         this.useFactoryMethods = settings.builderCreation().flag();
         this.embeddedBuilder = settings.builderLocation().flag();
         this.naming = settings.naming();
-        this.facade = new Facade(settings.productsAreMutable(), settings.naming());
+        this.facade = new Facade(settings.productsAreMutable()).withNaming(settings.naming());
 
         ofNullable(settings.listAdderVariants()).map(this::toVariants).ifPresent(facade::withAdderVariants);
         ofNullable(settings.listMutatorVariants()).map(this::toVariants).ifPresent(facade::withMutatorVariants);

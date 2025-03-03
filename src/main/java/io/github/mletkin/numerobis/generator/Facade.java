@@ -25,36 +25,36 @@ import io.github.mletkin.numerobis.plugin.Naming;
  */
 public class Facade {
 
+    private Naming namingSettings = Naming.DEFAULT;
+    private ListMutatorVariant[] adderVariants = {};
+    private ListMutatorVariant[] mutatorVariants = {};
     private boolean productsAreMutable;
-    private ListMutatorVariant[] adderVariants;
-    private ListMutatorVariant[] mutatorVariants;
-    private Naming namingSettings;
 
     /**
-     * Creates a {@code Facade}-Instance with default mutablity.
+     * Creates a {@code Facade}-Instance and sets the default mutablity.
      *
      * @param productsAreMutable value for the mutability default flag
      */
     public Facade(boolean productsAreMutable) {
-        this(productsAreMutable, Naming.DEFAULT);
+        this.productsAreMutable = productsAreMutable;
     }
 
     /**
-     * Creates a {@code Facade}-Instance with default mutablity and namings.
+     * Sets the namimng settings of the facade.
      *
-     * @param productsAreMutable value for the mutability default flag
-     * @param namingSettings     Values for various names
+     * @param  naming object containing naming settings
+     * @return        the {@code Facade} instance
      */
-    public Facade(boolean productsAreMutable, Naming namingSettings) {
-        this.productsAreMutable = productsAreMutable;
-        this.namingSettings = namingSettings;
+    public Facade withNaming(Naming naming) {
+        this.namingSettings = naming;
+        return this;
     }
 
     /**
      * Sets the variants to generate for list adder methods.
      *
      * @param  adderVariants a list of variants to use
-     * @return               the the {@code Facade} instance
+     * @return               the {@code Facade} instance
      */
     public Facade withAdderVariants(ListMutatorVariant[] adderVariants) {
         this.adderVariants = adderVariants;
@@ -65,7 +65,7 @@ public class Facade {
      * Sets the variants to generate for list mutator methods.
      *
      * @param  mutatorVariants a list of variants to use
-     * @return                 the the {@code Facade} instance
+     * @return                 the {@code Facade} instance
      */
     public Facade withMutatorVariants(ListMutatorVariant[] mutatorVariants) {
         this.mutatorVariants = mutatorVariants;
