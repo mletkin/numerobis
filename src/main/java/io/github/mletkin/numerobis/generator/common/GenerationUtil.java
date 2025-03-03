@@ -41,14 +41,35 @@ public final class GenerationUtil {
         // prevent instantiation
     }
 
+    /**
+     * Creates an assign expression object.
+     *
+     * @param  field the field that gets assigned
+     * @param  value the value that is assigned
+     * @return       the {@link AssignExpr} instance
+     */
     public static AssignExpr assignExpr(String field, Expression value) {
         return assignExpr(new NameExpr(field), value);
     }
 
+    /**
+     * Creates an assign expression object.
+     *
+     * @param  left  expression the expression that gets assigned
+     * @param  value expression the expression that is assigned
+     * @return       the {@link AssignExpr} instance
+     */
     public static AssignExpr assignExpr(Expression left, Expression value) {
         return new AssignExpr(left, value, AssignExpr.Operator.ASSIGN);
     }
 
+    /**
+     * Creates a object generation expression.
+     *
+     * @param  type the type of the new instance
+     * @param  args arguments for the constructor
+     * @return      the {@link ObjectCreationExpr} instance
+     */
     public static ObjectCreationExpr newExpr(ClassOrInterfaceType type, Expression... args) {
         return new ObjectCreationExpr(null, type, new NodeList<>(args));
     }
@@ -56,9 +77,8 @@ public final class GenerationUtil {
     /**
      * Creates an expression fom a name.
      *
-     * @param name
-     *            name to use
-     * @return the name expression
+     * @param  name name to use
+     * @return      the name expression
      */
     public static NameExpr nameExpr(String name) {
         return new NameExpr(name);
@@ -67,18 +87,29 @@ public final class GenerationUtil {
     /**
      * Creates an expression fom the simple name of a class.
      *
-     * @param clazz
-     *            class object
-     * @return the name expression
+     * @param  clazz class object
+     * @return       the name expression
      */
     public static NameExpr nameExpr(Class<?> clazz) {
         return new NameExpr(clazz.getSimpleName());
     }
 
+    /**
+     * Creates a return statement.
+     *
+     * @param  value the expression the statement returns.
+     * @return       the {@link ReturnStmt}
+     */
     public static ReturnStmt returnStmt(Expression value) {
         return new ReturnStmt(value);
     }
 
+    /**
+     * Returns a list of expressions describing the constructor parameters.
+     *
+     * @param  constructor constructor deplaration to process
+     * @return             array of {@link Expression} instances
+     */
     public static Expression[] args(ConstructorDeclaration constructor) {
         return constructor.getParameters().stream() //
                 .map(Parameter::getNameAsString) //
@@ -86,27 +117,45 @@ public final class GenerationUtil {
                 .toArray(Expression[]::new);
     }
 
+    /**
+     * Returns a method call statement.
+     *
+     * @param  scope expression that evaluates to an object reference
+     * @param  name  name of the Method
+     * @param  args  list of arguments for the call
+     * @return       the {@link MethodCallExpr} instance
+     */
     public static MethodCallExpr methodCall(Expression scope, String name, Expression... args) {
         return new MethodCallExpr(scope, name, new NodeList<>(args));
     }
 
     /**
-     * Creates method reference expression.
+     * Creates an expression representing a method reference.
      *
-     * @param scope
-     *            object expression or class name
-     * @param name
-     *            method name to call
-     * @return method reference expression (like {@code dings:: bums})
+     * @param  scope expression that evaluates to an object reference
+     * @param  name  method name to call
+     * @return       method reference expression (like {@code dings:: bums})
      */
     public static MethodReferenceExpr methodReference(Expression scope, String name) {
         return new MethodReferenceExpr(scope, null, name);
     }
 
+    /**
+     * Creates an expression refering to the object.
+     *
+     * @return the {@link ThisExpr} instance
+     */
     public static ThisExpr thisExpr() {
         return new ThisExpr();
     }
 
+    /**
+     * Creates an expression for the access of an object's field.
+     *
+     * @param  scope     expression that evaluates to an object reference
+     * @param  fieldName name of the field
+     * @return
+     */
     public static FieldAccessExpr fieldAccess(Expression scope, String fieldName) {
         return new FieldAccessExpr(scope, fieldName);
     }
@@ -114,9 +163,8 @@ public final class GenerationUtil {
     /**
      * Creates a public member class.
      *
-     * @param className
-     *            name of the new class
-     * @return class declaration
+     * @param  className name of the new class
+     * @return           class declaration
      */
     public static ClassOrInterfaceDeclaration newMemberClass(String className) {
         return new ClassOrInterfaceDeclaration(new NodeList<>(Modifier.publicModifier(), Modifier.staticModifier()),
@@ -127,11 +175,10 @@ public final class GenerationUtil {
     /**
      * Returns the {@code Stream} type for a {@code Argument} type.
      *
-     * @param argumentType
-     *            argument type for the stream
-     * @return the stream type
+     * @param  argumentType argument type for the stream
+     * @return              the stream type
      */
-    public  static Type streamType(Type argumentType) {
+    public static Type streamType(Type argumentType) {
         return new ClassOrInterfaceType() //
                 .setName("Stream") //
                 .setTypeArguments(argumentType);
@@ -140,11 +187,10 @@ public final class GenerationUtil {
     /**
      * Returns the {@code Collection} type for a {@code Argument} type.
      *
-     * @param argumentType
-     *            argument type for the stream
-     * @return the stream type
+     * @param  argumentType argument type for the stream
+     * @return              the stream type
      */
-    public  static Type collectionType(Type argumentType) {
+    public static Type collectionType(Type argumentType) {
         return new ClassOrInterfaceType() //
                 .setName("Collection") //
                 .setTypeArguments(argumentType);

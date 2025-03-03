@@ -1,4 +1,4 @@
-# Maven Builder Generator Plugin (Version 2.3)
+# Maven Builder Generator Plugin (Version 3.1)
 This is a simple maven plugin that generates builder classes for classes that have the appropriate annotation.
 The builders are generated during the generate-sources phase of the maven build. The current version is restricted to the use of default settings. Customization is currently in a proof of concept state.
 
@@ -40,7 +40,7 @@ This should work using default values only.
 <plugin>
     <groupId>io.github.mletkin</groupId>
     <artifactId>builder-generator-maven-plugin</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <executions>
         <execution>
             <goals>
@@ -50,7 +50,7 @@ This should work using default values only.
     </executions>
 </plugin>
 ```
-Add the annotation `@GenerateBuilder`to each class for which you want to create a builder.
+Add the annotation `@GenerateBuilder` to each class or record for which you want to create a builder.
 Builder code is generated in the `generate-sources` phase of the maven build.
 
 The annotations are not separated from the plugin.
@@ -59,10 +59,12 @@ To use the annotations the plugin must also be added in the dependency section:
 <dependency>
     <groupId>io.github.mletkin</groupId>
     <artifactId>builder-generator-maven-plugin</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <scope>compile</scope>
 </dependency>
 ```
+This will probably change in some future version.
+
 ## Configuration
 With the following options the settings can be customized through maven configuration.
 
@@ -74,9 +76,16 @@ To set the Java-Version of the code to be processed, default ist Java 17.
     <javaVersion>JAVA_21</javaVersion>
 </configuration>
 ```
+Actually the version of the processed java code is independent of the plugin code.
+The default is the plugin code version, but it might as well be higher or lower.
+
 ### builder creation
 To use the generated builder it is necessary to create builder instances. The generator provides two alternatives.
-The builder creates the object of the product class during builder creation. For this reason the builder generator must provide a constructor or factory method for each product constrcutor.  
+The builder for class object creates the object of the product class during builder creation.
+For this reason the builder generator must provide a constructor or factory method for each product constrcutor.
+
+Java records function differently. All fields are buffered within the builder
+and the build function calls the record's constructor with the buffered values as arguments.
 
 #### Constructor
 For each constructor in the production class a constructor in the builder class is created.
@@ -94,7 +103,7 @@ This is the default.
 <configuration>
 ```
 ### builder location
-The builder can be generated as separate class or as member class of the product class.
+The builder can be generated as separate class or as embedded member class of the product class.
 
 #### embedded
 The builder class is generated as member class (sometimes called "static inner class") of the product class.
@@ -143,7 +152,7 @@ collected in the enum ```GenerateAdder.Variants```. The following values are ava
 - *STREAM*, create a method that takes a stream of values as parameter
 - *COLLECTION* , creates a method that takes a collection of values as parameter
 
-The difference between *OBJECT* an *COLLECTION*  is that *COLLCTION* copies the values into the list (or a new list)
+The difference between *OBJECT* an *COLLECTION* is that *COLLECTION* copies the values into the list (or a new list)
 while *OBJECT* uses the reference of the List or Set object. 
 
 None of the generated methods checks the arguments for ```null``` values and none of the adder methods checks
@@ -190,7 +199,8 @@ Future versions may have the option to define pattern like `prefix{0}`. This may
 ## Annotations
 Most of the behavior of the builder generator is controlled through annotations.
 The generator will stick to the annotation concept. The names might change and options may be set via annotation parameters. 
-All annotations are located in the package ```io.github.mletkin.numerobis.annotation```
+All annotations are located in the package ```io.github.mletkin.numerobis.annotation```.
+The retention policy for all annotation is _source_. The annotations vanish through compilation.
 
 The generator is -- currently -- unable to evaluate constant expressions. For this reason annotation parameters can only be
 literals of the expected type. String arguments must be quoted string literals, enum arguments must be enum constants and may be
@@ -220,3 +230,4 @@ Fields annotated with `@Ignore` are ignored by the generator, no mutators and no
 ### Mutable and Immutable
 Used on product classes.
 Overrides the builder setting for "product classes are immutable/mutable by default" in the pom.xml.
+

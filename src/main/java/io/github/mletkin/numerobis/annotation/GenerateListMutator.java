@@ -31,11 +31,27 @@ import java.lang.annotation.Target;
 public @interface GenerateListMutator {
 
     enum Variant {
-        NONE, // no mutator for the list field
-        OBJECT, // mutator with a List object as parameter that is used
-        VARARG, // mutator with vararg parameter list
-        STREAM, // mutator with a stream of items as parameter
-        COLLECTION, // mutator with a collection of items as parameter that is copied
+
+        /**
+         * No mutator for the list field.
+         */
+        NONE,
+        /**
+         * Mutator with a List object as parameter.
+         */
+        OBJECT,
+        /**
+         * Mutator with vararg parameter list.
+         */
+        VARARG,
+        /**
+         * Mutator with a stream of items as parameter.
+         */
+        STREAM,
+        /**
+         * Mutator with a collection of items as parameter.
+         */
+        COLLECTION,
 
         ;
     }

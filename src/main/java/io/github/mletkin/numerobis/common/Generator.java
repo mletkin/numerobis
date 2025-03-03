@@ -17,8 +17,8 @@ package io.github.mletkin.numerobis.common;
 
 import com.github.javaparser.ast.CompilationUnit;
 
-/*
- * Describes the execution of a generation.
+/**
+ * Function for the generation of a {@link CompilationUnit} instance.
  */
 @FunctionalInterface
 public interface Generator {
@@ -29,4 +29,5 @@ public interface Generator {
      * @return the {@link CompilationUnit} containing the builder
      */
     CompilationUnit execute();
+
 }

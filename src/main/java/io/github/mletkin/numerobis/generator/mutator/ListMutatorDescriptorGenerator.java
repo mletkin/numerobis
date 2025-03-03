@@ -13,11 +13,11 @@ import io.github.mletkin.numerobis.generator.common.StringExtractor;
 import io.github.mletkin.numerobis.generator.common.VariantExtractor;
 
 /**
- * Generator for lust field mutator descriptor objects.
+ * Generator for list field mutator descriptor objects.
  * <p>
- * NB: One field declaration can contain more than one variable ( e.g.
- * {@code int x,y;})
- *
+ * NB: One field declaration can contain more than one variable<br>
+ * (e.g. {@code int x,y;})
+ * <p>
  * TODO handle List&lt;T&gt;[] correctly
  */
 public class ListMutatorDescriptorGenerator {
@@ -27,13 +27,20 @@ public class ListMutatorDescriptorGenerator {
     private ListMutatorVariant[] variants;
     private String mutatorPrefix;
 
-    public ListMutatorDescriptorGenerator(FieldDeclaration field, ListMutatorVariant[] variants, String mutatoPrefix) {
+    /**
+     * Gereates a generator instance.
+     *
+     * @param field         declaration of the list field to manipulate
+     * @param variants      list of mutator variants
+     * @param mutatorPrefix prefix to use for the mutator method
+     */
+    public ListMutatorDescriptorGenerator(FieldDeclaration field, ListMutatorVariant[] variants, String mutatorPrefix) {
         this.field = field;
         this.variants = Util.firstNotEmpty( //
                 new VariantExtractor(GenerateListMutator.class).variants(field), //
                 variants) //
                 .orElse(DEFAULT);
-        this.mutatorPrefix = mutatoPrefix;
+        this.mutatorPrefix = mutatorPrefix;
     }
 
     /**

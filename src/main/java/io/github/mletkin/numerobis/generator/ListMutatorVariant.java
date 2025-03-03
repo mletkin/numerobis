@@ -20,12 +20,33 @@ package io.github.mletkin.numerobis.generator;
  */
 public enum ListMutatorVariant {
 
-    NONE, // no mutator for the list field
-    OBJECT, // pass complete object -- not for adder
-    VARARG, // pass items as vararg parameter list
-    ITEM, // pass a single item -- adder only
-    STREAM, // pass items as stream
-    COLLECTION, // pass items as collection
+    /**
+     * No mutator or adder for the list field.
+     */
+    NONE,
+    /**
+     * Mutator only:<br>
+     * Pass the object.
+     */
+    OBJECT,
+    /**
+     * Pass items as vararg parameter list.
+     */
+    VARARG,
+    /**
+     * Adder only:<br>
+     * Pass a single item.
+     */
+    ITEM,
+    /**
+     * Pass the items as stream.
+     */
+    STREAM,
+    /**
+     * Pass the items as collection
+     */
+    COLLECTION,
+
     ;
 
     /**

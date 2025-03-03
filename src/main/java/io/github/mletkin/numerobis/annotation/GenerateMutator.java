@@ -33,6 +33,8 @@ public @interface GenerateMutator {
 
     /**
      * Sets the name of the mutator method (is not a prefix).
+     *
+     * @return name of the mutator method
      */
     String name() default "";
 }

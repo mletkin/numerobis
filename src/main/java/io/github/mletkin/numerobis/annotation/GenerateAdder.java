@@ -31,11 +31,28 @@ public @interface GenerateAdder {
      * Available adder variants.
      */
     enum Variant {
-        NONE, // no adder for the list field
-        VARARG, // adder with vararg parameter list
-        ITEM, // adder with a single item as parameter
-        STREAM, // adder with a stream of items as parameter
-        COLLECTION, // adder with a collection of items as parameter
+
+        /**
+         * No adder for the list field.
+         */
+        NONE,
+        /**
+         * Adder with vararg parameter list.
+         */
+        VARARG,
+        /**
+         * Adder with a single item as parameter.
+         */
+        ITEM,
+        /**
+         * Adder with a stream of items as parameter.
+         */
+        STREAM,
+        /**
+         * Adder with a collection of items as parameter.
+         */
+        COLLECTION,
+
         ;
     }
 

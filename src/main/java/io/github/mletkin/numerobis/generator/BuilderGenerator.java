@@ -47,6 +47,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.github.mletkin.numerobis.annotation.Ignore;
 import io.github.mletkin.numerobis.annotation.Immutable;
 import io.github.mletkin.numerobis.annotation.Mutable;
+import io.github.mletkin.numerobis.common.VisibleForTesting;
 import io.github.mletkin.numerobis.generator.common.ClassUtil;
 import io.github.mletkin.numerobis.generator.mutator.ListMutatorDescriptorGenerator;
 import io.github.mletkin.numerobis.generator.mutator.MutatorDescriptorGenerator;
@@ -120,7 +121,7 @@ public class BuilderGenerator {
     }
 
     /**
-     * Create a generator for a separate builder class.
+     * Creates a generator for a separate builder class.
      *
      * @param  builderUnit the unit that takes the builder
      * @return             the {@code BuilderGenerator} instance
@@ -314,7 +315,8 @@ public class BuilderGenerator {
     /**
      * Adds a mutator for each field of the product.
      *
-     * @return the {@code BuilderGenerator} instance
+     * @param  mutatorVariants list of variants to generate
+     * @return                 the {@code BuilderGenerator} instance
      */
     public BuilderGenerator addMutator(ListMutatorVariant[] mutatorVariants) {
         allMember(productclass, FieldDeclaration.class) //
@@ -380,7 +382,12 @@ public class BuilderGenerator {
         return this;
     }
 
-    ClassOrInterfaceType builderClassType() {
+    /**
+     * Returns the type of the builder class.
+     *
+     * @return the {@link ClassOrInterfaceType} object
+     */
+    public ClassOrInterfaceType builderClassType() {
         return new ClassOrInterfaceType(builderClassName());
     }
 
@@ -396,10 +403,20 @@ public class BuilderGenerator {
         return builderclass().getNameAsString();
     }
 
+    /**
+     * Returns the builder class declaration.
+     *
+     * @return the {@link ClassOrInterfaceDeclaration} object
+     */
     public ClassOrInterfaceDeclaration builderclass() {
         return forge.builderClass();
     }
 
+    /**
+     * Returns the compilation unit containig the builder class.
+     *
+     * @return the {@link CompilationUnit} object
+     */
     public CompilationUnit builderUnit() {
         return forge.builderUnit();
     }
@@ -410,7 +427,7 @@ public class BuilderGenerator {
      * The constructor must be callable by the builder
      *
      * @param  type class to check
-     * @return      {@code true} if the class contains fitting constructor.
+     * @return      {@code true} when the class contains a fitting constructor.
      */
     private boolean hasUsableConstructor(ClassOrInterfaceDeclaration type) {
         List<ConstructorDeclaration> constructorList = //
@@ -422,18 +439,29 @@ public class BuilderGenerator {
     /**
      * Checks if the product class should be considered mutable.
      *
-     * @return {@code true} if the class should be mutable
+     * @return {@code true} when the class should be mutable
      */
+    @VisibleForTesting
     boolean isProductMutable() {
         return productclass.isAnnotationPresent(Mutable.class)
                 || (mutableByDefault && !productclass.isAnnotationPresent(Immutable.class));
     }
 
-    CompilationUnit productUnit() {
+    /**
+     * Returns the compilation unit containing the product class.
+     *
+     * @return the {@link CompilationUnit} object
+     */
+    public CompilationUnit productUnit() {
         return productUnit;
     }
 
-    Naming naming() {
+    /**
+     * Returns the naimng settings of the forge.
+     *
+     * @return the {@link Naming} object
+     */
+    public Naming naming() {
         return naming;
     }
 

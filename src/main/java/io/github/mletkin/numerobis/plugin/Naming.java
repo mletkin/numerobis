@@ -15,6 +15,8 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
+import io.github.mletkin.numerobis.common.VisibleForTesting;
+
 /**
  * Naming settings for the generator.
  * <p>
@@ -28,7 +30,7 @@ package io.github.mletkin.numerobis.plugin;
 public class Naming {
 
     /**
-     * An instance with all naming sttings set to the default value.
+     * An instance with all naming settings set to the default values.
      */
     public static final Naming DEFAULT = new Naming();
 
@@ -39,12 +41,18 @@ public class Naming {
     private String builderClassPostfix = "Builder";
     private String productField = "product";
 
+    private Naming() {
+        // instantiation through the builder only
+    }
+
     /**
      * Object instances are usually generated through maven calling the mojo.
      * <p>
      * The builder is for unit test use only and hence package visible.
      */
+    @VisibleForTesting
     static class Builder {
+
         private Naming naming = new Naming();
 
         private Builder() {

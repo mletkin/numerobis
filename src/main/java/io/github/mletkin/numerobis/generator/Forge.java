@@ -58,7 +58,7 @@ public class Forge {
      * @param  builderUnit  unit to take the builder
      * @param  productClass name of the product class
      * @param  postfix      postfix of the builder class name
-     * @return              the {@code Forge}-Object
+     * @return              the {@code Forge} instance
      */
     public static Forge internal(CompilationUnit builderUnit, ClassOrInterfaceDeclaration productClass,
             String postfix) {
@@ -68,10 +68,10 @@ public class Forge {
     /**
      * Creates a forge for an embedded builder for a product record.
      *
-     * @param  builderUnit  unit to take the builder
-     * @param  productClass name of the product class
-     * @param  postfix      postfix of the builder class name
-     * @return              the {@code Forge}-Object
+     * @param  builderUnit   unit to take the builder
+     * @param  productRecord name of the product record
+     * @param  postfix       postfix of the builder class name
+     * @return               the {@code Forge} instance
      */
     public static Forge internal(CompilationUnit builderUnit, RecordDeclaration productRecord, String postfix) {
         return new Forge(builderUnit, createInternalBuilderClass(productRecord, postfix));
@@ -80,19 +80,29 @@ public class Forge {
     /**
      * Creates a forge for a separate builder for a product class or record.
      *
-     * @param  builderUnit  unit to take the builder
-     * @param  productClass name of the product class or record
-     * @param  postfix      postfix of the builder class name
-     * @return              the {@code Forge}-Object
+     * @param  builderUnit      unit to take the builder
+     * @param  productClassName name of the product class or record
+     * @param  postfix          postfix of the builder class name
+     * @return                  the {@code Forge} instance
      */
     public static Forge external(CompilationUnit builderUnit, String productClassName, String postfix) {
         return new Forge(builderUnit, createExternalBuilderClass(builderUnit, productClassName, postfix));
     }
 
+    /**
+     * Returns the compilation of the builder being forged.
+     *
+     * @return the {@link CompilationUnit} instance
+     */
     public CompilationUnit builderUnit() {
         return builderUnit;
     }
 
+    /**
+     * Returns the type declaration of the builder class.
+     *
+     * @return the {@link ClassOrInterfaceDeclaration} instance
+     */
     public ClassOrInterfaceDeclaration builderClass() {
         return builderClass;
     }
@@ -172,6 +182,13 @@ public class Forge {
         return impDec.getNameAsString().startsWith(BUILDER_PACKAGE);
     }
 
+    /**
+     * Checks whether the builder contains a product constuctor matching the
+     * declaration.
+     *
+     * @param  productConstructor the declaration of the expected constructor
+     * @return                    {@code true} when a constructor is found
+     */
     public boolean hasMatchingConstructor(ConstructorDeclaration productConstructor) {
         return allMember(builderClass, ConstructorDeclaration.class) //
                 .anyMatch(cd -> ClassUtil.matchesParameter(cd, productConstructor));
