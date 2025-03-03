@@ -15,24 +15,30 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.externalWithConstructors;
+import static io.github.mletkin.numerobis.Fixture.asString;
+import static io.github.mletkin.numerobis.Fixture.parseString;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-/**
- * List field.
- */
+import io.github.mletkin.numerobis.generator.Facade;
+
 class ListFieldTest {
+
+    private Facade facade = new Facade(false);
 
     @Test
     void retainsAddMethod() {
-        assertThat(externalWithConstructors("WithList", "public class WithListBuilder {" //
-        + "    public WithListBuilder addX(String foo) {" //
-        + "        return null;" //
-        + "    }" //
-        + "}") //
-        ).isEqualTo(//
+        var product = "WithList";
+        var builder = parseString("public class WithListBuilder {" //
+                + "    public WithListBuilder addX(String foo) {" //
+                + "        return null;" //
+                + "    }" //
+                + "}");
+
+        var result = facade.withConstructors(Fixture.parse(product), product, builder).execute();
+
+        assertThat(asString(result)).isEqualTo( //
                 "import java.util.List;" //
                         + "public class WithListBuilder {" // 1
                         + "    public WithListBuilder addX(String foo) {" //

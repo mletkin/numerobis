@@ -15,36 +15,56 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
+import static io.github.mletkin.numerobis.Fixture.asString;
+import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import io.github.mletkin.numerobis.TestFacade;
+import com.github.javaparser.ast.CompilationUnit;
+
+import io.github.mletkin.numerobis.generator.Facade;
 
 class NamingTest {
 
     @Test
     void buildNameConfiguration() {
-        Naming naming = Naming.Builder.of().withBuildMethod("foo").build();
-        assertThat(internalWithFactories("Empty", naming)).contains(//
-                "    public Empty foo() {" //
-                        + "        return product;" //
-                        + "    }");
+        var naming = Naming.Builder.of().withBuildMethod("foo").build();
+        var facade = new Facade(false, naming);
+        var product = "Empty";
+
+        var result = facade.withFactoryMethods(parse(product), product).execute();
+
+        assertThat(asString(result)).contains(//
+                "      public Empty foo() {" //
+                        + "            return product;" //
+                        + "        }");
     }
 
     @Test
     void factoryNameConfiguration() {
-        Naming naming = Naming.Builder.of().withFactoryMethod("foo").build();
-        assertThat(internalWithFactories("Empty", naming)).contains(//
-                "    public static Builder foo() {" //
-                        + "        return new Builder(new Empty());" //
-                        + "    }");
+        var naming = Naming.Builder.of().withFactoryMethod("foo").build();
+        var facade = new Facade(false, naming);
+        var product = "Empty";
+
+        var result = facade.withFactoryMethods(parse(product), product).execute();
+
+        assertThat(asString(result)).contains( //
+                "public static Builder foo() {" //
+                        + "            return new Builder(new Empty());" //
+                        + "        }");
     }
 
     @Test
     void mutatorPrefixConfiguration() {
-        Naming naming = Naming.Builder.of().withMutatorPrefix("foo").build();
-        assertThat(internalWithFactories(("IntFieldWithAccessor"), naming)).contains(//
+        var naming = Naming.Builder.of().withMutatorPrefix("foo").build();
+        var facade = new Facade(false, naming);
+        var product = "IntFieldWithAccessor";
+
+        var result = facade.withFactoryMethods(parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "    public Builder fooFoo(int foo) {" //
                         + "        product.foo = foo;" //
                         + "        return this;" //
@@ -53,8 +73,13 @@ class NamingTest {
 
     @Test
     void adderPrefixConfiguration() {
-        Naming naming = Naming.Builder.of().withAdderPrefix("foo").build();
-        assertThat(internalWithFactories(("WithList"), naming)).contains(//
+        var naming = Naming.Builder.of().withAdderPrefix("foo").build();
+        var facade = new Facade(false, naming);
+        var product = "WithList";
+
+        var result = facade.withFactoryMethods(parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "    public Builder fooX(String item) {" //
                         + "        product.x.add(item);" //
                         + "        return this;" //
@@ -63,31 +88,38 @@ class NamingTest {
 
     @Test
     void productFieldConfiguration() {
-        Naming naming = Naming.Builder.of().withProductField("foo").build();
-        assertThat(internalWithFactories(("Empty"), naming)).contains(//
+        var naming = Naming.Builder.of().withProductField("foo").build();
+        var facade = new Facade(false, naming);
+        var product = "Empty";
+
+        var result = facade.withFactoryMethods(parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "private Empty foo;");
     }
 
     @Test
     void internalBuilderClassNameConfiguration() {
-        Naming naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
-        assertThat(internalWithFactories(("WithList"), naming)).contains(//
+        var naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
+        var facade = new Facade(false, naming);
+        var product = "WithList";
+
+        var result = facade.withFactoryMethods(parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "public static class Foo {");
     }
 
     @Test
     void externalBuilderClassNameConfiguration() {
-        Naming naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
-        assertThat(externalWithFactories(("WithList"), naming)).contains(//
+        var naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
+        var facade = new Facade(false, naming);
+        var product = "WithList";
+
+        var result = facade.withFactoryMethods(parse(product), product, new CompilationUnit()).execute();
+
+        assertThat(asString(result)).contains( //
                 "public class WithListFoo {");
-    }
-
-    static String internalWithFactories(String className, Naming naming) {
-        return new TestFacade(false, naming).internalWithFactories(className);
-    }
-
-    static String externalWithFactories(String className, Naming naming) {
-        return new TestFacade(false, naming).externalWithFactories(className);
     }
 
 }

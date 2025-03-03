@@ -15,9 +15,9 @@
  */
 package io.github.mletkin.numerobis.generator;
 
+import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Nested;
@@ -43,8 +43,8 @@ class BuilderGenerationTest {
     class Class {
 
         @Test
-        void generatesEmbeddedBuilder() throws IOException {
-            var cu = StaticJavaParser.parse(RSCE.resolve("TestClass.java"));
+        void generatesEmbeddedBuilder() {
+            var cu = parse("TestClass");
             var builder = new BuilderGenerator(cu, "TestClass") //
                     .withInternalBuilder() //
                     .addProductField() //
@@ -57,8 +57,8 @@ class BuilderGenerationTest {
         }
 
         @Test
-        void existingEmbeddedBuilderIsNotChanged() throws IOException {
-            var cu = StaticJavaParser.parse(RSCE.resolve("internal").resolve("TestClass"));
+        void existingEmbeddedBuilderIsNotChanged() {
+            var cu = parse(RSCE.resolve("internal").resolve("TestClass"));
             var builder = new BuilderGenerator(cu, "TestClass") //
                     .withInternalBuilder() //
                     .addProductField() //
@@ -71,8 +71,8 @@ class BuilderGenerationTest {
         }
 
         @Test
-        void generatesSeparatedBuilder() throws IOException {
-            var cu = StaticJavaParser.parse(RSCE.resolve("TestClass.java"));
+        void generatesSeparatedBuilder() {
+            var cu = parse("TestClass");
             var builder = new BuilderGenerator(cu, "TestClass") //
                     .withExternalBuilder(new CompilationUnit()) //
                     .addProductField() //
@@ -85,8 +85,8 @@ class BuilderGenerationTest {
         }
 
         @Test
-        void existingSeparatedBuilderIsNotChanged() throws IOException {
-            var cu = StaticJavaParser.parse(RSCE.resolve("TestClass.java"));
+        void existingSeparatedBuilderIsNotChanged() {
+            var cu = parse("TestClass");
             var builder = new BuilderGenerator(cu, "TestClass") //
                     .withExternalBuilder(new CompilationUnit()) //
                     .addProductField() //
@@ -103,8 +103,8 @@ class BuilderGenerationTest {
     class Record {
 
         @Test
-        void generatesEmbeddedBuilder() throws IOException {
-            var cu = StaticJavaParser.parse(RSCE.resolve("TestRecord.java"));
+        void generatesEmbeddedBuilder() {
+            var cu = parse("TestRecord");
             var builder = new RecordBuilderGenerator(cu, "TestRecord") //
                     .withInternalBuilder() //
                     .addFields() //
@@ -116,8 +116,8 @@ class BuilderGenerationTest {
         }
 
         @Test
-        void existingEmbeddedBuilderIsNotChanged() throws IOException {
-            var cu = StaticJavaParser.parse(RSCE.resolve("internal").resolve("TestRecord"));
+        void existingEmbeddedBuilderIsNotChanged() {
+            var cu = parse(RSCE.resolve("internal").resolve("TestRecord"));
             var builder = new RecordBuilderGenerator(cu, "TestRecord") //
                     .withInternalBuilder() //
                     .addFields() //
@@ -129,9 +129,9 @@ class BuilderGenerationTest {
         }
 
         @Test
-        void generatesSeparatedBuilder() throws IOException {
-            var bcu = StaticJavaParser.parse(RSCE.resolve("external").resolve("TestRecord"));
-            var cu = StaticJavaParser.parse(RSCE.resolve("TestRecord.java"));
+        void generatesSeparatedBuilder() {
+            var bcu = parse(RSCE.resolve("external").resolve("TestRecord"));
+            var cu = parse(RSCE.resolve("TestRecord.java"));
             var builder = new RecordBuilderGenerator(cu, "TestRecord") //
                     .withExternalBuilder(bcu) //
                     .addFields() //
@@ -143,9 +143,9 @@ class BuilderGenerationTest {
         }
 
         @Test
-        void existingSeparatedBuilderIsNotChanged() throws IOException {
-            var bcu = StaticJavaParser.parse(RSCE.resolve("external").resolve("TestRecord"));
-            var cu = StaticJavaParser.parse(RSCE.resolve("TestRecord.java"));
+        void existingSeparatedBuilderIsNotChanged() {
+            var bcu = parse(RSCE.resolve("external").resolve("TestRecord"));
+            var cu = parse(RSCE.resolve("TestRecord.java"));
             var builder = new RecordBuilderGenerator(cu, "TestRecord") //
                     .withExternalBuilder(bcu) //
                     .addFields() //

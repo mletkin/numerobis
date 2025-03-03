@@ -22,9 +22,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.github.javaparser.StaticJavaParser;
-
-import io.github.mletkin.numerobis.Util;
+import io.github.mletkin.numerobis.Fixture;
 
 class BuilderGeneratorTest {
 
@@ -56,8 +54,7 @@ class BuilderGeneratorTest {
         );
     }
 
-    BuilderGenerator generator(String className) {
-        return Util.uncheckExceptions(
-                () -> new BuilderGenerator(StaticJavaParser.parseResource(className + ".java"), className));
+    private BuilderGenerator generator(String className) {
+        return new BuilderGenerator(Fixture.parse(className), className);
     }
 }

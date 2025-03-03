@@ -15,102 +15,104 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.internalWithConstructors;
+import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * Builder generation of internal builder class.
  */
 class InternalBuilderGeneratorWithConstructorsTest {
 
-    @Test
-    void productClassWithoutConstructor() {
-        assertThat(internalWithConstructors("Empty")).isEqualTo(//
-                "public static class Builder {" //
-                        + "    private Empty product;" //
-                        + "    public Builder() {" //
-                        + "        product = new Empty();" //
-                        + "    }" //
-                        + "    public Empty build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
+    private Facade facade = new Facade(false);
+
+    @ParameterizedTest
+    @MethodSource("testCases")
+    void test(String desc, String product, String builder) {
+        var result = facade.withConstructors(parse(product), product).execute();
+        assertThat(builder(result, product)).as(desc).isEqualTo(builder);
     }
 
-    @Test
-    void productClassWithCustomConstructor() {
-        assertThat(internalWithConstructors("EmptyWithCustomConstructor")).isEqualTo(//
-                "public static class Builder {" //
-                        + "    private EmptyWithCustomConstructor product;" //
-                        + "    public Builder(int n) {" //
-                        + "        product = new EmptyWithCustomConstructor(n);" //
-                        + "    }" //
-                        + "    public EmptyWithCustomConstructor build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
+    static Stream<Arguments> testCases() {
+        return Stream.of( //
+                Arguments.of("productClassWithoutConstructor", "Empty", //
+                        "public static class Builder {" //
+                                + "    private Empty product;" //
+                                + "    public Builder() {" //
+                                + "        product = new Empty();" //
+                                + "    }" //
+                                + "    public Empty build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
 
-    @Test
-    void productClassWithDefaultConstructor() {
-        assertThat(internalWithConstructors("EmptyWithDefaultConstructor")).isEqualTo(//
-                "public static class Builder {" //
-                        + "    private EmptyWithDefaultConstructor product;" //
-                        + "    public Builder() {" //
-                        + "        product = new EmptyWithDefaultConstructor();" //
-                        + "    }" //
-                        + "    public EmptyWithDefaultConstructor build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
+                Arguments.of("productClassWithCustomConstructor", "EmptyWithCustomConstructor", //
+                        "public static class Builder {" //
+                                + "    private EmptyWithCustomConstructor product;" //
+                                + "    public Builder(int n) {" //
+                                + "        product = new EmptyWithCustomConstructor(n);" //
+                                + "    }" //
+                                + "    public EmptyWithCustomConstructor build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
 
-    @Test
-    void constructorWithAnnotationIsIgnored() {
-        assertThat(internalWithConstructors("EmptyWithIgnoredConstructor")).isEqualTo( //
-                "public static class Builder {" //
-                        + "    private EmptyWithIgnoredConstructor product;" //
-                        + "    public Builder(int n) {" //
-                        + "        product = new EmptyWithIgnoredConstructor(n);" //
-                        + "    }" //
-                        + "    public EmptyWithIgnoredConstructor build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
+                Arguments.of("productClassWithDefaultConstructor", "EmptyWithDefaultConstructor", //
+                        "public static class Builder {" //
+                                + "    private EmptyWithDefaultConstructor product;" //
+                                + "    public Builder() {" //
+                                + "        product = new EmptyWithDefaultConstructor();" //
+                                + "    }" //
+                                + "    public EmptyWithDefaultConstructor build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
 
-    @Test
-    void privateConstructorIsProcessed() {
-        assertThat(internalWithConstructors("EmptyWithPrivateAndPublicConstructor")).isEqualTo( //
-                "public static class Builder {" //
-                        + "    private EmptyWithPrivateAndPublicConstructor product;" //
-                        + "    public Builder(int n) {" //
-                        + "        product = new EmptyWithPrivateAndPublicConstructor(n);" //
-                        + "    }" //
-                        + "    public Builder(String s) {" //
-                        + "        product = new EmptyWithPrivateAndPublicConstructor(s);" //
-                        + "    }" //
-                        + "    public EmptyWithPrivateAndPublicConstructor build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
+                Arguments.of("constructorWithAnnotationIsIgnored", "EmptyWithIgnoredConstructor", //
+                        "public static class Builder {" //
+                                + "    private EmptyWithIgnoredConstructor product;" //
+                                + "    public Builder(int n) {" //
+                                + "        product = new EmptyWithIgnoredConstructor(n);" //
+                                + "    }" //
+                                + "    public EmptyWithIgnoredConstructor build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
 
-    @Test
-    void usesExistingMemberBuilderClass() {
-        assertThat(internalWithConstructors("WithBuilder")).isEqualTo(//
-                "public static class Builder {" //
-                        + "    private int x;" //
-                        + "    private WithBuilder product;" //
-                        + "    public Builder() {" //
-                        + "        product = new WithBuilder();" //
-                        + "    }" //
-                        + "    public WithBuilder build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
+                Arguments.of("privateConstructorIsProcessed", "EmptyWithPrivateAndPublicConstructor", //
+                        "public static class Builder {" //
+                                + "    private EmptyWithPrivateAndPublicConstructor product;" //
+                                + "    public Builder(int n) {" //
+                                + "        product = new EmptyWithPrivateAndPublicConstructor(n);" //
+                                + "    }" //
+                                + "    public Builder(String s) {" //
+                                + "        product = new EmptyWithPrivateAndPublicConstructor(s);" //
+                                + "    }" //
+                                + "    public EmptyWithPrivateAndPublicConstructor build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
+
+                Arguments.of("usesExistingMemberBuilderClass", "WithBuilder", //
+                        "public static class Builder {" //
+                                + "    private int x;" //
+                                + "    private WithBuilder product;" //
+                                + "    public Builder() {" //
+                                + "        product = new WithBuilder();" //
+                                + "    }" //
+                                + "    public WithBuilder build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}") //
+        );
     }
 
 }

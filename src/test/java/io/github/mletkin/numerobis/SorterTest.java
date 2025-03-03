@@ -15,15 +15,13 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.asString;
-import static io.github.mletkin.numerobis.Util.uncheckExceptions;
+import static io.github.mletkin.numerobis.Fixture.asString;
+import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.StaticJavaParser;
 
 import io.github.mletkin.numerobis.generator.Sorter;
 import io.github.mletkin.numerobis.plugin.Naming;
@@ -35,52 +33,50 @@ class SorterTest {
 
     @Test
     void test() throws IOException {
-        assertThat(//
-                asString(uncheckExceptions(
-                        () -> new Sorter(Naming.DEFAULT).sort(StaticJavaParser.parseResource("SortTest.java"))))) //
-                                .isEqualTo( //
-                                        "/**" //
-                                                + " * File comment." //
-                                                + " */" //
-                                                + "package foo.bar.baz;" //
-                                                + "import di.da.dum;" //
-                                                + "/**" //
-                                                + " * class" //
-                                                + " */" //
-                                                + "public class SortTest {" //
-                                                + "    static int bla = 10;" //
-                                                + "    private TestClass product = new TestClass();" //
-                                                + "    /* Foo bekommt */" //
-                                                + "    /* Wert 10 */" //
-                                                + "    int foo = 10;" //
-                                                + "    /**" //
-                                                + "     * constructor comment." //
-                                                + "     */" //
-                                                + "    SortTest() {" //
-                                                + "        // nothing to do" //
-                                                + "    }" //
-                                                + "    public static String of() {" //
-                                                + "    }" //
-                                                + "    public TestClassBuilder withX(int x) {" //
-                                                + "        // sue me" //
-                                                + "        product.x = x;" //
-                                                + "        return this;" //
-                                                + "    }" //
-                                                + "    public TestClass build() {" //
-                                                + "        return product;" //
-                                                + "    }" //
-                                                + "    /**" //
-                                                + "     * Method comment" //
-                                                + "     *" //
-                                                + "     * @param x" //
-                                                + "     * @return" //
-                                                + "     */" //
-                                                + "    public Object foo(int x) {" //
-                                                + "        return null;" //
-                                                + "    }" //
-                                                + "    public static class Foo {" //
-                                                + "    }" //
-                                                + "}");
+        var sorter = new Sorter(Naming.DEFAULT);
+        assertThat(asString(sorter.sort(parse("SortTest")))).isEqualTo( //
+                "/**" //
+                        + " * File comment." //
+                        + " */" //
+                        + "package foo.bar.baz;" //
+                        + "import di.da.dum;" //
+                        + "/**" //
+                        + " * class" //
+                        + " */" //
+                        + "public class SortTest {" //
+                        + "    static int bla = 10;" //
+                        + "    private TestClass product = new TestClass();" //
+                        + "    /* Foo bekommt */" //
+                        + "    /* Wert 10 */" //
+                        + "    int foo = 10;" //
+                        + "    /**" //
+                        + "     * constructor comment." //
+                        + "     */" //
+                        + "    SortTest() {" //
+                        + "        // nothing to do" //
+                        + "    }" //
+                        + "    public static String of() {" //
+                        + "    }" //
+                        + "    public TestClassBuilder withX(int x) {" //
+                        + "        // sue me" //
+                        + "        product.x = x;" //
+                        + "        return this;" //
+                        + "    }" //
+                        + "    public TestClass build() {" //
+                        + "        return product;" //
+                        + "    }" //
+                        + "    /**" //
+                        + "     * Method comment" //
+                        + "     *" //
+                        + "     * @param x" //
+                        + "     * @return" //
+                        + "     */" //
+                        + "    public Object foo(int x) {" //
+                        + "        return null;" //
+                        + "    }" //
+                        + "    public static class Foo {" //
+                        + "    }" //
+                        + "}");
 
     }
 

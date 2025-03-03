@@ -15,11 +15,18 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.internalWithConstructors;
+import static io.github.mletkin.numerobis.Fixture.asArray;
+import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
@@ -29,28 +36,46 @@ import io.github.mletkin.numerobis.generator.ListMutatorVariant;
  */
 class AdderInternalTest {
 
-    @Test
-    void adderForListField() {
-        assertThat(internalWithConstructors("WithList")).contains(//
-                "public Builder addX(String item) {" //
-                        + "        product.x.add(item);" //
-                        + "        return this;" //
-                        + "    }");
+    private Facade facade = new Facade(false);
+
+    @ParameterizedTest
+    @MethodSource("testCases")
+    void test(String desc, String product, String method) {
+        var result = facade.withConstructors(parse(product), product).execute();
+
+        assertThat(builder(result, product)).as(desc).contains(method);
     }
 
-    @Test
-    void adderForListFieldWithPostfixS() {
-        assertThat(internalWithConstructors("WithListWithPostfix")).contains(//
-                "public Builder addProduct(String item) {" //
-                        + "        product.products.add(item);" //
-                        + "        return this;" //
-                        + "    }");
+    static Stream<Arguments> testCases() {
+        return Stream.of( //
+                Arguments.of("adderForListField", "WithList", //
+                        "public Builder addX(String item) {" //
+                                + "        product.x.add(item);" //
+                                + "        return this;" //
+                                + "    }"),
+
+                Arguments.of("adderForListFieldWithPostfixS", "WithListWithPostfix", //
+                        "public Builder addProduct(String item) {" //
+                                + "        product.products.add(item);" //
+                                + "        return this;" //
+                                + "    }"),
+
+                Arguments.of("adderForSetField", "WithSet", //
+                        "public Builder addX(String item) {" //
+                                + "        product.x.add(item);" //
+                                + "        return this;" //
+                                + "    }")
+
+        );
     }
 
     @Disabled
     @Test
     void adderForListFieldWithPostfixEn() {
-        assertThat(internalWithConstructors("WithListWithPostfix")).contains(//
+        var product = "WithListWithPostfix";
+        var result = facade.withConstructors(Fixture.parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "public Builder addPerson(String item) {" //
                         + "        product.personen.add(item);" //
                         + "        return this;" //
@@ -60,126 +85,55 @@ class AdderInternalTest {
     @Disabled
     @Test
     void adderForListFieldWithPostfixE() {
-        assertThat(internalWithConstructors("WithListWithPostfix")).contains(//
+        var product = "WithListWithPostfix";
+        var result = facade.withConstructors(Fixture.parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "public Builder addBrief(String item) {" //
                         + "        product.briefe.add(item);" //
                         + "        return this;" //
                         + "    }");
     }
 
-    @Test
-    void adderForSetField() {
-        assertThat(internalWithConstructors("WithSet")).contains(//
-                "public Builder addX(String item) {" //
-                        + "        product.x.add(item);" //
-                        + "        return this;" //
-                        + "    }");
+    @ParameterizedTest
+    @MethodSource("adderCases")
+    void addsAdder(ListMutatorVariant variant, String method) {
+        var product = "WithList";
+        var result = facade //
+                .withAdderVariants(asArray(variant)) //
+                .withConstructors(parse(product), product) //
+                .execute();
+
+        assertThat(builder(result, product)).contains(method);
     }
 
-    @Test
-    void addsItemAdder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.ITEM };
-        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList"))
-                .contains(//
+    static Stream<Arguments> adderCases() {
+        return Stream.of( //
+                Arguments.of(ListMutatorVariant.ITEM, //
                         "public Builder addX(String item) {" //
                                 + "        product.x.add(item);" //
                                 + "        return this;" //
-                                + "    }");
-    }
+                                + "    }"),
 
-    @Test
-    void addsStreamAdder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList"))
-                .contains(//
+                Arguments.of(ListMutatorVariant.STREAM, //
                         "public Builder addX(Stream<String> items) {" //
                                 + "        items.forEach(product.x::add);" //
                                 + "        return this;" //
-                                + "    }");
-    }
+                                + "    }"),
 
-    // @Test
-    // void retainsStreamAdder() {
-    // ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-    // assertThat(new TestFacade(new
-    // Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList",
-    // //
-    // "public static class Builder {" //
-    // + " public WithListBuilder addX(Stream<String> foo) {" //
-    // + " return null;" //
-    // + " }" //
-    // + "}") //
-    // ).doesNotContain(//
-    // "public Builder addX(Stream<String> stream) {" //
-    // );
-    // }
-
-    @Test
-    void addCollectionAdder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.COLLECTION };
-        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList"))
-                .contains(//
+                Arguments.of(ListMutatorVariant.COLLECTION, //
                         "public Builder addX(Collection<String> items) {" //
                                 + "        product.x.addAll(items);" //
                                 + "        return this;" //
-                                + "    }");
-    }
+                                + "    }"),
 
-    @Test
-    void retainsCollectionAdder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.COLLECTION };
-        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList", //
-                "public class WithListBuilder {" //
-                        + "    public WithListBuilder addX(Collection<String> foo) {" //
-                        + "        return null;" //
-                        + "    }" //
-                        + "}") //
-        ).contains(//
-                "public WithListBuilder addX(Collection<String> foo) {" //
-                        + "        return null;" //
-                        + "    }");
-    }
-
-    @Test
-    void addsVarArgAdder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
-        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList"))
-                .contains(//
+                Arguments.of(ListMutatorVariant.VARARG, //
                         "public Builder addX(String... items) {" //
                                 + "        Stream.of(items).forEach(product.x::add);" //
                                 + "        return this;" //
-                                + "    }");
-    }
+                                + "    }")
 
-    @Test
-    void retainsVarArgAdder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
-        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("WithList", //
-                "public class WithListBuilder {" //
-                        + "    public WithListBuilder addX(String... foo) {" //
-                        + "        return null;" //
-                        + "    }" //
-                        + "}") //
-        ).contains(//
-                "public WithListBuilder addX(String... foo) {" //
-                        + "        return null;" //
-                        + "    }");
-    }
-
-    @Test
-    void addsItemAndVarargAdder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.ITEM, ListMutatorVariant.VARARG };
-        assertThat(new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("WithList"))
-                .contains(//
-                        "public Builder addX(String item) {" //
-                                + "        product.x.add(item);" //
-                                + "        return this;" //
-                                + "    }") //
-                .contains(//
-                        "public Builder addX(String... items) {" //
-                                + "        Stream.of(items).forEach(product.x::add);" //
-                                + "        return this;" //
-                                + "    }");
+        );
     }
 
 }

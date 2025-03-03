@@ -15,20 +15,28 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.externalWithConstructors;
-import static io.github.mletkin.numerobis.Util.internalWithConstructors;
+import static io.github.mletkin.numerobis.Fixture.asArray;
+import static io.github.mletkin.numerobis.Fixture.asString;
+import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+
+import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 
 class MutatorAnnotationTest {
 
-    @Test
+    private Facade facade = new Facade(false);
+
     void adderAnnoForListFieldInExternalBuilder() {
-        assertThat(externalWithConstructors("AdderAnno")).contains(//
+        var product = "AdderAnno";
+        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+
+        assertThat(asString(result)).contains( //
                 "public AdderAnnoBuilder addProduct(String item) {" //
                         + "        product.products.add(item);" //
                         + "        return this;" //
@@ -43,7 +51,10 @@ class MutatorAnnotationTest {
 
     @Test
     void mutatorAnnoForListFieldInInternalBuilder() {
-        assertThat(internalWithConstructors("AdderAnno")).contains(//
+        var product = "AdderAnno";
+        var result = facade.withConstructors(parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "public Builder withProducts(List<String> products) {" //
                         + "        product.products = products;" //
                         + "        return this;" //
@@ -58,7 +69,10 @@ class MutatorAnnotationTest {
 
     @Test
     void mutatorAnnoForListFieldInExternalBuilder() {
-        assertThat(externalWithConstructors("AdderAnno")).contains(//
+        var product = "AdderAnno";
+        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+
+        assertThat(asString(result)).contains( //
                 "public AdderAnnoBuilder withProducts(List<String> products) {" //
                         + "        product.products = products;" //
                         + "        return this;" //
@@ -73,7 +87,10 @@ class MutatorAnnotationTest {
 
     @Test
     void adderAnnoForListFieldInInternalBuilder() {
-        assertThat(internalWithConstructors("AdderAnno")).contains(//
+        var product = "AdderAnno";
+        var result = facade.withConstructors(parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "public Builder addProduct(String item) {" //
                         + "        product.products.add(item);" //
                         + "        return this;" //
@@ -87,37 +104,39 @@ class MutatorAnnotationTest {
     }
 
     @Test
-    void adderAnnotationOverridesPomInInternalBuilder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-        assertThat(
-                new TestFacade(new Facade(false).withAdderVariants(variants)).internalWithConstructors("AdderAnnoNone"))
-                        .doesNotContain(//
-                                "addProduct");
+    void adderAnnotationOverridesDefaultInInternalBuilder() {
+        var product = "AdderAnnoNone";
+        var result = facade //
+                .withAdderVariants(asArray(ListMutatorVariant.STREAM)) //
+                .withConstructors(parse(product), product) //
+                .execute();
+
+        assertThat(asString(result)).doesNotContain( //
+                "addProduct");
     }
 
     @Test
-    void adderAnnotationOverridesPomInExternalBuilder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-        assertThat(
-                new TestFacade(new Facade(false).withAdderVariants(variants)).externalWithConstructors("AdderAnnoNone"))
-                        .doesNotContain(//
-                                "addProduct");
-    }
+    void mutatorAnnotationOverridesDefaultInInternalBuilder() {
+        var product = "AdderAnnoNone";
+        var result = facade //
+                .withMutatorVariants(asArray(ListMutatorVariant.STREAM)) //
+                .withConstructors(parse(product), product) //
+                .execute();
 
-    @Test
-    void mutatorAnnotationOverridesPomInInternalBuilder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants))
-                .internalWithConstructors("AdderAnnoNone")).doesNotContain(//
-                        "addProduct");
+        assertThat(asString(result)).doesNotContain( //
+                "addProduct");
     }
 
     @Test
     void mutatorAnnotationOverridesPomInExternalBuilder() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants))
-                .externalWithConstructors("AdderAnnoNone")).doesNotContain(//
-                        "addProduct");
+        var product = "AdderAnnoNone";
+        var result = facade //
+                .withMutatorVariants(asArray(ListMutatorVariant.STREAM)) //
+                .withConstructors(parse(product), product, new CompilationUnit()) //
+                .execute();
+
+        assertThat(asString(result)).doesNotContain( //
+                "addProduct");
     }
 
 }

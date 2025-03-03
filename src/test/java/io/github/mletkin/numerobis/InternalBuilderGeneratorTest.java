@@ -15,16 +15,14 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.internalWithConstructors;
+import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-
-import java.io.IOException;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
@@ -35,9 +33,14 @@ import io.github.mletkin.numerobis.generator.GeneratorException;
  */
 class InternalBuilderGeneratorTest {
 
+    private Facade facade = new Facade(false);
+
     @Test
     void convertsClassWithField() {
-        assertThat(internalWithConstructors("TestClass")).isEqualTo(//
+        var product = "TestClass";
+        var result = facade.withConstructors(parse(product), product).execute();
+
+        assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
                         + "    private TestClass product;" //
                         + "    public Builder() {" //
@@ -54,18 +57,18 @@ class InternalBuilderGeneratorTest {
     }
 
     @Test
-    void notContainedClassProducesNothing() throws IOException {
-        var generator = new Facade(false) //
-                .withConstructors(StaticJavaParser.parseResource("TestClass.java"), "Foo", new CompilationUnit());
+    void notContainedClassProducesNothing() {
+        var generator = facade //
+                .withConstructors(parse("TestClass"), "Foo", new CompilationUnit());
 
         assertThatExceptionOfType(GeneratorException.class) //
                 .isThrownBy(generator::execute).withMessage("Product class Foo not found in compilation unit.");
     }
 
     @Test
-    void nullClassProducesNothing() throws IOException {
-        var generator = new Facade(false) //
-                .withConstructors(StaticJavaParser.parseResource("TestClass.java"), "", new CompilationUnit());
+    void nullClassProducesNothing() {
+        var generator = facade //
+                .withConstructors(parse("TestClass"), "", new CompilationUnit());
 
         assertThatExceptionOfType(GeneratorException.class) //
                 .isThrownBy(generator::execute) //

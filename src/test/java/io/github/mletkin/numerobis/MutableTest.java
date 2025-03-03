@@ -15,42 +15,71 @@
  */
 package io.github.mletkin.numerobis;
 
+import static io.github.mletkin.numerobis.Fixture.asString;
+import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.parseString;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import io.github.mletkin.numerobis.generator.Facade;
 
 class MutableTest {
 
-    @Test
-    void externalManipulationConstructorIsRetained() {
-        assertThat(Util.externalWithConstructors("Mutable", //
-                "public class MutableBuilder {" //
-                        + "    public MutableBuilder(Mutable item) {" //
-                        + "    }" //
-                        + "}") //
-        ).isEqualTo(//
-                "public class MutableBuilder {" //
-                        + "    public MutableBuilder(Mutable item) {" //
-                        + "    }" //
-                        + "    private Mutable product;" //
-                        + "    public MutableBuilder() {" //
-                        + "        product = new Mutable();" //
-                        + "    }" //
-                        + "    public Mutable build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
+    private Facade facade = new Facade(false);
+
+    @ParameterizedTest
+    @MethodSource("testCases")
+    void mergeTest(String desc, String product, String builder, String expected) {
+        var actual = facade //
+                .withConstructors(parse(product), product, parseString(builder)) //
+                .execute();
+
+        assertThat(asString(actual)).as(desc).isEqualTo(expected);
+
+    }
+
+    static Stream<Arguments> testCases() {
+        return Stream.of( //
+                Arguments.of("externalManipulationConstructorIsRetained", "Mutable", //
+                        "public class MutableBuilder {" //
+                                + "    public MutableBuilder(Mutable item) {" //
+                                + "    }" //
+                                + "}", //
+                        "public class MutableBuilder {" //
+                                + "    public MutableBuilder(Mutable item) {" //
+                                + "    }" //
+                                + "    private Mutable product;" //
+                                + "    public MutableBuilder() {" //
+                                + "        product = new Mutable();" //
+                                + "    }" //
+                                + "    public Mutable build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}")
+
+        );
     }
 
     @Test
     void externalManipulationFactoryIsRetained() {
-        assertThat(Util.externalWithFactories("Mutable", //
-                "public class MutableBuilder {" //
-                        + "    public static MutableBuilder of(Mutable item) {" //
-                        + "        return null;" //
-                        + "    }" //
-                        + "}") //
-        ).isEqualTo(//
+        var product = "Mutable";
+        var builder = "public class MutableBuilder {" //
+                + "    public static MutableBuilder of(Mutable item) {" //
+                + "        return null;" //
+                + "    }" //
+                + "}"; //
+
+        var actual = facade //
+                .withFactoryMethods(parse(product), product, parseString(builder)) //
+                .execute();
+
+        assertThat(asString(actual)).isEqualTo( //
                 "public class MutableBuilder {" //
                         + "    public static MutableBuilder of(Mutable item) {" //
                         + "        return null;" //

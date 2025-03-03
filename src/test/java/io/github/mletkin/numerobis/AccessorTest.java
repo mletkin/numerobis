@@ -15,87 +15,103 @@
  */
 package io.github.mletkin.numerobis;
 
-import org.assertj.core.api.Assertions;
+import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.product;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import io.github.mletkin.numerobis.generator.Facade;
 
 /**
  * Accessor generation in the product class.
  */
 class AccessorTest {
 
-    private TestFacade testFacade = new TestFacade(false);
+    private Facade facade = new Facade(false);
 
+    @ParameterizedTest
+    @MethodSource("testCases")
+    void test(String desc, String product, String content) {
+        var result = facade.withAccessors(parse(product), product);
+        assertThat(product(result, product)).as(desc).isEqualTo(content);
+    }
+
+    static Stream<Arguments> testCases() {
+        return Stream.of( //
+                Arguments.of("accessMethodGenerated", "Access", //
+                        "@GenerateAccessors" //
+                                + "public class Access {" //
+                                + "    int foo;" //
+                                + "    public int foo() {" //
+                                + "        return foo;" //
+                                + "    }" //
+                                + "}"),
+
+                Arguments.of("accessMethodWithPrefixGenerated", "AccessWithPrefix", //
+                        "@GenerateAccessors(prefix = \"get\")" //
+                                + "public class AccessWithPrefix {" //
+                                + "    int foo;" //
+                                + "    public int getFoo() {" //
+                                + "        return foo;" //
+                                + "    }" //
+                                + "}"),
+
+                Arguments.of("retainsArrayAccessor", "ArrayFieldWithAccessor", //
+                        "class ArrayFieldWithAccessor {" //
+                                + "    String[] foo;" //
+                                + "    String[] foo() {" //
+                                + "    }" //
+                                + "}"),
+
+                Arguments.of("retainsIntAccessor", "IntFieldWithAccessor", //
+                        "class IntFieldWithAccessor {" //
+                                + "    int foo;" //
+                                + "    int foo() {" //
+                                + "    }" //
+                                + "}")
+
+        );
+    }
+
+    /**
+     * Maybe there's a bug in JavaParser.<br>
+     * In this test int[] bar and int bar[] are not considered equal
+     */
+    @Disabled
     @Test
-    void accessMethodGenerated() {
-        Assertions.assertThat(testFacade.generateAccessors("Access")).isEqualTo(//
-                "@GenerateAccessors" //
-                        + "public class Access {" //
-                        + "    int foo;" //
-                        + "    public int foo() {" //
-                        + "        return foo;" //
+    void retainsIntAndArrayAccessor() {
+        var product = "IntAndArrayFieldWithAccessor";
+        var result = facade.withAccessors(parse(product), product);
+
+        assertThat(product(result, product)).isEqualTo( //
+                "class IntAndArrayFieldWithAccessor {" //
+                        + "    int foo, bar[];" //
+                        + "    int foo() {" //
+                        + "    }" //
+                        + "    int[] bar() {" //
                         + "    }" //
                         + "}");
     }
 
     @Test
     void accessMethodForListGeneratesStream() {
-        Assertions.assertThat(testFacade.generateAccessors("WithList")).isEqualTo(//
+        var product = "WithList";
+        var result = facade.withAccessors(parse(product), product);
+
+        assertThat(Fixture.asString(result)).isEqualTo(//
                 "import java.util.List;" //
                         + "import java.util.stream.Stream;" //
                         + "public class WithList {" //
                         + "    List<String> x = new ArrayList<>();" //
                         + "    public Stream<String> x() {" //
                         + "        return x.stream();" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void accessMethodWithPrefixGenerated() {
-        Assertions.assertThat(testFacade.generateAccessors("AccessWithPrefix")).isEqualTo(//
-                "@GenerateAccessors(prefix = \"get\")" //
-                        + "public class AccessWithPrefix {" //
-                        + "    int foo;" //
-                        + "    public int getFoo() {" //
-                        + "        return foo;" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void retainsArrayAccessor() {
-        Assertions.assertThat(testFacade.generateAccessors("ArrayFieldWithAccessor")).isEqualTo(//
-                "class ArrayFieldWithAccessor {" //
-                        + "    String[] foo;" //
-                        + "    String[] foo() {" //
-                        + "    }" //
-                        + "}");
-    }
-
-    @Test
-    void retainsIntAccessor() {
-        Assertions.assertThat(testFacade.generateAccessors("IntFieldWithAccessor")).isEqualTo(//
-                "class IntFieldWithAccessor {" //
-                        + "    int foo;" //
-                        + "    int foo() {" //
-                        + "    }" //
-                        + "}");
-    }
-
-    /**
-     * Maybe there's a bug in JavaParser.<br>
-     * In this test int[] and int[] are not considered equal
-     */
-    @Disabled
-    @Test
-    void retainsIntAndArrayAccessor() {
-        Assertions.assertThat(testFacade.generateAccessors("IntAndArrayFieldWithAccessor")).isEqualTo(//
-                "class IntAndArrayFieldWithAccessor {" //
-                        + "    int foo, bar[];" //
-                        + "    int foo() {" //
-                        + "    }" //
-                        + "    int[] bar() {" //
                         + "    }" //
                         + "}");
     }

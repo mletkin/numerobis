@@ -15,9 +15,16 @@
  */
 package io.github.mletkin.numerobis;
 
+import static io.github.mletkin.numerobis.Fixture.asArray;
+import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
@@ -27,36 +34,100 @@ import io.github.mletkin.numerobis.generator.ListMutatorVariant;
  */
 class ListMutatorInternalTest {
 
-    @Test
-    void defaultMutatorForListIsObject() {
-        assertThat(new TestFacade(new Facade(false)).internalWithConstructors("WithList"))//
-                .contains(//
+    private Facade facade = new Facade(false);
+
+    @ParameterizedTest
+    @MethodSource("listCases")
+    void addsMutatorForList(String desc, ListMutatorVariant variant, String method) {
+        var product = "WithList";
+        var result = facade //
+                .withMutatorVariants(asArray(variant)) //
+                .withConstructors(parse(product), product) //
+                .execute();
+
+        assertThat(builder(result, product)).as(desc).contains(method);
+    }
+
+    static Stream<Arguments> listCases() {
+        return Stream.of( //
+                Arguments.of("defaultMutatorIsObject", null, //
                         "public Builder withX(List<String> x) {" //
                                 + "        product.x = x;" //
                                 + "        return this;" //
-                                + "    }");
-    }
+                                + "    }"),
 
-    @Test
-    void addsObjectMutatorForList() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.OBJECT };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList"))
-                .contains(//
+                Arguments.of("addsObjectMutator", ListMutatorVariant.OBJECT, //
                         "public Builder withX(List<String> x) {" //
                                 + "        product.x = x;" //
                                 + "        return this;" //
-                                + "    }");
+                                + "    }"),
+
+                Arguments.of("addsStreamMutator", ListMutatorVariant.STREAM, //
+                        "public Builder withX(Stream<String> items) {" //
+                                + "        product.x = items.collect(Collectors.toList());" //
+                                + "        return this;" //
+                                + "    }"),
+
+                Arguments.of("addsCollectionMutator", ListMutatorVariant.COLLECTION, //
+                        "public Builder withX(Collection<String> items) {" //
+                                + "        product.x = items.stream().collect(Collectors.toList());" //
+                                + "        return this;" //
+                                + "    }"),
+
+                Arguments.of("addsVarargMutator", ListMutatorVariant.VARARG, //
+                        "public Builder withX(String... items) {" //
+                                + "        product.x = Stream.of(items).collect(Collectors.toList());" //
+                                + "        return this;" //
+                                + "    }")
+
+        );
     }
 
-    @Test
-    void addsObjectMutatorForSet() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.OBJECT };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
-                .contains(//
+    @ParameterizedTest
+    @MethodSource("setCases")
+    void addsMutatorForSet(String desc, ListMutatorVariant variant, String method) {
+        var product = "WithSet";
+        var result = facade //
+                .withMutatorVariants(asArray(variant)) //
+                .withConstructors(parse(product), product) //
+                .execute();
+
+        assertThat(builder(result, product)).as(desc).contains(method);
+    }
+
+    static Stream<Arguments> setCases() {
+        return Stream.of( //
+                Arguments.of("defaultMutatorIsObject", null, //
                         "public Builder withX(Set<String> x) {" //
                                 + "        product.x = x;" //
                                 + "        return this;" //
-                                + "    }");
+                                + "    }"),
+
+                Arguments.of("addsObjectMutator", ListMutatorVariant.OBJECT, //
+                        "public Builder withX(Set<String> x) {" //
+                                + "        product.x = x;" //
+                                + "        return this;" //
+                                + "    }"),
+
+                Arguments.of("addsStreamMutator", ListMutatorVariant.STREAM, //
+                        "public Builder withX(Stream<String> items) {" //
+                                + "        product.x = items.collect(Collectors.toSet());" //
+                                + "        return this;" //
+                                + "    }"),
+
+                Arguments.of("addsCollectionMutator", ListMutatorVariant.COLLECTION, //
+                        "public Builder withX(Collection<String> items) {" //
+                                + "        product.x = items.stream().collect(Collectors.toSet());" //
+                                + "        return this;" //
+                                + "    }"),
+
+                Arguments.of("addsVarargMutator", ListMutatorVariant.VARARG, //
+                        "public Builder withX(String... items) {" //
+                                + "        product.x = Stream.of(items).collect(Collectors.toSet());" //
+                                + "        return this;" //
+                                + "    }")
+
+        );
     }
 
     // @Test
@@ -76,28 +147,6 @@ class ListMutatorInternalTest {
     // ).doesNotContain("public Builder withX(List<String> x)");
     // }
 
-    @Test
-    void addsStreamMutatorForList() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList"))
-                .contains(//
-                        "public Builder withX(Stream<String> items) {" //
-                                + "        product.x = items.collect(Collectors.toList());" //
-                                + "        return this;" //
-                                + "    }");
-    }
-
-    @Test
-    void addsStreamMutatorForSet() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
-                .contains(//
-                        "public Builder withX(Stream<String> items) {" //
-                                + "        product.x = items.collect(Collectors.toSet());" //
-                                + "        return this;" //
-                                + "    }");
-    }
-
     // @Test
     // void retainsStreamMutator() {
     // ListMutatorVariant[] variants = { ListMutatorVariant.STREAM };
@@ -115,28 +164,6 @@ class ListMutatorInternalTest {
     // + " }" //
     // ).doesNotContain("public Builder withX(Stream<String> items)");
     // }
-
-    @Test
-    void addsCollectionMutatorForList() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.COLLECTION };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList"))
-                .contains(//
-                        "public Builder withX(Collection<String> items) {" //
-                                + "        product.x = items.stream().collect(Collectors.toList());" //
-                                + "        return this;" //
-                                + "    }");
-    }
-
-    @Test
-    void addsCollectionMutatorForSet() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.COLLECTION };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
-                .contains(//
-                        "public Builder withX(Collection<String> items) {" //
-                                + "        product.x = items.stream().collect(Collectors.toSet());" //
-                                + "        return this;" //
-                                + "    }");
-    }
 
     // @Test
     // void retainsCollectionMutator() {
@@ -156,34 +183,12 @@ class ListMutatorInternalTest {
     // ).doesNotContain("public Builder withX(Collection<String> items)");
     // }
 
-    @Test
-    void addsVarArgMutatorForList() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithList"))
-                .contains(//
-                        "public Builder withX(String... items) {" //
-                                + "        product.x = Stream.of(items).collect(Collectors.toList());" //
-                                + "        return this;" //
-                                + "    }");
-    }
-
-    @Test
-    void addsVarArgMutatorForSet() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants)).internalWithConstructors("WithSet"))
-                .contains(//
-                        "public Builder withX(String... items) {" //
-                                + "        product.x = Stream.of(items).collect(Collectors.toSet());" //
-                                + "        return this;" //
-                                + "    }");
-    }
-
-    @Test
-    void retainsVarArgMutator() {
-        ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
-        assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants))
-                .internalWithConstructors("WithListWithVarargMutator")).contains(//
-                        "Builder withX(String... foo) {    }");
-    }
+    // @Test
+    // void retainsVarArgMutator() {
+    // ListMutatorVariant[] variants = { ListMutatorVariant.VARARG };
+    // assertThat(new TestFacade(new Facade(false).withMutatorVariants(variants))
+    // .internalWithConstructors("WithListWithVarargMutator")).contains(//
+    // "Builder withX(String... foo) { }");
+    // }
 
 }

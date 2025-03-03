@@ -15,118 +15,127 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Util.externalWithConstructors;
+import static io.github.mletkin.numerobis.Fixture.asString;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.github.javaparser.ast.CompilationUnit;
+
+import io.github.mletkin.numerobis.generator.Facade;
+import io.github.mletkin.numerobis.generator.common.ClassUtil;
 
 /**
  * Mutator generation for generated external builder.
  */
 class MutatorExternalBuilderTest {
 
-    @Test
-    void mutatorForNonListField() {
-        assertThat(externalWithConstructors("Mutator")).isEqualTo(//
-                "public class MutatorBuilder {" //
-                        + "    private Mutator product;" //
-                        + "    public MutatorBuilder() {" //
-                        + "        product = new Mutator();" //
-                        + "    }" //
-                        + "    public MutatorBuilder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public Mutator build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
+    private Facade facade = new Facade(false);
+
+    public static String builder(CompilationUnit unit, String product) {
+        return Fixture.asString(ClassUtil.findClass(unit, product + "Builder").orElse(null));
     }
 
-    @Test
-    void mutatorsForTwoFieldsInOneDeclaration() {
-        assertThat(externalWithConstructors("MutatorTwoFields")).isEqualTo(//
-                "public class MutatorTwoFieldsBuilder {" //
-                        + "    private MutatorTwoFields product;" //
-                        + "    public MutatorTwoFieldsBuilder() {" //
-                        + "        product = new MutatorTwoFields();" //
-                        + "    }" //
-                        + "    public MutatorTwoFieldsBuilder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public MutatorTwoFieldsBuilder withY(int y) {" //
-                        + "        product.y = y;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public MutatorTwoFields build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
+    @ParameterizedTest
+    @MethodSource("testCases")
+    void test(String desc, String product, String expected) {
+        var result = facade.withConstructors(Fixture.parse(product), product, new CompilationUnit()).execute();
+        assertThat(asString(result)).as(desc).isEqualTo(expected);
     }
 
-    @Test
-    void mutatorForFieldWithCustomNameAnnotation() {
-        assertThat(externalWithConstructors("MutatorWithCustomName")).isEqualTo(//
-                "public class MutatorWithCustomNameBuilder {" //
-                        + "    private MutatorWithCustomName product;" //
-                        + "    public MutatorWithCustomNameBuilder() {" //
-                        + "        product = new MutatorWithCustomName();" //
-                        + "    }" //
-                        + "    public MutatorWithCustomNameBuilder fillX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public MutatorWithCustomName build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
+    static Stream<Arguments> testCases() {
+        return Stream.of( //
+                Arguments.of("mutatorForNonListField", "Mutator", //
+                        "public class MutatorBuilder {" //
+                                + "    private Mutator product;" //
+                                + "    public MutatorBuilder() {" //
+                                + "        product = new Mutator();" //
+                                + "    }" //
+                                + "    public MutatorBuilder withX(int x) {" //
+                                + "        product.x = x;" //
+                                + "        return this;" //
+                                + "    }" //
+                                + "    public Mutator build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
 
-    @Test
-    void mutatorForFieldWithAnnotationWithoutCustomMethodName() {
-        assertThat(externalWithConstructors("FieldAnnoNoCustomName")).isEqualTo(//
-                "public class FieldAnnoNoCustomNameBuilder {" //
-                        + "    private FieldAnnoNoCustomName product;" //
-                        + "    public FieldAnnoNoCustomNameBuilder() {" //
-                        + "        product = new FieldAnnoNoCustomName();" //
-                        + "    }" //
-                        + "    public FieldAnnoNoCustomNameBuilder withX(int x) {" //
-                        + "        product.x = x;" //
-                        + "        return this;" //
-                        + "    }" //
-                        + "    public FieldAnnoNoCustomName build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
+                Arguments.of("mutatorsForTwoFieldsInOneDeclaration", "MutatorTwoFields", //
+                        "public class MutatorTwoFieldsBuilder {" //
+                                + "    private MutatorTwoFields product;" //
+                                + "    public MutatorTwoFieldsBuilder() {" //
+                                + "        product = new MutatorTwoFields();" //
+                                + "    }" //
+                                + "    public MutatorTwoFieldsBuilder withX(int x) {" //
+                                + "        product.x = x;" //
+                                + "        return this;" //
+                                + "    }" //
+                                + "    public MutatorTwoFieldsBuilder withY(int y) {" //
+                                + "        product.y = y;" //
+                                + "        return this;" //
+                                + "    }" //
+                                + "    public MutatorTwoFields build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
 
-    @Test
-    void noMutatorForFieldWithIgnoreAnnotation() {
-        assertThat(externalWithConstructors("MutatorIgnore")).isEqualTo(//
-                "public class MutatorIgnoreBuilder {" //
-                        + "    private MutatorIgnore product;" //
-                        + "    public MutatorIgnoreBuilder() {" //
-                        + "        product = new MutatorIgnore();" //
-                        + "    }" //
-                        + "    public MutatorIgnore build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
-    }
+                Arguments.of("mutatorForFieldWithCustomNameAnnotation", "MutatorWithCustomName", //
+                        "public class MutatorWithCustomNameBuilder {" //
+                                + "    private MutatorWithCustomName product;" //
+                                + "    public MutatorWithCustomNameBuilder() {" //
+                                + "        product = new MutatorWithCustomName();" //
+                                + "    }" //
+                                + "    public MutatorWithCustomNameBuilder fillX(int x) {" //
+                                + "        product.x = x;" //
+                                + "        return this;" //
+                                + "    }" //
+                                + "    public MutatorWithCustomName build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
 
-    @Test
-    void noMutatorForPrivateField() {
-        assertThat(externalWithConstructors("MutatorPrivateField")).isEqualTo( //
-                "public class MutatorPrivateFieldBuilder {" //
-                        + "    private MutatorPrivateField product;" //
-                        + "    public MutatorPrivateFieldBuilder() {" //
-                        + "        product = new MutatorPrivateField();" //
-                        + "    }" //
-                        + "    public MutatorPrivateField build() {" //
-                        + "        return product;" //
-                        + "    }" //
-                        + "}");
+                Arguments.of("mutatorForFieldWithAnnotationWithoutCustomMethodName", "FieldAnnoNoCustomName", //
+                        "public class FieldAnnoNoCustomNameBuilder {" //
+                                + "    private FieldAnnoNoCustomName product;" //
+                                + "    public FieldAnnoNoCustomNameBuilder() {" //
+                                + "        product = new FieldAnnoNoCustomName();" //
+                                + "    }" //
+                                + "    public FieldAnnoNoCustomNameBuilder withX(int x) {" //
+                                + "        product.x = x;" //
+                                + "        return this;" //
+                                + "    }" //
+                                + "    public FieldAnnoNoCustomName build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
+
+                Arguments.of("noMutatorForFieldWithIgnoreAnnotation", "MutatorIgnore", //
+                        "public class MutatorIgnoreBuilder {" //
+                                + "    private MutatorIgnore product;" //
+                                + "    public MutatorIgnoreBuilder() {" //
+                                + "        product = new MutatorIgnore();" //
+                                + "    }" //
+                                + "    public MutatorIgnore build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}"),
+
+                Arguments.of("noMutatorForPrivateField", "MutatorPrivateField", //
+                        "public class MutatorPrivateFieldBuilder {" //
+                                + "    private MutatorPrivateField product;" //
+                                + "    public MutatorPrivateFieldBuilder() {" //
+                                + "        product = new MutatorPrivateField();" //
+                                + "    }" //
+                                + "    public MutatorPrivateField build() {" //
+                                + "        return product;" //
+                                + "    }" //
+                                + "}")
+
+        );
     }
 
 }

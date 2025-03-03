@@ -15,33 +15,49 @@
  */
 package io.github.mletkin.numerobis;
 
+import static io.github.mletkin.numerobis.Fixture.asString;
+import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.javaparser.ast.CompilationUnit;
+
+import io.github.mletkin.numerobis.generator.Facade;
+
 public class ImmutableByDefaultTest {
 
-    private TestFacade facade = new TestFacade(false);
+    private Facade facade = new Facade(false);
 
     @Test
-    void mutableAnnotationCreatesManipulationConstructorInExternalBuilder() {
-        assertThat(facade.externalWithConstructors("Mutable")).contains(//
+    void mutableAnnotationCreatesManipulationConstructorInSeparateBuilder() {
+        var product = "Mutable";
+        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+
+        assertThat(asString(result)).contains(//
                 "public MutableBuilder(Mutable product) {" //
                         + "        this.product = product;" //
                         + "    }");
     }
 
     @Test
-    void mutableAnnotationCreatesManipulationConstructorInInternalBuilder() {
-        assertThat(facade.internalWithConstructors("Mutable")).contains(//
+    void mutableAnnotationCreatesManipulationConstructorInEmbeddedBuilder() {
+        var product = "Mutable";
+        var result = facade.withConstructors(parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "public Builder(Mutable product) {" //
                         + "        this.product = product;" //
                         + "    }");
     }
 
     @Test
-    void mutableAnnotationCreatesManipulationFactoryinExternalBuilder() {
-        assertThat(facade.externalWithFactories("Mutable")).contains(//
+    void mutableAnnotationCreatesManipulationFactoryInSeparateBuilder() {
+        var product = "Mutable";
+        var result = facade.withFactoryMethods(parse(product), product, new CompilationUnit()).execute();
+
+        assertThat(asString(result)).contains( //
                 "public static MutableBuilder of(Mutable product) {" //
                         + "        return new MutableBuilder(product);" //
                         + "    }");
@@ -49,7 +65,10 @@ public class ImmutableByDefaultTest {
 
     @Test
     void mutableAnnotationCreatesManipulationFactoryinInternalBuilder() {
-        assertThat(facade.internalWithFactories("Mutable")).contains(//
+        var product = "Mutable";
+        var result = facade.withFactoryMethods(parse(product), product).execute();
+
+        assertThat(builder(result, product)).contains( //
                 "public static Builder of(Mutable product) {" //
                         + "        return new Builder(product);" //
                         + "    }");
@@ -57,7 +76,10 @@ public class ImmutableByDefaultTest {
 
     @Test
     void immmutableAnnotationPreventsManipulationFactoryInInternalBuilder() {
-        assertThat(facade.internalWithFactories("Immutable")).isEqualTo(//
+        var product = "Immutable";
+        var result = facade.withFactoryMethods(parse(product), product).execute();
+
+        assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
                         + "    private Immutable product;" //
                         + "    private Builder(Immutable product) {" //
@@ -74,7 +96,10 @@ public class ImmutableByDefaultTest {
 
     @Test
     void immmutableAnnotationPreventsManipulationFactoryInExternalBuilder() {
-        assertThat(facade.externalWithFactories("Immutable")).isEqualTo(//
+        var product = "Immutable";
+        var result = facade.withFactoryMethods(parse(product), product, new CompilationUnit()).execute();
+
+        assertThat(asString(result)).isEqualTo( //
                 "public class ImmutableBuilder {" //
                         + "    private Immutable product;" //
                         + "    private ImmutableBuilder(Immutable product) {" //
@@ -91,7 +116,10 @@ public class ImmutableByDefaultTest {
 
     @Test
     void immmutableAnnotationPreventsManipulationConstructorInInternalBuilder() {
-        assertThat(facade.internalWithConstructors("Immutable")).isEqualTo(//
+        var product = "Immutable";
+        var result = facade.withConstructors(parse(product), product).execute();
+
+        assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
                         + "    private Immutable product;" //
                         + "    public Builder() {" //
@@ -105,7 +133,10 @@ public class ImmutableByDefaultTest {
 
     @Test
     void immmutableAnnotationPreventsManipulationConstructorInExternalBuilder() {
-        assertThat(facade.externalWithConstructors("Immutable")).isEqualTo(//
+        var product = "Immutable";
+        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+
+        assertThat(asString(result)).isEqualTo( //
                 "public class ImmutableBuilder {" //
                         + "    private Immutable product;" //
                         + "    public ImmutableBuilder() {" //
@@ -119,7 +150,10 @@ public class ImmutableByDefaultTest {
 
     @Test
     void withoutAnnotationNoManipulationFactoryInInternalBuilder() {
-        assertThat(facade.internalWithFactories("Empty")).isEqualTo(//
+        var product = "Empty";
+        var result = facade.withFactoryMethods(parse(product), product).execute();
+
+        assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
                         + "    private Empty product;" //
                         + "    private Builder(Empty product) {" //
@@ -136,7 +170,10 @@ public class ImmutableByDefaultTest {
 
     @Test
     void withoutAnnotationNoManipulationFactoryInExternalBuilder() {
-        assertThat(facade.externalWithFactories("Empty")).isEqualTo(//
+        var product = "Empty";
+        var result = facade.withFactoryMethods(parse(product), product, new CompilationUnit()).execute();
+
+        assertThat(asString(result)).isEqualTo( //
                 "public class EmptyBuilder {" //
                         + "    private Empty product;" //
                         + "    private EmptyBuilder(Empty product) {" //
@@ -153,7 +190,10 @@ public class ImmutableByDefaultTest {
 
     @Test
     void withoutAnnotationNoManipulationConstructorInInternalBuilder() {
-        assertThat(facade.internalWithConstructors("Empty")).isEqualTo(//
+        var product = "Empty";
+        var result = facade.withConstructors(parse(product), product).execute();
+
+        assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
                         + "    private Empty product;" //
                         + "    public Builder() {" //
@@ -167,7 +207,10 @@ public class ImmutableByDefaultTest {
 
     @Test
     void withoutAnnotationNoManipulationConstructorInExternalBuilder() {
-        assertThat(facade.externalWithConstructors("Empty")).isEqualTo(//
+        var product = "Empty";
+        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+
+        assertThat(asString(result)).isEqualTo( //
                 "public class EmptyBuilder {" //
                         + "    private Empty product;" //
                         + "    public EmptyBuilder() {" //
