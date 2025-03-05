@@ -24,6 +24,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.annotation.GenerateAdder;
+import io.github.mletkin.numerobis.common.PackageVisible;
 import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.common.ClassUtil;
 import io.github.mletkin.numerobis.generator.common.VariantExtractor;
@@ -31,11 +32,16 @@ import io.github.mletkin.numerobis.generator.common.VariantExtractor;
 /**
  * Descriptor for the generation of an adder for a collection field.
  */
+@PackageVisible
 class AdderMethodDescriptor {
 
+    @PackageVisible
     String fieldName;
+    @PackageVisible
     String methodName;
+    @PackageVisible
     Type parameterType;
+    @PackageVisible
     ListMutatorVariant variant;
 
     /**
@@ -43,6 +49,7 @@ class AdderMethodDescriptor {
      * <p>
      * One declaration can contain more than one variable ( e.g. {@code int x,y;})
      */
+    @PackageVisible
     static class Generator {
         private static ListMutatorVariant[] DEFAULT = { ListMutatorVariant.ITEM };
 
@@ -51,6 +58,7 @@ class AdderMethodDescriptor {
         private CompilationUnit cu;
         private String adderPrefix;
 
+        @PackageVisible
         Generator(FieldDeclaration field, ListMutatorVariant[] listMutatorVariant, CompilationUnit cu,
                 String adderPrefix) {
             this.field = field;
@@ -67,6 +75,7 @@ class AdderMethodDescriptor {
          *
          * @return Stream<AdderMethodDescriptor>
          */
+        @PackageVisible
         Stream<AdderMethodDescriptor> stream() {
             return field.getVariables().stream() //
                     .filter(vd -> ClassUtil.isCollection(vd, cu)) //

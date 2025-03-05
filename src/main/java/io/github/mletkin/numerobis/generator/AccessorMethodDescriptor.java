@@ -22,23 +22,31 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.Type;
 
+import io.github.mletkin.numerobis.common.PackageVisible;
 import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.common.ClassUtil;
 
 /**
  * Describes an accessor method for a class.
  */
+@PackageVisible
 class AccessorMethodDescriptor {
+    @PackageVisible
     String methodName;
+    @PackageVisible
     String fieldName;
+    @PackageVisible
     Type fieldType;
+    @PackageVisible
     boolean streamAccessor;
 
+    @PackageVisible
     static class Generator {
         FieldDeclaration field;
         private CompilationUnit cu;
         private String prefix;
 
+        @PackageVisible
         Generator(FieldDeclaration field, String prefix, CompilationUnit cu) {
             this.field = field;
             this.cu = cu;
@@ -50,6 +58,7 @@ class AccessorMethodDescriptor {
          *
          * @return Stream<AccessorMethodDescriptor>
          */
+        @PackageVisible
         Stream<AccessorMethodDescriptor> stream() {
             return field.getVariables().stream() //
                     .map(this::map);

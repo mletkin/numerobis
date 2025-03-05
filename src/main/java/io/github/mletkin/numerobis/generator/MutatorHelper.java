@@ -64,7 +64,7 @@ public class MutatorHelper {
      * @param owner
      *            builder generator that maintains the builder.
      */
-    MutatorHelper(BuilderGenerator owner) {
+    public MutatorHelper(BuilderGenerator owner) {
         this.owner = owner;
     }
 
@@ -74,7 +74,7 @@ public class MutatorHelper {
      * @param mmd
      *            mutator method descriptor
      */
-    void addMutator(MutatorMethodDescriptor mmd) {
+    public void addMutator(MutatorMethodDescriptor mmd) {
         switch (mmd.variant()) {
         case OBJECT:
             addObjectMutator(mmd);
@@ -100,7 +100,7 @@ public class MutatorHelper {
      *            mutator method descriptor
      * @return {@code true} if a mutator matching the signature exists
      */
-    boolean hasMutator(MutatorMethodDescriptor mmd) {
+    public boolean hasMutator(MutatorMethodDescriptor mmd) {
         switch (mmd.variant()) {
         case OBJECT:
         case STREAM:

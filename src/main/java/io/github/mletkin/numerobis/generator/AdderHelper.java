@@ -33,6 +33,7 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.Type;
 
+import io.github.mletkin.numerobis.common.PackageVisible;
 import io.github.mletkin.numerobis.generator.common.ClassUtil;
 import io.github.mletkin.numerobis.generator.common.GenerationUtil;
 
@@ -48,16 +49,17 @@ import io.github.mletkin.numerobis.generator.common.GenerationUtil;
  * <li>retains the original content of the field
  * </ul>
  */
-public class AdderHelper {
+@PackageVisible
+class AdderHelper {
 
     private BuilderGenerator owner;
 
     /**
      * Creates a helper instance for adder creation.
      *
-     * @param owner
-     *            builder generator that maintains the builder.
+     * @param owner builder generator that maintains the builder.
      */
+    @PackageVisible
     AdderHelper(BuilderGenerator owner) {
         this.owner = owner;
     }
@@ -67,10 +69,10 @@ public class AdderHelper {
      * <p>
      * signature {@code Builder addName(Type item)}
      *
-     * @param amd
-     *            adder descriptor
-     * @return {@code true} if the method exists
+     * @param  amd adder descriptor
+     * @return     {@code true} if the method exists
      */
+    @PackageVisible
     void addAdder(AdderMethodDescriptor amd) {
         switch (amd.variant) {
         case ITEM:
@@ -95,10 +97,10 @@ public class AdderHelper {
      * <p>
      * signature {@code Builder addName(Type item)}
      *
-     * @param amd
-     *            adder descriptor
-     * @return {@code true} if the method exists
+     * @param  amd adder descriptor
+     * @return     {@code true} if the method exists
      */
+    @PackageVisible
     boolean hasAdder(AdderMethodDescriptor amd) {
         switch (amd.variant) {
         case ITEM:
@@ -172,9 +174,8 @@ public class AdderHelper {
     /**
      * Returns the paraneter type of the mutator method.
      *
-     * @param amd
-     *            mutator method descriptor
-     * @return the parameter type
+     * @param  amd mutator method descriptor
+     * @return     the parameter type
      */
     private Type adderParameterType(AdderMethodDescriptor amd) {
         switch (amd.variant) {

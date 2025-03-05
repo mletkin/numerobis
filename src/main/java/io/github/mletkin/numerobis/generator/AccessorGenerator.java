@@ -55,7 +55,7 @@ public class AccessorGenerator {
      * @param unit      thr compilation unit with the class to modify
      * @param className Name of the class to modify
      */
-    AccessorGenerator(CompilationUnit unit, String className) {
+    public AccessorGenerator(CompilationUnit unit, String className) {
         this.unit = unit;
         this.clazz = ClassUtil.findClass(unit, className).orElse(null);
         this.prefix = new StringExtractor(GenerateAccessors.class, "prefix").value(clazz).orElse("");

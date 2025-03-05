@@ -34,6 +34,7 @@ import com.github.javaparser.ParserConfiguration.LanguageLevel;
 
 import io.github.mletkin.numerobis.annotation.GenerateAdder;
 import io.github.mletkin.numerobis.annotation.GenerateListMutator;
+import io.github.mletkin.numerobis.common.PackageVisible;
 
 /**
  * Entry point for the generator plugin.
@@ -49,8 +50,9 @@ import io.github.mletkin.numerobis.annotation.GenerateListMutator;
 public class BuilderMojo extends AbstractMojo {
 
     /**
-     * Possible variants for creation of builder instances
+     * Possible variants for creation of builder instances.
      */
+    @PackageVisible
     enum Creation {
         CONSTRUCTOR, FACTORY;
 
@@ -60,8 +62,9 @@ public class BuilderMojo extends AbstractMojo {
     }
 
     /**
-     * Possible location of the builder class
+     * Possible location variants of the builder class.
      */
+    @PackageVisible
     enum Location {
         EMBEDDED, SEPARATE;
 
@@ -155,7 +158,6 @@ public class BuilderMojo extends AbstractMojo {
     private void walk(String directory) {
         try (var paths = Files.walk(Paths.get(directory))) {
             paths //
-//                    .peek(f -> getLog().info(f.toString())) //
                     .filter(Files::exists) //
                     .filter(f -> f.getFileName().toString().endsWith(".java")) //
                     .peek(f -> getLog().info(f.toString())) //
