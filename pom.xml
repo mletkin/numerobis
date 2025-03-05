@@ -90,7 +90,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <keyname></keyname>
+                            <keyname>${KEY_NAME}</keyname>
                             <passphraseServerId>gpg</passphraseServerId>
                         </configuration>
                     </plugin>
@@ -142,6 +142,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <failOnError>false</failOnError>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.sonatype.central</groupId>
@@ -178,6 +181,9 @@
                 <configuration>
                     <failOnViolation>false</failOnViolation>
                     <printFailingErrors>true</printFailingErrors>
+                    <rulesets>
+                        <ruleset>${PMD_RULES}</ruleset>
+                    </rulesets>
                 </configuration>
                 <executions>
                     <execution>
@@ -200,8 +206,8 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <keyname></keyname>
+                <configuration>                
+                    <keyname>${KEY_NAME}</keyname>
                     <passphraseServerId>gpg</passphraseServerId>
                 </configuration>
             </plugin>
