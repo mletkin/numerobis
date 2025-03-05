@@ -34,7 +34,7 @@ import io.github.mletkin.numerobis.generator.common.GenerationUtil;
 /**
  * Produces the builder class.
  */
-public class Forge {
+public final class Forge {
 
     private static final String BUILDER_PACKAGE = "io.github.mletkin.numerobis";
 

@@ -42,7 +42,7 @@ class AccessorMethodDescriptor {
 
     @PackageVisible
     static class Generator {
-        FieldDeclaration field;
+        private FieldDeclaration field;
         private CompilationUnit cu;
         private String prefix;
 

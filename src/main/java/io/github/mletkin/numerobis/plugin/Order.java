@@ -29,10 +29,12 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 
 import io.github.mletkin.numerobis.annotation.GenerateAccessors;
 import io.github.mletkin.numerobis.annotation.GenerateBuilder;
+import io.github.mletkin.numerobis.common.PackageVisible;
 
 /**
  * Represents the order to process a single java file.
  */
+@PackageVisible
 class Order {
 
     private boolean generateBuilder;
@@ -49,6 +51,7 @@ class Order {
      *
      * @param productClassFile descriptor of the file with the product class
      */
+    @PackageVisible
     public Order(Path productClassFile) {
         productPath = productClassFile;
         productUnit = parse(productPath);

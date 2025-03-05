@@ -25,7 +25,7 @@ import io.github.mletkin.numerobis.annotation.GenerateListMutator;
 /**
  * Parameter container for the {@code Processor} objects.
  */
-public class MojoSettings {
+public final class MojoSettings {
 
     private Path targetDirectory;
     private BuilderMojo.Creation builderCreation;

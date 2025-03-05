@@ -56,6 +56,7 @@ public class BuilderMojo extends AbstractMojo {
     enum Creation {
         CONSTRUCTOR, FACTORY;
 
+        @PackageVisible
         boolean flag() {
             return this == FACTORY;
         }
@@ -68,6 +69,7 @@ public class BuilderMojo extends AbstractMojo {
     enum Location {
         EMBEDDED, SEPARATE;
 
+        @PackageVisible
         boolean flag() {
             return this == EMBEDDED;
         }

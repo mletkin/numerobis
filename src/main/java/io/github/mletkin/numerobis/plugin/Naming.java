@@ -27,7 +27,7 @@ import io.github.mletkin.numerobis.common.VisibleForTesting;
  * <p>
  * The builder class postfix is also the internal builder class name.
  */
-public class Naming {
+public final class Naming {
 
     /**
      * An instance with all naming settings set to the default values.
@@ -51,7 +51,7 @@ public class Naming {
      * The builder is for unit test use only and hence package visible.
      */
     @VisibleForTesting
-    static class Builder {
+    static final class Builder {
 
         private Naming naming = new Naming();
 
@@ -59,40 +59,48 @@ public class Naming {
             // instantiation through factory method only
         }
 
+        @VisibleForTesting
         static Builder of() {
             return new Builder();
         }
 
+        @VisibleForTesting
         Builder withFactoryMethod(String factoryMethod) {
             naming.factoryMethod = factoryMethod;
             return this;
         }
 
+        @VisibleForTesting
         Builder withBuildMethod(String buildMethod) {
             naming.buildMethod = buildMethod;
             return this;
         }
 
+        @VisibleForTesting
         Builder withMutatorPrefix(String mutatorPrefix) {
             naming.mutatorPrefix = mutatorPrefix;
             return this;
         }
 
+        @VisibleForTesting
         Builder withAdderPrefix(String adderPrefix) {
             naming.adderPrefix = adderPrefix;
             return this;
         }
 
+        @VisibleForTesting
         Builder withBuilderClassPostfix(String builderClassPostfix) {
             naming.builderClassPostfix = builderClassPostfix;
             return this;
         }
 
+        @VisibleForTesting
         Builder withProductField(String productField) {
             naming.productField = productField;
             return this;
         }
 
+        @VisibleForTesting
         Naming build() {
             return naming;
         }

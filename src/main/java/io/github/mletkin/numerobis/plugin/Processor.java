@@ -171,7 +171,7 @@ public class Processor {
             Util.createParentPath(path);
             Files.write(path, unit.toString().getBytes());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new MojoFileIOException(e);
         }
     }
 

@@ -24,7 +24,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
  */
 public class GeneratorException extends RuntimeException {
 
-    private GeneratorException(String message) {
+    protected GeneratorException(String message) {
         super(message);
     }
 

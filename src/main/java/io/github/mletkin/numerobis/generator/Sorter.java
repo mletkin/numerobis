@@ -59,9 +59,8 @@ public class Sorter {
      * <p>
      * The output object it the input object.
      *
-     * @param cu
-     *            compilation unit to process
-     * @return the processed compilation unit
+     * @param  cu compilation unit to process
+     * @return    the processed compilation unit
      */
     public CompilationUnit sort(CompilationUnit cu) {
         cu.getTypes().stream() //
@@ -73,8 +72,7 @@ public class Sorter {
     /**
      * Sort the members of a {@code NodeList}.
      *
-     * @param member
-     *            {@code NodeList} object to sort
+     * @param member {@code NodeList} object to sort
      */
     private void sort(NodeList<BodyDeclaration<?>> member) {
         Collections.sort(member, this::compare);
@@ -87,20 +85,19 @@ public class Sorter {
     /**
      * Assign an order index to a {@code BodyDeclaration} object.
      *
-     * @param declaration
-     *            object to assess
-     * @return index value
+     * @param  declaration object to assess
+     * @return             index value
      */
     private int value(BodyDeclaration<?> declaration) {
-        if (declaration instanceof FieldDeclaration) {
-            FieldDeclaration fd = (FieldDeclaration) declaration;
+        if (declaration instanceof FieldDeclaration fd) {
             return fd.isStatic() ? 10 : 11;
         }
-        if (declaration instanceof ConstructorDeclaration)
-            return 20;
 
-        if (declaration instanceof MethodDeclaration) {
-            MethodDeclaration md = (MethodDeclaration) declaration;
+        if (declaration instanceof ConstructorDeclaration) {
+            return 20;
+        }
+
+        if (declaration instanceof MethodDeclaration md) {
             if (md.isStatic() && md.getNameAsString().startsWith(naming.factoryMethod())) {
                 return 30;
             }
