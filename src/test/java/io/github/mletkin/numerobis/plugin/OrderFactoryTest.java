@@ -28,7 +28,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import io.github.mletkin.numerobis.plugin.BuilderMojo.Creation;
 import io.github.mletkin.numerobis.plugin.BuilderMojo.Location;
 
-class ProcessorTest {
+class OrderFactoryTest {
 
     @Nested
     class BuilderPath {
@@ -37,7 +37,7 @@ class ProcessorTest {
         @ValueSource(strings = { "", " " })
         @NullSource
         void noDestinationPath(String targetDir) {
-            var p = processor(targetDir);
+            var p = orderFactory(targetDir);
 
             assertThat(p.builderPath(Path.of("foo/bar/baz.java"), "org.mletkin.test")) //
                     .isEqualTo(Path.of("foo/bar/bazBuilder.java"));
@@ -47,7 +47,7 @@ class ProcessorTest {
         @ValueSource(strings = { "", " " })
         @NullSource
         void noDestinationPathAbsoluteProductPath(String targetDir) {
-            var p = processor(targetDir);
+            var p = orderFactory(targetDir);
 
             assertThat(p.builderPath(Path.of("c:/foo/bar/baz.java"), "org.mletkin.test")) //
                     .isEqualTo(Path.of("c:/foo/bar/bazBuilder.java"));
@@ -55,7 +55,7 @@ class ProcessorTest {
 
         @Test
         void withDestinationPath() {
-            var p = processor("target/generated");
+            var p = orderFactory("target/generated");
 
             assertThat(p.builderPath(Path.of("foo/bar/baz.java"), "org.mletkin.test")) //
                     .isEqualTo(Path.of("target/generated/org/mletkin/test/bazBuilder.java"));
@@ -63,7 +63,7 @@ class ProcessorTest {
 
         @Test
         void withAbsoluteDestinationPath() {
-            var p = processor("c:/target/generated");
+            var p = orderFactory("c:/target/generated");
 
             assertThat(p.builderPath(Path.of("d:/foo/bar/baz.java"), "org.mletkin.test")) //
                     .isEqualTo(Path.of("c:/target/generated/org/mletkin/test/bazBuilder.java"));
@@ -71,15 +71,15 @@ class ProcessorTest {
 
         @Test
         void nonJavaFile() {
-            var p = processor(null);
+            var p = orderFactory(null);
 
             assertThat(p.builderPath(Path.of("foo/bar/baz.txt"), "org.mletkin.test")) //
                     .isEqualTo(Path.of("foo/bar/baz.txt"));
 
         }
 
-        private Processor processor(String targetDirectory) {
-            return new Processor(new MojoSettings.Builder() //
+        private OrderFactory orderFactory(String targetDirectory) {
+            return new OrderFactory(new MojoSettings.Builder() //
                     .withBuilderCreation(Creation.CONSTRUCTOR) //
                     .withBuilderLocation(Location.EMBEDDED) //
                     .withNamingSettings(Naming.DEFAULT) //

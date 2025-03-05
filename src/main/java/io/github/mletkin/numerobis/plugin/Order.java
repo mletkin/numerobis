@@ -33,12 +33,21 @@ import io.github.mletkin.numerobis.common.PackageVisible;
 
 /**
  * Represents the order to process a single java file.
+ * <p>
+ * The product class for which the builder is made must be the top class of the
+ * file. It's not possible to generate a builder for a inner or member class.
+ * <p>
+ * Maybe the parsing should not be performed in the {@code Order} class.
  */
 @PackageVisible
 class Order {
 
     private boolean generateBuilder;
+    private boolean embeddedBuilder;
+    private boolean useFactoryMethods;
     private boolean generateAccessors;
+
+    private Naming naming;
 
     private CompilationUnit builderUnit;
     private Path builderPath;
@@ -52,9 +61,12 @@ class Order {
      * @param productClassFile descriptor of the file with the product class
      */
     @PackageVisible
-    public Order(Path productClassFile) {
+    public Order(Path productClassFile, Naming naming, boolean embedded, boolean useFactoryMethods) {
         productPath = productClassFile;
         productUnit = parse(productPath);
+        this.naming = naming;
+        this.embeddedBuilder = embedded;
+        this.useFactoryMethods = useFactoryMethods;
 
         generateBuilder = isBuilderWanted(productUnit);
         generateAccessors = areAccessorsWanted(productUnit);
@@ -141,12 +153,28 @@ class Order {
         return generateBuilder;
     }
 
+    public boolean embeddedBuilder() {
+        return embeddedBuilder;
+    }
+
+    public boolean separateBuilder() {
+        return !embeddedBuilder;
+    }
+
+    public boolean useFactoryMethods() {
+        return useFactoryMethods;
+    }
+
     public boolean needsProcessing() {
         return generateAccessors || generateBuilder;
     }
 
     public String unitPackageName() {
         return productUnit.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
+    }
+
+    public Naming naming() {
+        return naming;
     }
 
     private CompilationUnit parse(Path file) {
