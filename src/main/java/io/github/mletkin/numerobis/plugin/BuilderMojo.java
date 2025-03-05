@@ -73,7 +73,7 @@ public class BuilderMojo extends AbstractMojo {
     /**
      * The directories containing the sources to be processed.
      */
-    @Parameter(defaultValue = "${project.compileSourceRoots}", readonly = true, required = true)
+    @Parameter(defaultValue = "${project.compileSourceRoots}", readonly = false, required = true)
     private List<String> compileSourceRoots;
 
     /**
@@ -81,7 +81,7 @@ public class BuilderMojo extends AbstractMojo {
      * <p>
      * The packages are converted to file paths.
      */
-    @Parameter(defaultValue = " ")
+    @Parameter
     private String targetDirectory;
 
     /**
@@ -154,9 +154,11 @@ public class BuilderMojo extends AbstractMojo {
      */
     private void walk(String directory) {
         try (var paths = Files.walk(Paths.get(directory))) {
-            paths.filter(Files::exists) //
-                    .filter(f -> f.getFileName().endsWith(".java")) //
-                    .peek(f -> getLog().debug(f.toString())) //
+            paths //
+//                    .peek(f -> getLog().info(f.toString())) //
+                    .filter(Files::exists) //
+                    .filter(f -> f.getFileName().toString().endsWith(".java")) //
+                    .peek(f -> getLog().info(f.toString())) //
                     .forEach(new Processor(processorSettings())::process);
         } catch (IOException e) {
             throw new MojoFileIOException(e);
