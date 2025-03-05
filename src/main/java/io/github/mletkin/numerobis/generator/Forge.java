@@ -18,8 +18,6 @@ package io.github.mletkin.numerobis.generator;
 import static io.github.mletkin.numerobis.generator.common.ClassUtil.allMember;
 import static java.util.function.Predicate.not;
 
-import java.util.function.Predicate;
-
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.PackageDeclaration;
@@ -174,7 +172,7 @@ public final class Forge {
      */
     public void copyImports(CompilationUnit productUnit) {
         productUnit.getImports().stream() //
-                .filter(Predicate.not(this::isBuilderImport)) //
+                .filter(not(this::isBuilderImport)) //
                 .forEach(builderUnit::addImport);
     }
 

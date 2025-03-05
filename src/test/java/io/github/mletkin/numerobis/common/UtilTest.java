@@ -23,6 +23,9 @@ import java.util.List;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class UtilTest {
 
@@ -53,5 +56,23 @@ class UtilTest {
             assertThat(dir.resolve("foo/bar/baz")).doesNotExist();
 
         }
+    }
+
+    @Nested
+    class IsNullOrBlank {
+
+        @ParameterizedTest
+        @ValueSource(strings = { "", " ", "\t", "  " })
+        @NullSource
+        void isNullOrBlank(String str) {
+            assertThat(Util.isNullOrBlank(str)).isTrue();
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = { "a", " a", " b", "$" })
+        void isNotNullAndNotBlank(String str) {
+            assertThat(Util.isNullOrBlank(str)).isFalse();
+        }
+
     }
 }

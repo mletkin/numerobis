@@ -21,14 +21,14 @@ import io.github.mletkin.numerobis.generator.common.VariantExtractor;
  * TODO handle List&lt;T&gt;[] correctly
  */
 public class ListMutatorDescriptorGenerator {
-    private static ListMutatorVariant[] DEFAULT = { ListMutatorVariant.OBJECT };
+    private static final ListMutatorVariant[] DEFAULT = { ListMutatorVariant.OBJECT };
 
     private FieldDeclaration field;
     private ListMutatorVariant[] variants;
     private String mutatorPrefix;
 
     /**
-     * Gereates a generator instance.
+     * Generates a generator instance.
      *
      * @param field         declaration of the list field to manipulate
      * @param variants      list of mutator variants

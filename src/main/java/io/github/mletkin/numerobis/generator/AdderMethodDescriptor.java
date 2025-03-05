@@ -51,7 +51,7 @@ class AdderMethodDescriptor {
      */
     @PackageVisible
     static class Generator {
-        private static ListMutatorVariant[] DEFAULT = { ListMutatorVariant.ITEM };
+        private static final ListMutatorVariant[] DEFAULT = { ListMutatorVariant.ITEM };
 
         private FieldDeclaration field;
         private ListMutatorVariant[] variants;

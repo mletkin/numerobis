@@ -15,6 +15,9 @@
  */
 package io.github.mletkin.numerobis.generator;
 
+import static io.github.mletkin.numerobis.common.Util.firstLetterUppercase;
+import static io.github.mletkin.numerobis.common.Util.isNullOrBlank;
+
 import java.util.stream.Stream;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -23,7 +26,6 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.Type;
 
 import io.github.mletkin.numerobis.common.PackageVisible;
-import io.github.mletkin.numerobis.common.Util;
 import io.github.mletkin.numerobis.generator.common.ClassUtil;
 
 /**
@@ -74,8 +76,8 @@ class AccessorMethodDescriptor {
         }
 
         private String methodName(VariableDeclarator vd) {
-            return prefix != null && !prefix.equals("") //
-                    ? prefix + Util.firstLetterUppercase(vd.getNameAsString())
+            return !isNullOrBlank(prefix) //
+                    ? prefix + firstLetterUppercase(vd.getNameAsString())
                     : vd.getNameAsString();
         }
     }

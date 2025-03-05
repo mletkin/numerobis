@@ -82,7 +82,7 @@ public final class Util {
      * Converts the first letter of a string to uppercase.
      *
      * @param  str string to process
-     * @return      processed string
+     * @return     processed string
      */
     public static String firstLetterUppercase(String str) {
         return Character.toUpperCase(str.charAt(0)) + str.substring(1);
@@ -100,6 +100,16 @@ public final class Util {
                 .filter(Objects::nonNull) //
                 .filter(a -> a.length > 0) //
                 .findFirst();
+    }
+
+    /**
+     * Checks whether a string is {@code null} or a string of whitespace.
+     *
+     * @param  str {@code String} to check
+     * @return     {@code true} when the string is {@code null} or blank
+     */
+    public static boolean isNullOrBlank(String str) {
+        return str == null || str.isBlank();
     }
 
 }
