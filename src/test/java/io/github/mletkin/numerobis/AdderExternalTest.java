@@ -36,7 +36,7 @@ import io.github.mletkin.numerobis.generator.ListMutatorVariant;
  * Adder generation for generated external builder.
  */
 class AdderExternalTest {
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     @ParameterizedTest
     @MethodSource("testCases")

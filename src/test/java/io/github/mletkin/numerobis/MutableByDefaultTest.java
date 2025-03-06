@@ -17,24 +17,21 @@ package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.asString;
 import static io.github.mletkin.numerobis.Fixture.builder;
-import static io.github.mletkin.numerobis.Fixture.mkOrder;
-import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.mkOrderMutableProduct;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
 
 public class MutableByDefaultTest {
 
-    private Facade facade = new Facade(true);
+    private Facade facade = new Facade();
 
     @Test
     void withoutAnnotationCreatesManipulationConstructorInExternalBuilder() {
         var product = "Empty";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).contains( //
@@ -46,7 +43,7 @@ public class MutableByDefaultTest {
     @Test
     void withoutAnnotationCreatesManipulationConstructorInInternalBuilder() {
         var product = "Empty";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).contains( //
@@ -58,7 +55,7 @@ public class MutableByDefaultTest {
     @Test
     void withoutAnnotationCreatesManipulationFactoryInExternalBuilder() {
         var product = "Empty";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.separateWithFactoryMethods(order).execute();
 
         assertThat(asString(result)).contains( //
@@ -70,7 +67,7 @@ public class MutableByDefaultTest {
     @Test
     void withoutAnnotationCreatesManipulationFactoryInInternalBuilder() {
         var product = "Empty";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).contains( //
@@ -82,7 +79,7 @@ public class MutableByDefaultTest {
     @Test
     void mutableAnnotationCreatesManipulationConstructorInExternalBuilder() {
         var product = "Mutable";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).contains( //
@@ -94,7 +91,7 @@ public class MutableByDefaultTest {
     @Test
     void mutableAnnotationCreatesManipulationConstructorInInternalBuilder() {
         var product = "Mutable";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).contains( //
@@ -106,7 +103,7 @@ public class MutableByDefaultTest {
     @Test
     void mutableAnnotationCreatesManipulationFactoryInExternalBuilder() {
         var product = "Mutable";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.separateWithFactoryMethods(order).execute();
 
         assertThat(asString(result)).contains( //
@@ -118,7 +115,7 @@ public class MutableByDefaultTest {
     @Test
     void mutableAnnotationCreatesManipulationFactoryInInternalBuilder() {
         var product = "Mutable";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).contains( //
@@ -130,7 +127,7 @@ public class MutableByDefaultTest {
     @Test
     void immutablePreventsManipulationFactoryInInternalBuilder() {
         var product = "Immutable";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).contains( //
@@ -151,7 +148,7 @@ public class MutableByDefaultTest {
     @Test
     void immutablePreventsManipulationFactoryInExternalBuilder() {
         var product = "Immutable";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.separateWithFactoryMethods(order).execute();
 
         assertThat(asString(result)).contains( //
@@ -172,7 +169,7 @@ public class MutableByDefaultTest {
     @Test
     void immutablePreventsManipulationConstructorInInternalBuilder() {
         var product = "Immutable";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).contains( //
@@ -190,7 +187,7 @@ public class MutableByDefaultTest {
     @Test
     void immutablePreventsManipulationConstructorInExternalBuilder() {
         var product = "Immutable";
-        var order = mkOrder(product);
+        var order = mkOrderMutableProduct(product);
         var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).contains( //

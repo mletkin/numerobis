@@ -27,15 +27,14 @@ public class Facade {
 
     private ListMutatorVariant[] adderVariants = {};
     private ListMutatorVariant[] mutatorVariants = {};
-    private boolean productsAreMutable;
 
     /**
      * Creates a {@code Facade}-Instance and sets the default mutablity.
      *
      * @param productsAreMutable value for the mutability default flag
      */
-    public Facade(boolean productsAreMutable) {
-        this.productsAreMutable = productsAreMutable;
+    public Facade() {
+        //
     }
 
     /**
@@ -100,7 +99,7 @@ public class Facade {
      */
     public Generator separateWithConstructors(Order order) {
         return () -> new BuilderGenerator(order.productUnit(), order.productType()) //
-                .mutableByDefault(productsAreMutable) //
+                .mutableByDefault(order.productsAreMutable()) //
                 .withNamingSettings(order.naming()) //
                 .withExternalBuilder(order.builderUnit()) //
                 .addProductField() //
@@ -119,7 +118,7 @@ public class Facade {
      */
     public Generator separateWithFactoryMethods(Order order) {
         return () -> new BuilderGenerator(order.productUnit(), order.productType()) //
-                .mutableByDefault(productsAreMutable) //
+                .mutableByDefault(order.productsAreMutable()) //
                 .withNamingSettings(order.naming()) //
                 .withExternalBuilder(order.builderUnit()) //
                 .addProductField() //
@@ -138,7 +137,7 @@ public class Facade {
      */
     public Generator embeddedWithConstructors(Order order) {
         return () -> new BuilderGenerator(order.productUnit(), order.productType()) //
-                .mutableByDefault(productsAreMutable) //
+                .mutableByDefault(order.productsAreMutable()) //
                 .withNamingSettings(order.naming()) //
                 .withInternalBuilder() //
                 .addProductField() //
@@ -157,7 +156,7 @@ public class Facade {
      */
     public Generator embeddedWithFactoryMethods(Order order) {
         return () -> new BuilderGenerator(order.productUnit(), order.productType()) //
-                .mutableByDefault(productsAreMutable) //
+                .mutableByDefault(order.productsAreMutable()) //
                 .withNamingSettings(order.naming()) //
                 .withInternalBuilder() //
                 .addProductField() //

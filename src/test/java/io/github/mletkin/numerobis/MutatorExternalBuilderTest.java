@@ -35,7 +35,7 @@ import io.github.mletkin.numerobis.generator.common.ClassUtil;
  */
 class MutatorExternalBuilderTest {
 
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     public static String builder(CompilationUnit unit, String product) {
         return Fixture.asString(ClassUtil.findClass(unit, product + "Builder").orElse(null));

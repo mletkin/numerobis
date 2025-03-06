@@ -37,7 +37,7 @@ import io.github.mletkin.numerobis.generator.GeneratorException;
  */
 class ExternalBuilderGeneratorTest {
 
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     @ParameterizedTest
     @MethodSource("testCases")

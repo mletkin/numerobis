@@ -26,7 +26,7 @@ import io.github.mletkin.numerobis.generator.Facade;
 
 class NamingTest {
 
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     @Test
     void buildNameConfiguration() {

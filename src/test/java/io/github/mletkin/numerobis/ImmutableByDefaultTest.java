@@ -26,7 +26,7 @@ import io.github.mletkin.numerobis.generator.Facade;
 
 public class ImmutableByDefaultTest {
 
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     @Test
     void mutableAnnotationCreatesManipulationConstructorInSeparateBuilder() {

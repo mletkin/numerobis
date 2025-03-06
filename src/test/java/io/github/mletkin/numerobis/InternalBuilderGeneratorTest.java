@@ -30,7 +30,7 @@ import io.github.mletkin.numerobis.generator.GeneratorException;
  */
 class InternalBuilderGeneratorTest {
 
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     @Test
     void convertsClassWithField() {

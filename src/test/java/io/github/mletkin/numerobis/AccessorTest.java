@@ -34,7 +34,7 @@ import io.github.mletkin.numerobis.generator.Facade;
  */
 class AccessorTest {
 
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     @ParameterizedTest
     @MethodSource("testCases")

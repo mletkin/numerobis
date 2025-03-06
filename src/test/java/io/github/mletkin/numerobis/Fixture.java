@@ -107,16 +107,16 @@ public final class Fixture {
         return clazz.toString().replace("\r", "").replace("\n", "");
     }
 
-    public static Order mkOrder(Path productFile) {
-        return new Order(productFile, Naming.DEFAULT, true, true);
+    public static Order mkOrder(String product) {
+        return new Order(RSCE.resolve(product + ".java"), Naming.DEFAULT, true, true, false);
     }
 
-    public static Order mkOrder(String product) {
-        return new Order(RSCE.resolve(product + ".java"), Naming.DEFAULT, true, true);
+    public static Order mkOrderMutableProduct(String product) {
+        return new Order(RSCE.resolve(product + ".java"), Naming.DEFAULT, true, true, true);
     }
 
     public static Order mkOrder(String product, Naming naming) {
-        return new Order(RSCE.resolve(product + ".java"), naming, true, true);
+        return new Order(RSCE.resolve(product + ".java"), naming, true, true, false);
     }
 
 }

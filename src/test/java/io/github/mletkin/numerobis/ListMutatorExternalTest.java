@@ -36,7 +36,7 @@ import io.github.mletkin.numerobis.generator.ListMutatorVariant;
  */
 class ListMutatorExternalTest {
 
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     @ParameterizedTest
     @MethodSource("listCases")

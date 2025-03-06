@@ -44,6 +44,7 @@ public class Order {
     private boolean embeddedBuilder;
     private boolean useFactoryMethods;
     private boolean generateAccessors;
+    private boolean productsAreMutable;
 
     private Naming naming;
 
@@ -58,12 +59,14 @@ public class Order {
      *
      * @param productClassFile descriptor of the file with the product class
      */
-    public Order(Path productClassFile, Naming naming, boolean embedded, boolean useFactoryMethods) {
+    public Order(Path productClassFile, Naming naming, boolean embedded, boolean useFactoryMethods,
+            boolean productsAreMutable) {
         productPath = productClassFile;
         productUnit = parse(productPath);
         this.naming = naming;
         this.embeddedBuilder = embedded;
         this.useFactoryMethods = useFactoryMethods;
+        this.productsAreMutable = productsAreMutable;
 
         generateBuilder = isBuilderWanted(productUnit);
         generateAccessors = areAccessorsWanted(productUnit);
@@ -169,6 +172,10 @@ public class Order {
 
     public boolean useFactoryMethods() {
         return useFactoryMethods;
+    }
+
+    public boolean productsAreMutable() {
+        return productsAreMutable;
     }
 
     public boolean needsProcessing() {

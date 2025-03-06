@@ -84,7 +84,7 @@ public class OrderFactory {
      * @return             an object describing the builder generation context
      */
     public Order makeOrder(Path productFile) {
-        var order = new Order(productFile, naming, makeEmbeddedBuilders, useFactoryMethods);
+        var order = new Order(productFile, naming, makeEmbeddedBuilders, useFactoryMethods, productsAreMutable);
         if (order.generateBuilder()) {
             order.setBuilderPath(builderPath(order));
         }
@@ -96,7 +96,7 @@ public class OrderFactory {
      * Settings can be changed by the product classes annotations.
      */
     public Facade makeFacade() {
-        return new Facade(productsAreMutable) //
+        return new Facade() //
                 .withAdderVariants(adderVariants) //
                 .withMutatorVariants(mutatorVariants);
     }

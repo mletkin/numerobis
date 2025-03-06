@@ -19,19 +19,16 @@ import static io.github.mletkin.numerobis.Fixture.asArray;
 import static io.github.mletkin.numerobis.Fixture.asString;
 import static io.github.mletkin.numerobis.Fixture.builder;
 import static io.github.mletkin.numerobis.Fixture.mkOrder;
-import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 
 class MutatorAnnotationTest {
 
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     void adderAnnoForListFieldInExternalBuilder() {
         var product = "AdderAnno";

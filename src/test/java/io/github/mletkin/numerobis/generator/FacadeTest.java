@@ -27,7 +27,7 @@ class FacadeTest {
 
     private static final Path RSCE = Path.of("src/test/resources");
 
-    private Facade facade = new Facade(false);
+    private Facade facade = new Facade();
 
     @Test
     void convertsClassWithField() {
