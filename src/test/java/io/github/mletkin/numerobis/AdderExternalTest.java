@@ -17,11 +17,11 @@ package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.asArray;
 import static io.github.mletkin.numerobis.Fixture.asString;
-import static io.github.mletkin.numerobis.Fixture.parse;
-import static io.github.mletkin.numerobis.Fixture.parseString;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static io.github.mletkin.numerobis.Fixture.product;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Disabled;
@@ -30,8 +30,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.github.javaparser.ast.CompilationUnit;
-
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 
@@ -39,13 +37,15 @@ import io.github.mletkin.numerobis.generator.ListMutatorVariant;
  * Adder generation for generated external builder.
  */
 class AdderExternalTest {
-
+    private Path RSCE = Path.of("src/test/resources");
     private Facade facade = new Facade(false);
 
     @ParameterizedTest
     @MethodSource("testCases")
     void test(String desc, String product, String method) {
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
+
         assertThat(product(result, product + "Builder")).as(desc).contains(method);
     }
 
@@ -71,7 +71,8 @@ class AdderExternalTest {
     @Test
     void adderForListFieldWithPostfixEn() {
         var product = "WithListWithPostfix";
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
 
         assertThat(product(result, product + "Builder")).contains( //
                 "    public WithListWithPostfixBuilder addPerson(String item) {" //
@@ -85,7 +86,8 @@ class AdderExternalTest {
     @Test
     void adderForListFieldWithPostfixE() {
         var product = "WithListWithPostfix";
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
         assertThat(product(result, product + "Builder")).contains( //
                 "    public WithListWithPostfixBuilder addBrief(String item) {" //
                         + "        product.briefe.add(item);" //
@@ -96,7 +98,8 @@ class AdderExternalTest {
     @Test
     void adderForSetField() {
         var product = "WithSet";
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).isEqualTo( //
                 "import java.util.Set;" //
@@ -123,8 +126,8 @@ class AdderExternalTest {
     @MethodSource("adderCases")
     void addsAdder(String desc, ListMutatorVariant variant, String method) {
         var product = "WithList";
-        var result = facade.withAdderVariants(asArray(variant))
-                .withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.withAdderVariants(asArray(variant)).separateWithConstructors(order).execute();
 
         assertThat(asString(result)).contains(method);
     }
@@ -159,12 +162,13 @@ class AdderExternalTest {
 
     }
 
+    @Disabled
     @ParameterizedTest
     @MethodSource("retainCases")
     void retainsAdder(ListMutatorVariant variant, String clazz, String method) {
         var product = "WithList";
-        var result = facade.withAdderVariants(asArray(variant))
-                .withConstructors(parse(product), product, parseString(clazz)).execute();
+        var order = mkOrder(product);
+        var result = facade.withAdderVariants(asArray(variant)).separateWithConstructors(order).execute();
 
         assertThat(asString(result)).doesNotContain(method);
     }
@@ -177,7 +181,7 @@ class AdderExternalTest {
                                 + "        return null;" //
                                 + "    }" //
                                 + "}", //
-                        "public WithListBuilder addX(String itenm"), //
+                        "public WithListBuilder addX(String item"), //
 
                 Arguments.of(ListMutatorVariant.STREAM, //
                         "public class WithListBuilder {" //

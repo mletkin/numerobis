@@ -29,7 +29,6 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 
 import io.github.mletkin.numerobis.annotation.GenerateAccessors;
 import io.github.mletkin.numerobis.annotation.GenerateBuilder;
-import io.github.mletkin.numerobis.common.PackageVisible;
 
 /**
  * Represents the order to process a single java file.
@@ -39,8 +38,7 @@ import io.github.mletkin.numerobis.common.PackageVisible;
  * <p>
  * Maybe the parsing should not be performed in the {@code Order} class.
  */
-@PackageVisible
-class Order {
+public class Order {
 
     private boolean generateBuilder;
     private boolean embeddedBuilder;
@@ -49,7 +47,7 @@ class Order {
 
     private Naming naming;
 
-    private CompilationUnit builderUnit;
+    private CompilationUnit builderUnit = new CompilationUnit();
     private Path builderPath;
 
     private CompilationUnit productUnit;
@@ -60,7 +58,6 @@ class Order {
      *
      * @param productClassFile descriptor of the file with the product class
      */
-    @PackageVisible
     public Order(Path productClassFile, Naming naming, boolean embedded, boolean useFactoryMethods) {
         productPath = productClassFile;
         productUnit = parse(productPath);
@@ -70,6 +67,11 @@ class Order {
 
         generateBuilder = isBuilderWanted(productUnit);
         generateAccessors = areAccessorsWanted(productUnit);
+    }
+
+    public Order useBuildUnit(CompilationUnit bcu) {
+        this.builderUnit = bcu;
+        return this;
     }
 
     /**
@@ -139,6 +141,10 @@ class Order {
 
     public Optional<String> productTypeName() {
         return productUnit.getPrimaryTypeName();
+    }
+
+    public String productType() {
+        return productUnit.getPrimaryTypeName().orElse(null);
     }
 
     public Path builderPath() {

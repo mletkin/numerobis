@@ -17,7 +17,7 @@ package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.asArray;
 import static io.github.mletkin.numerobis.Fixture.asString;
-import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static io.github.mletkin.numerobis.Fixture.parseString;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,8 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
@@ -44,9 +42,10 @@ class ListMutatorExternalTest {
     @MethodSource("listCases")
     void addsMutatorForList(String desc, ListMutatorVariant variant, String method) {
         var product = "WithList";
+        var order = mkOrder(product);
         var result = facade //
                 .withMutatorVariants(asArray(variant)) //
-                .withConstructors(parse(product), product, new CompilationUnit()) //
+                .separateWithConstructors(order) //
                 .execute();
 
         assertThat(asString(result)).as(desc).contains(method);
@@ -90,9 +89,10 @@ class ListMutatorExternalTest {
     @Test
     void addsMutatorForListWithCustomName() {
         var product = "WithListWithCustomName";
+        var order = mkOrder(product);
         var result = facade //
                 .withMutatorVariants(asArray(ListMutatorVariant.OBJECT)) //
-                .withConstructors(parse(product), product, new CompilationUnit()) //
+                .separateWithConstructors(order) //
                 .execute();
 
         assertThat(asString(result)).contains( //
@@ -106,9 +106,10 @@ class ListMutatorExternalTest {
     @MethodSource("setCases")
     void addsMutatorForSet(String desc, ListMutatorVariant variant, String method) {
         var product = "WithSet";
+        var order = mkOrder(product);
         var result = facade //
                 .withMutatorVariants(asArray(variant)) //
-                .withConstructors(parse(product), product, new CompilationUnit()) //
+                .separateWithConstructors(order) //
                 .execute();
 
         assertThat(asString(result)).as(desc).contains(method);
@@ -152,16 +153,17 @@ class ListMutatorExternalTest {
     @Test
     void retainsObjectMutatorForList() {
         var product = "WithList";
-        var builder = parseString( //
+        var builder = //
                 "public class WithListBuilder {" //
                         + "    public WithListBuilder withX(List<String> foo) {" //
                         + "        return null;" //
                         + "    }" //
-                        + "}");
+                        + "}";
+        var order = mkOrder(product).useBuildUnit(parseString(builder));
 
         var result = facade //
                 .withMutatorVariants(asArray(ListMutatorVariant.OBJECT)) //
-                .withConstructors(parse(product), product, builder) //
+                .separateWithConstructors(order) //
                 .execute();
 
         assertThat(asString(result)).contains( //

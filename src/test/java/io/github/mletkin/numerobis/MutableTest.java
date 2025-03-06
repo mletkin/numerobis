@@ -16,7 +16,7 @@
 package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.asString;
-import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static io.github.mletkin.numerobis.Fixture.parseString;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,9 +36,9 @@ class MutableTest {
     @ParameterizedTest
     @MethodSource("testCases")
     void mergeTest(String desc, String product, String builder, String expected) {
-        var actual = facade //
-                .withConstructors(parse(product), product, parseString(builder)) //
-                .execute();
+        var order = mkOrder(product).useBuildUnit(parseString(builder));
+
+        var actual = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(actual)).as(desc).isEqualTo(expected);
 
@@ -74,10 +74,9 @@ class MutableTest {
                 + "        return null;" //
                 + "    }" //
                 + "}"; //
+        var order = mkOrder(product).useBuildUnit(parseString(builder));
 
-        var actual = facade //
-                .withFactoryMethods(parse(product), product, parseString(builder)) //
-                .execute();
+        var actual = facade.separateWithFactoryMethods(order).execute();
 
         assertThat(asString(actual)).isEqualTo( //
                 "public class MutableBuilder {" //

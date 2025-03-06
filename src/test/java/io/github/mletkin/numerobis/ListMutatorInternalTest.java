@@ -17,7 +17,7 @@ package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.asArray;
 import static io.github.mletkin.numerobis.Fixture.builder;
-import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.Stream;
@@ -40,9 +40,10 @@ class ListMutatorInternalTest {
     @MethodSource("listCases")
     void addsMutatorForList(String desc, ListMutatorVariant variant, String method) {
         var product = "WithList";
+        var order = mkOrder(product);
         var result = facade //
                 .withMutatorVariants(asArray(variant)) //
-                .withConstructors(parse(product), product) //
+                .embeddedWithConstructors(order) //
                 .execute();
 
         assertThat(builder(result, product)).as(desc).contains(method);
@@ -87,9 +88,10 @@ class ListMutatorInternalTest {
     @MethodSource("setCases")
     void addsMutatorForSet(String desc, ListMutatorVariant variant, String method) {
         var product = "WithSet";
+        var order = mkOrder(product);
         var result = facade //
                 .withMutatorVariants(asArray(variant)) //
-                .withConstructors(parse(product), product) //
+                .embeddedWithConstructors(order) //
                 .execute();
 
         assertThat(builder(result, product)).as(desc).contains(method);

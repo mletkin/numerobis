@@ -80,22 +80,21 @@ public class Processor {
     }
 
     private Generator generator(Order order) {
-        var type = order.productTypeName().get();
         var facade = orderFactory.makeFacade();
 
         if (order.isRecord()) {
             return order.embeddedBuilder() //
-                    ? facade.forRecordEmbedded(order.productUnit(), type)
-                    : facade.forRecordSeparate(order.productUnit(), type, order.builderUnit());
+                    ? facade.forRecordEmbedded(order)
+                    : facade.forRecordSeparate(order);
         }
         if (order.embeddedBuilder()) {
             return order.useFactoryMethods() //
-                    ? facade.withFactoryMethods(order.productUnit(), type)
-                    : facade.withConstructors(order.productUnit(), type);
+                    ? facade.embeddedWithFactoryMethods(order)
+                    : facade.embeddedWithConstructors(order);
         }
         return order.useFactoryMethods() //
-                ? facade.withFactoryMethods(order.productUnit(), type, order.builderUnit())
-                : facade.withConstructors(order.productUnit(), type, order.builderUnit());
+                ? facade.separateWithFactoryMethods(order)
+                : facade.separateWithConstructors(order);
     }
 
     private void sort(Order order) {

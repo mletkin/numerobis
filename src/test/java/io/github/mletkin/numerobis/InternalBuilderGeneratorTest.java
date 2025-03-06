@@ -16,14 +16,11 @@
 package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.builder;
-import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.GeneratorException;
@@ -38,7 +35,8 @@ class InternalBuilderGeneratorTest {
     @Test
     void convertsClassWithField() {
         var product = "TestClass";
-        var result = facade.withConstructors(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
@@ -57,29 +55,14 @@ class InternalBuilderGeneratorTest {
     }
 
     @Test
-    void notContainedClassProducesNothing() {
-        var generator = facade //
-                .withConstructors(parse("TestClass"), "Foo", new CompilationUnit());
-
-        assertThatExceptionOfType(GeneratorException.class) //
-                .isThrownBy(generator::execute).withMessage("Product class Foo not found in compilation unit.");
-    }
-
-    @Test
-    void nullClassProducesNothing() {
-        var generator = facade //
-                .withConstructors(parse("TestClass"), "", new CompilationUnit());
+    void classWithoutUsableConstructorThrowsException() {
+        var product = "TestClassWithoutConstructor";
+        var order = mkOrder(product);
+        var generator = facade.embeddedWithConstructors(order);
 
         assertThatExceptionOfType(GeneratorException.class) //
                 .isThrownBy(generator::execute) //
-                .withMessage("Product class not found in compilation unit.");
-    }
-
-    @Disabled
-    @Test
-    void classWithoutUsableConstructorThrowsException() {
-        // The member class builder can use any constructor
-        // Although using a private constructor is not encouraged
+                .withMessage("No suitable constructor found.");
     }
 
 }

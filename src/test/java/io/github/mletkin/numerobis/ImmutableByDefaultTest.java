@@ -17,12 +17,10 @@ package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.asString;
 import static io.github.mletkin.numerobis.Fixture.builder;
-import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
 
@@ -33,7 +31,8 @@ public class ImmutableByDefaultTest {
     @Test
     void mutableAnnotationCreatesManipulationConstructorInSeparateBuilder() {
         var product = "Mutable";
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).contains(//
                 "public MutableBuilder(Mutable product) {" //
@@ -44,7 +43,8 @@ public class ImmutableByDefaultTest {
     @Test
     void mutableAnnotationCreatesManipulationConstructorInEmbeddedBuilder() {
         var product = "Mutable";
-        var result = facade.withConstructors(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "public Builder(Mutable product) {" //
@@ -55,7 +55,8 @@ public class ImmutableByDefaultTest {
     @Test
     void mutableAnnotationCreatesManipulationFactoryInSeparateBuilder() {
         var product = "Mutable";
-        var result = facade.withFactoryMethods(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithFactoryMethods(order).execute();
 
         assertThat(asString(result)).contains( //
                 "public static MutableBuilder of(Mutable product) {" //
@@ -66,7 +67,8 @@ public class ImmutableByDefaultTest {
     @Test
     void mutableAnnotationCreatesManipulationFactoryinInternalBuilder() {
         var product = "Mutable";
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "public static Builder of(Mutable product) {" //
@@ -77,7 +79,8 @@ public class ImmutableByDefaultTest {
     @Test
     void immmutableAnnotationPreventsManipulationFactoryInInternalBuilder() {
         var product = "Immutable";
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
@@ -97,7 +100,8 @@ public class ImmutableByDefaultTest {
     @Test
     void immmutableAnnotationPreventsManipulationFactoryInExternalBuilder() {
         var product = "Immutable";
-        var result = facade.withFactoryMethods(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithFactoryMethods(order).execute();
 
         assertThat(asString(result)).isEqualTo( //
                 "public class ImmutableBuilder {" //
@@ -117,7 +121,8 @@ public class ImmutableByDefaultTest {
     @Test
     void immmutableAnnotationPreventsManipulationConstructorInInternalBuilder() {
         var product = "Immutable";
-        var result = facade.withConstructors(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
@@ -134,7 +139,8 @@ public class ImmutableByDefaultTest {
     @Test
     void immmutableAnnotationPreventsManipulationConstructorInExternalBuilder() {
         var product = "Immutable";
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).isEqualTo( //
                 "public class ImmutableBuilder {" //
@@ -151,7 +157,8 @@ public class ImmutableByDefaultTest {
     @Test
     void withoutAnnotationNoManipulationFactoryInInternalBuilder() {
         var product = "Empty";
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
@@ -171,7 +178,8 @@ public class ImmutableByDefaultTest {
     @Test
     void withoutAnnotationNoManipulationFactoryInExternalBuilder() {
         var product = "Empty";
-        var result = facade.withFactoryMethods(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithFactoryMethods(order).execute();
 
         assertThat(asString(result)).isEqualTo( //
                 "public class EmptyBuilder {" //
@@ -191,7 +199,8 @@ public class ImmutableByDefaultTest {
     @Test
     void withoutAnnotationNoManipulationConstructorInInternalBuilder() {
         var product = "Empty";
-        var result = facade.withConstructors(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).isEqualTo( //
                 "public static class Builder {" //
@@ -208,7 +217,8 @@ public class ImmutableByDefaultTest {
     @Test
     void withoutAnnotationNoManipulationConstructorInExternalBuilder() {
         var product = "Empty";
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).isEqualTo( //
                 "public class EmptyBuilder {" //

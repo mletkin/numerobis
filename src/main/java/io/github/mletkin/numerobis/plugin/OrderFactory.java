@@ -97,7 +97,6 @@ public class OrderFactory {
      */
     public Facade makeFacade() {
         return new Facade(productsAreMutable) //
-                .withNaming(naming) //
                 .withAdderVariants(adderVariants) //
                 .withMutatorVariants(mutatorVariants);
     }

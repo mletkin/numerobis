@@ -16,6 +16,7 @@
 package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.asString;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.Stream;
@@ -43,7 +44,8 @@ class MutatorExternalBuilderTest {
     @ParameterizedTest
     @MethodSource("testCases")
     void test(String desc, String product, String expected) {
-        var result = facade.withConstructors(Fixture.parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
         assertThat(asString(result)).as(desc).isEqualTo(expected);
     }
 

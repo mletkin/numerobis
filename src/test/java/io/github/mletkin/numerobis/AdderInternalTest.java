@@ -17,6 +17,7 @@ package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.asArray;
 import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,7 +42,8 @@ class AdderInternalTest {
     @ParameterizedTest
     @MethodSource("testCases")
     void test(String desc, String product, String method) {
-        var result = facade.withConstructors(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).as(desc).contains(method);
     }
@@ -73,7 +75,8 @@ class AdderInternalTest {
     @Test
     void adderForListFieldWithPostfixEn() {
         var product = "WithListWithPostfix";
-        var result = facade.withConstructors(Fixture.parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "public Builder addPerson(String item) {" //
@@ -86,7 +89,8 @@ class AdderInternalTest {
     @Test
     void adderForListFieldWithPostfixE() {
         var product = "WithListWithPostfix";
-        var result = facade.withConstructors(Fixture.parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "public Builder addBrief(String item) {" //
@@ -99,9 +103,10 @@ class AdderInternalTest {
     @MethodSource("adderCases")
     void addsAdder(ListMutatorVariant variant, String method) {
         var product = "WithList";
+        var order = mkOrder(product);
         var result = facade //
                 .withAdderVariants(asArray(variant)) //
-                .withConstructors(parse(product), product) //
+                .embeddedWithConstructors(order) //
                 .execute();
 
         assertThat(builder(result, product)).contains(method);

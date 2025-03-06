@@ -15,12 +15,13 @@
  */
 package io.github.mletkin.numerobis.generator;
 
-import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
+
+import io.github.mletkin.numerobis.Fixture;
 
 class FacadeTest {
 
@@ -30,9 +31,9 @@ class FacadeTest {
 
     @Test
     void convertsClassWithField() {
-        var product = parse("TestClass");
-
-        var result = facade.withConstructors(product, "TestClass").execute();
+        var product = "TestClass";
+        var order = Fixture.mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(RSCE.resolve("facade").resolve("EmbeddedWithConstructors.java")).hasContent(result.toString());
     }

@@ -18,14 +18,13 @@ package io.github.mletkin.numerobis.generator;
 import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.common.Generator;
-import io.github.mletkin.numerobis.plugin.Naming;
+import io.github.mletkin.numerobis.plugin.Order;
 
 /**
  * Configuration for the generation of different builder classes.
  */
 public class Facade {
 
-    private Naming namingSettings = Naming.DEFAULT;
     private ListMutatorVariant[] adderVariants = {};
     private ListMutatorVariant[] mutatorVariants = {};
     private boolean productsAreMutable;
@@ -37,17 +36,6 @@ public class Facade {
      */
     public Facade(boolean productsAreMutable) {
         this.productsAreMutable = productsAreMutable;
-    }
-
-    /**
-     * Sets the namimng settings of the facade.
-     *
-     * @param  naming object containing naming settings
-     * @return        the {@code Facade} instance
-     */
-    public Facade withNaming(Naming naming) {
-        this.namingSettings = naming;
-        return this;
     }
 
     /**
@@ -75,13 +63,12 @@ public class Facade {
     /**
      * Creates a generator for an embedded builder for a record.
      *
-     * @param  productUnit     compilation unit containing the product record
-     * @param  productTypeName name of the product record
-     * @return                 generator
+     * @param  order object descibing the generation process
+     * @return       generator
      */
-    public Generator forRecordEmbedded(CompilationUnit productUnit, String productTypeName) {
-        return () -> new RecordBuilderGenerator(productUnit, productTypeName) //
-                .withNamingSettings(namingSettings) //
+    public Generator forRecordEmbedded(Order order) {
+        return () -> new RecordBuilderGenerator(order.productUnit(), order.productType()) //
+                .withNamingSettings(order.naming()) //
                 .withInternalBuilder() //
                 .addFields() //
                 .addMutators() //
@@ -92,16 +79,13 @@ public class Facade {
     /**
      * Creates a generator for a separate builder for a record.
      *
-     * @param  productUnit     compilation unit containing the product record
-     * @param  productTypeName name of the product record
-     * @param  builderUnit     compilation unit taking the builder
-     * @return                 generator
+     * @param  order object descibing the generation process
+     * @return       generator
      */
-    public Generator forRecordSeparate(CompilationUnit productUnit, String productTypeName,
-            CompilationUnit builderUnit) {
-        return () -> new RecordBuilderGenerator(productUnit, productTypeName) //
-                .withNamingSettings(namingSettings) //
-                .withExternalBuilder(builderUnit) //
+    public Generator forRecordSeparate(Order order) {
+        return () -> new RecordBuilderGenerator(order.productUnit(), order.productType()) //
+                .withNamingSettings(order.naming()) //
+                .withExternalBuilder(order.builderUnit()) //
                 .addFields() //
                 .addMutators() //
                 .addBuildMethod() //
@@ -111,14 +95,14 @@ public class Facade {
     /**
      * Creates a generator for a separate builder using constructor methods.
      *
-     * @param  productUnit      compilation unit containing the product class
-     * @param  productClassName name of the product class
-     * @param  builderUnit      compilation unit for/with the builder class
-     * @return                  generator
+     * @param  order object descibing the generation process
+     * @return       generator
      */
-    public Generator withConstructors(CompilationUnit productUnit, String productClassName,
-            CompilationUnit builderUnit) {
-        return () -> generatorSeparate(productUnit, productClassName, builderUnit) //
+    public Generator separateWithConstructors(Order order) {
+        return () -> new BuilderGenerator(order.productUnit(), order.productType()) //
+                .mutableByDefault(productsAreMutable) //
+                .withNamingSettings(order.naming()) //
+                .withExternalBuilder(order.builderUnit()) //
                 .addProductField() //
                 .addConstructors() //
                 .addMutator(mutatorVariants) //
@@ -130,15 +114,14 @@ public class Facade {
     /**
      * Creates a generator for a separate builder using static factory methods.
      *
-     * @param  productUnit      compilation unit containing the product class
-     * @param  productClassName name of the product class
-     * @param  builderUnit      compilation unit for/with the builder class
-     * @return                  generator
+     * @param  order object descibing the generation process
+     * @return       generator
      */
-    public Generator withFactoryMethods(CompilationUnit productUnit, String productClassName,
-            CompilationUnit builderUnit) {
-
-        return () -> generatorSeparate(productUnit, productClassName, builderUnit) //
+    public Generator separateWithFactoryMethods(Order order) {
+        return () -> new BuilderGenerator(order.productUnit(), order.productType()) //
+                .mutableByDefault(productsAreMutable) //
+                .withNamingSettings(order.naming()) //
+                .withExternalBuilder(order.builderUnit()) //
                 .addProductField() //
                 .addFactoryMethods() //
                 .addMutator(mutatorVariants) //
@@ -147,23 +130,17 @@ public class Facade {
                 .builderUnit();
     }
 
-    private BuilderGenerator generatorSeparate(CompilationUnit productUnit, String productClassName,
-            CompilationUnit builderUnit) {
-        return new BuilderGenerator(productUnit, productClassName) //
-                .mutableByDefault(productsAreMutable) //
-                .withNamingSettings(namingSettings) //
-                .withExternalBuilder(builderUnit);
-    }
-
     /**
      * Creates a generator for an embedded builder using constructor methods.
      *
-     * @param  productUnit      compilation unit containing the product class
-     * @param  productClassName name of the product class
-     * @return                  generator
+     * @param  order object descibing the generation process
+     * @return       generator
      */
-    public Generator withConstructors(CompilationUnit productUnit, String productClassName) {
-        return () -> generatorEmbedded(productUnit, productClassName) //
+    public Generator embeddedWithConstructors(Order order) {
+        return () -> new BuilderGenerator(order.productUnit(), order.productType()) //
+                .mutableByDefault(productsAreMutable) //
+                .withNamingSettings(order.naming()) //
+                .withInternalBuilder() //
                 .addProductField() //
                 .addConstructors() //
                 .addMutator(mutatorVariants) //
@@ -175,25 +152,20 @@ public class Facade {
     /**
      * Creates a generator for an embedded builder using static factory methods.
      *
-     * @param  productUnit      compilation unit containing the product class
-     * @param  productClassName name of the product class
-     * @return                  generator
+     * @param  order object descibing the generation process
+     * @return       generator
      */
-    public Generator withFactoryMethods(CompilationUnit productUnit, String productClassName) {
-        return () -> generatorEmbedded(productUnit, productClassName) //
+    public Generator embeddedWithFactoryMethods(Order order) {
+        return () -> new BuilderGenerator(order.productUnit(), order.productType()) //
+                .mutableByDefault(productsAreMutable) //
+                .withNamingSettings(order.naming()) //
+                .withInternalBuilder() //
                 .addProductField() //
                 .addFactoryMethods() //
                 .addMutator(mutatorVariants) //
                 .addAdder(adderVariants) //
                 .addBuildMethod() //
                 .builderUnit();
-    }
-
-    private BuilderGenerator generatorEmbedded(CompilationUnit productUnit, String productClassName) {
-        return new BuilderGenerator(productUnit, productClassName) //
-                .mutableByDefault(productsAreMutable) //
-                .withNamingSettings(namingSettings) //
-                .withInternalBuilder();
     }
 
     /**

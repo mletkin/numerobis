@@ -16,6 +16,7 @@
 package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +38,8 @@ class InternalBuilderGeneratorWithFactoryMethodsTest {
     @ParameterizedTest
     @MethodSource("testCases")
     void test(String desc, String product, String builder) {
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithFactoryMethods(order).execute();
         assertThat(builder(result, product)).as(desc).isEqualTo(builder);
     }
 

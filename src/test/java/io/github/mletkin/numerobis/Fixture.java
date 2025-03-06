@@ -27,11 +27,15 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
 import io.github.mletkin.numerobis.generator.ListMutatorVariant;
 import io.github.mletkin.numerobis.generator.common.ClassUtil;
+import io.github.mletkin.numerobis.plugin.Naming;
+import io.github.mletkin.numerobis.plugin.Order;
 
 /**
  * Helper methods for unit tests.
  */
 public final class Fixture {
+
+    public static Path RSCE = Path.of("src/test/resources");
 
     private Fixture() {
         // Prevent instantiation
@@ -101,6 +105,18 @@ public final class Fixture {
 
     public static String asString(ClassOrInterfaceDeclaration clazz) {
         return clazz.toString().replace("\r", "").replace("\n", "");
+    }
+
+    public static Order mkOrder(Path productFile) {
+        return new Order(productFile, Naming.DEFAULT, true, true);
+    }
+
+    public static Order mkOrder(String product) {
+        return new Order(RSCE.resolve(product + ".java"), Naming.DEFAULT, true, true);
+    }
+
+    public static Order mkOrder(String product, Naming naming) {
+        return new Order(RSCE.resolve(product + ".java"), naming, true, true);
     }
 
 }

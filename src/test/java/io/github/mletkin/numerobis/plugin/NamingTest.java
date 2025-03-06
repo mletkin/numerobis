@@ -17,24 +17,24 @@ package io.github.mletkin.numerobis.plugin;
 
 import static io.github.mletkin.numerobis.Fixture.asString;
 import static io.github.mletkin.numerobis.Fixture.builder;
-import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-
-import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
 
 class NamingTest {
 
+    private Facade facade = new Facade(false);
+
     @Test
     void buildNameConfiguration() {
         var naming = Naming.Builder.of().withBuildMethod("foo").build();
-        var facade = new Facade(false).withNaming(naming);
         var product = "Empty";
+        var order = mkOrder(product, naming);
 
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(asString(result)).contains(//
                 "      public Empty foo() {" //
@@ -45,10 +45,10 @@ class NamingTest {
     @Test
     void factoryNameConfiguration() {
         var naming = Naming.Builder.of().withFactoryMethod("foo").build();
-        var facade = new Facade(false).withNaming(naming);
         var product = "Empty";
+        var order = mkOrder(product, naming);
 
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(asString(result)).contains( //
                 "public static Builder foo() {" //
@@ -59,10 +59,10 @@ class NamingTest {
     @Test
     void mutatorPrefixConfiguration() {
         var naming = Naming.Builder.of().withMutatorPrefix("foo").build();
-        var facade = new Facade(false).withNaming(naming);
         var product = "IntFieldWithAccessor";
+        var order = mkOrder(product, naming);
 
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "    public Builder fooFoo(int foo) {" //
@@ -74,10 +74,10 @@ class NamingTest {
     @Test
     void adderPrefixConfiguration() {
         var naming = Naming.Builder.of().withAdderPrefix("foo").build();
-        var facade = new Facade(false).withNaming(naming);
         var product = "WithList";
+        var order = mkOrder(product, naming);
 
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "    public Builder fooX(String item) {" //
@@ -89,10 +89,10 @@ class NamingTest {
     @Test
     void productFieldConfiguration() {
         var naming = Naming.Builder.of().withProductField("foo").build();
-        var facade = new Facade(false).withNaming(naming);
         var product = "Empty";
+        var order = mkOrder(product, naming);
 
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "private Empty foo;");
@@ -101,10 +101,10 @@ class NamingTest {
     @Test
     void internalBuilderClassNameConfiguration() {
         var naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
-        var facade = new Facade(false).withNaming(naming);
         var product = "WithList";
+        var order = mkOrder(product, naming);
 
-        var result = facade.withFactoryMethods(parse(product), product).execute();
+        var result = facade.embeddedWithFactoryMethods(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "public static class Foo {");
@@ -113,10 +113,10 @@ class NamingTest {
     @Test
     void externalBuilderClassNameConfiguration() {
         var naming = Naming.Builder.of().withBuilderClassPostfix("Foo").build();
-        var facade = new Facade(false).withNaming(naming);
         var product = "WithList";
+        var order = mkOrder(product, naming);
 
-        var result = facade.withFactoryMethods(parse(product), product, new CompilationUnit()).execute();
+        var result = facade.separateWithFactoryMethods(order).execute();
 
         assertThat(asString(result)).contains( //
                 "public class WithListFoo {");

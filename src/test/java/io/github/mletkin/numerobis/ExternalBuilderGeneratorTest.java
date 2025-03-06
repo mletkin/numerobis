@@ -16,19 +16,16 @@
 package io.github.mletkin.numerobis;
 
 import static io.github.mletkin.numerobis.Fixture.asString;
-import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import java.io.IOException;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.generator.Facade;
 import io.github.mletkin.numerobis.generator.GeneratorException;
@@ -45,7 +42,8 @@ class ExternalBuilderGeneratorTest {
     @ParameterizedTest
     @MethodSource("testCases")
     void test(String desc, String product, String builder) {
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
         assertThat(asString(result)).as(desc).isEqualTo(builder);
     }
 
@@ -94,30 +92,10 @@ class ExternalBuilderGeneratorTest {
     }
 
     @Test
-    void notContainedClassThrowsException() throws IOException {
-        var generator = facade //
-                .withConstructors(parse("TestClass"), "Foo", new CompilationUnit());
-
-        assertThatExceptionOfType(GeneratorException.class) //
-                .isThrownBy(generator::execute) //
-                .withMessage("Product class Foo not found in compilation unit.");
-    }
-
-    @Test
-    void nullClassThrowsException() {
-        var generator = facade //
-                .withConstructors(parse("TestClass"), null, new CompilationUnit());
-
-        assertThatExceptionOfType(GeneratorException.class) //
-                .isThrownBy(generator::execute) //
-                .withMessage("Product class not found in compilation unit.");
-    }
-
-    @Test
     void classWithoutUsableConstructorThrowsException() {
         var product = "TestClassWithoutConstructor";
-        var generator = facade //
-                .withConstructors(parse(product), product, new CompilationUnit());
+        var order = mkOrder(product);
+        var generator = facade.separateWithConstructors(order);
 
         assertThatExceptionOfType(GeneratorException.class) //
                 .isThrownBy(generator::execute) //

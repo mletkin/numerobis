@@ -15,6 +15,8 @@
  */
 package io.github.mletkin.numerobis.plugin;
 
+import static io.github.mletkin.numerobis.common.Util.isNullOrBlank;
+
 import java.nio.file.Path;
 
 import com.github.javaparser.ParserConfiguration.LanguageLevel;
@@ -81,7 +83,7 @@ public final class MojoSettings {
         }
 
         public Builder withTargetDirectory(String targetDirectory) {
-            if (targetDirectory != null && !targetDirectory.isBlank()) {
+            if (!isNullOrBlank(targetDirectory)) {
                 product.targetDirectory = Path.of(targetDirectory);
             }
             return this;

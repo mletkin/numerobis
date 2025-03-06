@@ -36,7 +36,9 @@ class ListFieldTest {
                 + "    }" //
                 + "}");
 
-        var result = facade.withConstructors(Fixture.parse(product), product, builder).execute();
+        var order = Fixture.mkOrder(product).useBuildUnit(builder);
+
+        var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).isEqualTo( //
                 "import java.util.List;" //

@@ -18,6 +18,7 @@ package io.github.mletkin.numerobis;
 import static io.github.mletkin.numerobis.Fixture.asArray;
 import static io.github.mletkin.numerobis.Fixture.asString;
 import static io.github.mletkin.numerobis.Fixture.builder;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static io.github.mletkin.numerobis.Fixture.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,7 +35,8 @@ class MutatorAnnotationTest {
 
     void adderAnnoForListFieldInExternalBuilder() {
         var product = "AdderAnno";
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).contains( //
                 "public AdderAnnoBuilder addProduct(String item) {" //
@@ -52,7 +54,8 @@ class MutatorAnnotationTest {
     @Test
     void mutatorAnnoForListFieldInInternalBuilder() {
         var product = "AdderAnno";
-        var result = facade.withConstructors(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "public Builder withProducts(List<String> products) {" //
@@ -70,7 +73,8 @@ class MutatorAnnotationTest {
     @Test
     void mutatorAnnoForListFieldInExternalBuilder() {
         var product = "AdderAnno";
-        var result = facade.withConstructors(parse(product), product, new CompilationUnit()).execute();
+        var order = mkOrder(product);
+        var result = facade.separateWithConstructors(order).execute();
 
         assertThat(asString(result)).contains( //
                 "public AdderAnnoBuilder withProducts(List<String> products) {" //
@@ -88,7 +92,8 @@ class MutatorAnnotationTest {
     @Test
     void adderAnnoForListFieldInInternalBuilder() {
         var product = "AdderAnno";
-        var result = facade.withConstructors(parse(product), product).execute();
+        var order = mkOrder(product);
+        var result = facade.embeddedWithConstructors(order).execute();
 
         assertThat(builder(result, product)).contains( //
                 "public Builder addProduct(String item) {" //
@@ -106,9 +111,10 @@ class MutatorAnnotationTest {
     @Test
     void adderAnnotationOverridesDefaultInInternalBuilder() {
         var product = "AdderAnnoNone";
+        var order = mkOrder(product);
         var result = facade //
                 .withAdderVariants(asArray(ListMutatorVariant.STREAM)) //
-                .withConstructors(parse(product), product) //
+                .embeddedWithConstructors(order) //
                 .execute();
 
         assertThat(asString(result)).doesNotContain( //
@@ -118,9 +124,10 @@ class MutatorAnnotationTest {
     @Test
     void mutatorAnnotationOverridesDefaultInInternalBuilder() {
         var product = "AdderAnnoNone";
+        var order = mkOrder(product);
         var result = facade //
                 .withMutatorVariants(asArray(ListMutatorVariant.STREAM)) //
-                .withConstructors(parse(product), product) //
+                .embeddedWithConstructors(order) //
                 .execute();
 
         assertThat(asString(result)).doesNotContain( //
@@ -130,9 +137,10 @@ class MutatorAnnotationTest {
     @Test
     void mutatorAnnotationOverridesPomInExternalBuilder() {
         var product = "AdderAnnoNone";
+        var order = mkOrder(product);
         var result = facade //
                 .withMutatorVariants(asArray(ListMutatorVariant.STREAM)) //
-                .withConstructors(parse(product), product, new CompilationUnit()) //
+                .separateWithConstructors(order) //
                 .execute();
 
         assertThat(asString(result)).doesNotContain( //
