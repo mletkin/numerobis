@@ -26,7 +26,6 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import io.github.mletkin.numerobis.common.Generator;
-import io.github.mletkin.numerobis.generator.GeneratorException;
 import io.github.mletkin.numerobis.generator.Sorter;
 
 /**
@@ -68,14 +67,12 @@ public class Processor {
     }
 
     private void generate(Order order) {
-        var productTypeName = order.productTypeName().orElseThrow(GeneratorException::productClassNotFound);
-
         if (order.generateBuilder()) {
             generator(order).execute();
         }
 
         if (order.generateAccessors()) {
-            orderFactory.makeFacade().withAccessors(order.productUnit(), productTypeName);
+            orderFactory.makeFacade().withAccessors(order);
         }
     }
 

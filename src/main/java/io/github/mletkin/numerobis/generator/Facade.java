@@ -171,12 +171,11 @@ public class Facade {
     /**
      * Generates accessors for the fields in a class.
      *
-     * @param  productUnit compilation unit with product class
-     * @param  className   name of the product class
-     * @return             compilation unit with the processed product class
+     * @param  order object descibing the generation process
+     * @return       compilation unit with the processed product class
      */
-    public CompilationUnit withAccessors(CompilationUnit productUnit, String className) {
-        return new AccessorGenerator(productUnit, className) //
+    public CompilationUnit withAccessors(Order order) {
+        return new AccessorGenerator(order.productUnit(), order.productType()) //
                 .addAccessors() //
                 .resultUnit();
     }

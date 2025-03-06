@@ -21,7 +21,6 @@ import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static io.github.mletkin.numerobis.Fixture.product;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Disabled;
@@ -37,7 +36,6 @@ import io.github.mletkin.numerobis.generator.ListMutatorVariant;
  * Adder generation for generated external builder.
  */
 class AdderExternalTest {
-    private Path RSCE = Path.of("src/test/resources");
     private Facade facade = new Facade(false);
 
     @ParameterizedTest

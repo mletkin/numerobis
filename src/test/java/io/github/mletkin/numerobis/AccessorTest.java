@@ -15,7 +15,7 @@
  */
 package io.github.mletkin.numerobis;
 
-import static io.github.mletkin.numerobis.Fixture.parse;
+import static io.github.mletkin.numerobis.Fixture.mkOrder;
 import static io.github.mletkin.numerobis.Fixture.product;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,7 +39,8 @@ class AccessorTest {
     @ParameterizedTest
     @MethodSource("testCases")
     void test(String desc, String product, String content) {
-        var result = facade.withAccessors(parse(product), product);
+        var order = mkOrder(product);
+        var result = facade.withAccessors(order);
         assertThat(product(result, product)).as(desc).isEqualTo(content);
     }
 
@@ -88,7 +89,8 @@ class AccessorTest {
     @Test
     void retainsIntAndArrayAccessor() {
         var product = "IntAndArrayFieldWithAccessor";
-        var result = facade.withAccessors(parse(product), product);
+        var order = mkOrder(product);
+        var result = facade.withAccessors(order);
 
         assertThat(product(result, product)).isEqualTo( //
                 "class IntAndArrayFieldWithAccessor {" //
@@ -103,7 +105,8 @@ class AccessorTest {
     @Test
     void accessMethodForListGeneratesStream() {
         var product = "WithList";
-        var result = facade.withAccessors(parse(product), product);
+        var order = mkOrder(product);
+        var result = facade.withAccessors(order);
 
         assertThat(Fixture.asString(result)).isEqualTo(//
                 "import java.util.List;" //
