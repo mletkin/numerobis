@@ -56,7 +56,7 @@
         <!-- Java-Dependencies-->
         <version.javaparser-core>3.26.3</version.javaparser-core>
 
-        <version.assertj>3.13.2</version.assertj>
+        <version.assertj>3.27.7</version.assertj>
 
         <version.junit-platform>1.5.1</version.junit-platform>
         <version.junit-jupiter>5.5.1</version.junit-jupiter>
